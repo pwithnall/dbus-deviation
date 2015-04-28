@@ -1,0 +1,59 @@
+dbus-deviation
+==============
+
+dbus-deviation is a project for parsing D-Bus introspection XML and processing
+it in various ways. Its main tool is dbus-interface-diff, which calculates the
+difference between two D-Bus APIs for the purpose of checking for API breaks.
+This functionality is also available as a Python module, dbusdeviation.
+
+A second Python module, dbusapi, is provided for parsing D-Bus introspection
+XML to produce an AST representing a D-Bus interface.
+
+dbus-deviation’s API is currently unstable and is likely to change wildly.
+
+Using dbus-deviation
+====================
+
+dbus-deviation can be used as a utility program or as a Python library.
+
+The utility programs:
+ • dbus-interface-diff:
+     Check for differences between two versions of the same D-Bus API and
+     print details of each difference. It can check for problems with forwards
+     and backwards compatibility, as well as general informational
+     differences.
+
+     Example:
+       dbus-interface-diff \
+           com.example.Interface1.xml \  # old version of the interface
+           com.example.Interface2.xml    # new version of the interface
+
+As a library, the core object is an InterfaceParser, allowing a D-Bus API to
+be parsed and represented as an AST. See the API documentation for more
+explanation and examples.
+
+Dependencies
+============
+
+ • argparse
+ • xml.etree
+
+Licensing
+=========
+
+dbus-deviation is licensed under the choice of the Academic Free License
+version 2.1, or the GNU General Public License version 2 (or, at your option,
+any later version). This is the same license as D-Bus itself. See COPYING for
+more details.
+
+Bugs
+====
+
+Bug reports and (git formatted) patches should be e-mailed to one of the
+addresses listed in the ‘Contact’ section below. Thank you!
+
+Contact
+=======
+
+Philip Withnall <philip.withnall@collabora.co.uk>
+http://people.collabora.com/~pwith/dbus-deviation/

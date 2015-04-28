@@ -1,0 +1,25 @@
+Formatting
+==========
+
+All code should follow PEP8.
+
+Commit messages
+===============
+
+dbus-deviation does not use a ChangeLog; it is auto-generated from the git log
+when packaging a release. Commit messages should use a short tag in the commit
+summary to allow easy identification of which part of the code base they
+touch.
+
+Versioning
+==========
+
+dbus-deviation uses an even–odd/stable–unstable versioning policy, where odd
+minor version numbers are unstable releases, released periodically (with
+increasing micro version numbers) and leading to a stable release with the
+next even minor version number. API breaks are allowed in micro releases with
+an odd minor version number, but not in micro releases with an even minor
+version number.
+
+It is encouraged to make a new micro release of an odd minor series after each
+large API or feature addition or break.

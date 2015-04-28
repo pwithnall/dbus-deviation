@@ -1,0 +1,14 @@
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns="http://usefulinc.com/ns/doap#">
+	<name xml:lang="en">dbus-deviation</name>
+	<shortdesc xml:lang="en">dbus-deviation is a project for parsing D-Bus introspection XML and processing it in various ways</shortdesc>
+	<description xml:lang="en">dbus-deviation is a project for parsing D-Bus introspection XML and processing it in various ways. Its main tool is dbus-interface-diff, which calculates the difference between two D-Bus APIs for the purpose of checking for API breaks. This functionality is also available as a Python module, dbusdeviation.</description>
+	<homepage rdf:resource="https://gitlab.com/dbus-deviation/"/>
+	<license rdf:resource="http://usefulinc.com/doap/licenses/gpl"/>
+	<download-page rdf:resource="http://people.collabora.com/~pwith/dbus-deviation/"/>
+	<maintainer>
+		<foaf:Person>
+			<foaf:name>Philip Withnall</foaf:name>
+			<foaf:mbox rdf:resource="mailto:philip.withnall@collabora.co.uk"/>
+		</foaf:Person>
+	</maintainer>
+</Project>
