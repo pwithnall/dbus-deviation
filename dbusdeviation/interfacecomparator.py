@@ -221,8 +221,8 @@ class InterfaceComparator(object):
         old_ecs = self._get_emits_changed_signal_annotation(old_node)
         new_ecs = self._get_emits_changed_signal_annotation(new_node)
 
-        if (old_ecs in ['true', 'invalidates'] and
-            new_ecs in ['false', 'const']):
+        if old_ecs in ['true', 'invalidates'] and \
+           new_ecs in ['false', 'const']:
             self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
                                'Node ‘%s’ stopped emitting '
                                'org.freedesktop.DBus.PropertiesChanged.' %
