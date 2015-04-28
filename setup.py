@@ -13,6 +13,7 @@ setup(
     zip_safe=True,
     setup_requires=[
         'setuptools_git >= 0.3',
+        'setuptools_pep8',
     ],
     install_requires=[],
     tests_require=[],
