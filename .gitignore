@@ -5,4 +5,5 @@
 /dist/
 /htmlcov/
 /.coverage
+/.be/id-cache
 *.pyc
