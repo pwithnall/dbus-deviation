@@ -1,0 +1,4 @@
+Add autotools macros to support the git integration workflow suggested here:
+    https://bugs.freedesktop.org/show_bug.cgi?id=89845#c2
+
+Document the whole thing really well and port a few modules to it as an example.
