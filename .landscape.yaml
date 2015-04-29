@@ -3,3 +3,5 @@ test-warnings: yes
 strictness: veryhigh
 pep8:
     full: true
+ignore-paths:
+  - docs/conf.py
