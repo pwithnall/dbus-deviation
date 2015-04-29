@@ -87,13 +87,13 @@ def main():
 
     try:
         old_interfaces = old_parser.parse()
-    except ElementTree.ParseError as e:
-        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, e))
+    except ElementTree.ParseError as err:
+        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, err))
         sys.exit(1)
     try:
         new_interfaces = new_parser.parse()
-    except ElementTree.ParseError as e:
-        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, e))
+    except ElementTree.ParseError as err:
+        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, err))
         sys.exit(1)
 
     # Handle errors

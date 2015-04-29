@@ -39,6 +39,10 @@ WARNING_CATEGORIES = [
 ]
 
 
+def _format_level(level):
+    return [' INFO', ' WARN', 'ERROR'][level]
+
+
 class InterfaceComparator(object):
     """
     Compare two D-Bus interface descriptions and determine how they differ.
@@ -70,9 +74,6 @@ class InterfaceComparator(object):
     def _issue_output(self, level, message):
         self._output.append((level, message))
 
-    def _format_level(self, level):
-        return [' INFO', ' WARN', 'ERROR'][level]
-
     def _get_fd_for_level(self, level):
         if level == self.OUTPUT_INFO:
             return sys.stdout
@@ -95,9 +96,9 @@ class InterfaceComparator(object):
             if not self._warning_enabled(level):
                 continue
 
-            formatted_level = self._format_level(level)
-            fd = self._get_fd_for_level(level)
-            fd.write('%s: %s\n' % (formatted_level, message))
+            formatted_level = _format_level(level)
+            output_fd = self._get_fd_for_level(level)
+            output_fd.write('%s: %s\n' % (formatted_level, message))
 
     def get_output(self):
         """
@@ -140,40 +141,41 @@ class InterfaceComparator(object):
         # Work out the exit status.
         return self.get_output()
 
-    def _get_string_annotation(self, node, annotation_name, default):
-        if annotation_name in node.annotations:
-            return node.annotations[annotation_name].value
-        return default
-
-    def _get_bool_annotation(self, node, annotation_name, default):
-        if annotation_name in node.annotations:
-            return node.annotations[annotation_name].value == 'true'
-        return default
-
-    def _get_emits_changed_signal_annotation(self, node):
-        # Reference:
-        # http://dbus.freedesktop.org/doc/dbus-specification.html\
-        # #introspection-format
-        annotation_name = 'org.freedesktop.DBus.Property.EmitsChangedSignal'
-
-        if annotation_name in node.annotations:
-            return node.annotations[annotation_name].value
-        elif isinstance(node, ast.ASTProperty):
-            assert node.interface is not None
-            return self._get_emits_changed_signal_annotation(node.interface)
-        else:
-            return 'true'
-
+    # pylint: disable=too-many-branches
     def _compare_annotations(self, old_node, new_node):
         # Reference:
         # http://dbus.freedesktop.org/doc/dbus-specification.html\
         # #introspection-format
+        def _get_string_annotation(node, annotation_name, default):
+            if annotation_name in node.annotations:
+                return node.annotations[annotation_name].value
+            return default
+
+        def _get_bool_annotation(node, annotation_name, default):
+            if annotation_name in node.annotations:
+                return node.annotations[annotation_name].value == 'true'
+            return default
+
+        def _get_ecs_annotation(node):
+            # Reference:
+            # http://dbus.freedesktop.org/doc/dbus-specification.html\
+            # #introspection-format
+            name = 'org.freedesktop.DBus.Property.EmitsChangedSignal'
+
+            if name in node.annotations:
+                return node.annotations[name].value
+            elif isinstance(node, ast.ASTProperty):
+                assert node.interface is not None
+                return _get_ecs_annotation(node.interface)
+            else:
+                return 'true'
+
         old_deprecated = \
-            self._get_bool_annotation(old_node,
-                                      'org.freedesktop.DBus.Deprecated', False)
+            _get_bool_annotation(old_node,
+                                 'org.freedesktop.DBus.Deprecated', False)
         new_deprecated = \
-            self._get_bool_annotation(new_node,
-                                      'org.freedesktop.DBus.Deprecated', False)
+            _get_bool_annotation(new_node,
+                                 'org.freedesktop.DBus.Deprecated', False)
 
         if old_deprecated and not new_deprecated:
             self._issue_output(self.OUTPUT_INFO,
@@ -185,13 +187,11 @@ class InterfaceComparator(object):
                                old_node.format_name())
 
         old_c_symbol = \
-            self._get_string_annotation(old_node,
-                                        'org.freedesktop.DBus.GLib.CSymbol',
-                                        '')
+            _get_string_annotation(old_node,
+                                   'org.freedesktop.DBus.GLib.CSymbol', '')
         new_c_symbol = \
-            self._get_string_annotation(new_node,
-                                        'org.freedesktop.DBus.GLib.CSymbol',
-                                        '')
+            _get_string_annotation(new_node,
+                                   'org.freedesktop.DBus.GLib.CSymbol', '')
 
         if old_c_symbol != new_c_symbol:
             self._issue_output(self.OUTPUT_INFO,
@@ -201,13 +201,11 @@ class InterfaceComparator(object):
                                 new_c_symbol))
 
         old_no_reply = \
-            self._get_bool_annotation(old_node,
-                                      'org.freedesktop.DBus.Method.NoReply',
-                                      False)
+            _get_bool_annotation(old_node,
+                                 'org.freedesktop.DBus.Method.NoReply', False)
         new_no_reply = \
-            self._get_bool_annotation(new_node,
-                                      'org.freedesktop.DBus.Method.NoReply',
-                                      False)
+            _get_bool_annotation(new_node,
+                                 'org.freedesktop.DBus.Method.NoReply', False)
 
         if old_no_reply and not new_no_reply:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
@@ -218,8 +216,8 @@ class InterfaceComparator(object):
                                'Node ‘%s’ has been marked as not returning a '
                                'reply.' % old_node.format_name())
 
-        old_ecs = self._get_emits_changed_signal_annotation(old_node)
-        new_ecs = self._get_emits_changed_signal_annotation(new_node)
+        old_ecs = _get_ecs_annotation(old_node)
+        new_ecs = _get_ecs_annotation(new_node)
 
         if old_ecs in ['true', 'invalidates'] and \
            new_ecs in ['false', 'const']:
@@ -252,6 +250,7 @@ class InterfaceComparator(object):
                                'Node ‘%s’ became a constant.' %
                                old_node.format_name())
 
+    # pylint: disable=too-many-branches
     def _compare_interfaces(self, old_interface, new_interface):
         # Precondition of calling this method.
         assert old_interface.name == new_interface.name
@@ -272,20 +271,19 @@ class InterfaceComparator(object):
                                    method.format_name())
 
         # Compare properties
-        for (name, property) in old_interface.properties.items():
+        for (name, prop) in old_interface.properties.items():
             if name not in new_interface.properties:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                    'Property ‘%s’ has been removed.' %
-                                   property.format_name())
+                                   prop.format_name())
             else:
-                self._compare_properties(property,
-                                         new_interface.properties[name])
+                self._compare_properties(prop, new_interface.properties[name])
 
-        for (name, property) in new_interface.properties.items():
+        for (name, prop) in new_interface.properties.items():
             if name not in old_interface.properties:
                 self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
                                    'Property ‘%s’ has been added.' %
-                                   property.format_name())
+                                   prop.format_name())
 
         # Compare signals
         for (name, signal) in old_interface.signals.items():

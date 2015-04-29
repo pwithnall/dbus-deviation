@@ -34,18 +34,20 @@ import tempfile
 import unittest
 
 
+def _create_temp_xml_file(xml):
+    tmp_fd, tmp_name = tempfile.mkstemp(suffix='.xml', text=True)
+    xml_fd = os.fdopen(tmp_fd, 'wt')
+    xml_fd.write(xml)
+    xml_fd.close()
+
+    return tmp_name
+
+
+# pylint: disable=too-many-public-methods
 class TestComparatorErrors(unittest.TestCase):
-    def _create_temp_xml_file(self, xml):
-        tmp_fd, tmp_name = tempfile.mkstemp(suffix='.xml', text=True)
-        file = os.fdopen(tmp_fd, 'wt')
-        file.write(xml)
-        file.close()
-
-        return tmp_name
-
     def _test_comparator(self, old_xml, new_xml):
-        old_tmpfile = self._create_temp_xml_file(old_xml)
-        new_tmpfile = self._create_temp_xml_file(new_xml)
+        old_tmpfile = _create_temp_xml_file(old_xml)
+        new_tmpfile = _create_temp_xml_file(new_xml)
 
         old_parser = InterfaceParser(old_tmpfile)
         new_parser = InterfaceParser(new_tmpfile)
@@ -64,9 +66,11 @@ class TestComparatorErrors(unittest.TestCase):
 
         return InterfaceComparator(old_interfaces, new_interfaces)
 
+    # pylint: disable=invalid-name
     def assertSuccess(self, old_xml, new_xml):
         self.assertOutput(old_xml, new_xml, [])
 
+    # pylint: disable=invalid-name
     def assertOutput(self, old_xml, new_xml, output):
         comparator = self._test_comparator(old_xml, new_xml)
         self.assertEqual(comparator.compare(), output)
