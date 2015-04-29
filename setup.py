@@ -2,11 +2,22 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 
+"""
+Parse D-Bus introspection XML and process it in various ways
+"""
+
 from setuptools import setup, find_packages
+import os
+
+
+__version__ = '0.1.0'
+README = open('README').read()
+NEWS = open('NEWS').read()
+
 
 setup(
     name='dbus-deviation',
-    version='0.1.0',
+    version=__version__,
     packages=find_packages(exclude=['*.tests']),
     include_package_data=True,
     exclude_package_data={'': ['.gitignore']},
@@ -24,14 +35,9 @@ setup(
     },
     author='Philip Withnall',
     author_email='philip.withnall@collabora.co.uk',
-    description='Parse D-Bus introspection XML and process it in various ways',
-    long_description='dbus-deviation is a project for parsing D-Bus '
-                     'introspection XML and processing it in various ways. '
-                     'Its main tool is dbus-interface-diff, which calculates '
-                     'the difference between two D-Bus APIs for the purpose '
-                     'of checking for API breaks. This functionality is also '
-                     'available as a Python module, dbusdeviation.',
+    description=__doc__,
+    long_description=README + '\n\n' + NEWS,
     license='GPLv2+',
     url='http://people.collabora.com/~pwith/dbus-deviation/',
-    test_suite='dbusdeviation.tests'
+    test_suite='dbusdeviation.tests',
 )
