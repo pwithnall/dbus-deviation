@@ -34,8 +34,14 @@ explanation of the two types of compatibility.
 """
 
 import argparse
-from xml.etree import cElementTree
 import sys
+
+# PyPy support
+try:
+    from xml.etree import cElementTree as ElementTree
+except ImportError:
+    from xml.etree import ElementTree
+
 from dbusapi.interfaceparser import InterfaceParser
 from dbusdeviation.interfacecomparator import InterfaceComparator
 
@@ -81,12 +87,12 @@ def main():
 
     try:
         old_interfaces = old_parser.parse()
-    except cElementTree.ParseError as e:
+    except ElementTree.ParseError as e:
         sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, e))
         sys.exit(1)
     try:
         new_interfaces = new_parser.parse()
-    except cElementTree.ParseError as e:
+    except ElementTree.ParseError as e:
         sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, e))
         sys.exit(1)
 

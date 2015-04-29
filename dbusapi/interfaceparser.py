@@ -27,9 +27,15 @@
 TODO
 """
 
-from xml.etree import cElementTree
 import os
 import sys
+
+# PyPy support
+try:
+    from xml.etree import cElementTree as ElementTree
+except ImportError:
+    from xml.etree import ElementTree
+
 from dbusapi import ast
 
 
@@ -69,7 +75,7 @@ class InterfaceParser(object):
 
     def parse(self):
         self._output = []
-        tree = cElementTree.parse(self._filename)
+        tree = ElementTree.parse(self._filename)
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
