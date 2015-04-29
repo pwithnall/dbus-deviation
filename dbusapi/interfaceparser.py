@@ -42,15 +42,20 @@ from dbusapi import ast
 
 
 def _ignore_node(node):
-    # We definitely want to ignore:
-    #  - {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}\
-    #    docstring
-    #  - {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
+    """
+    Decide whether to ignore the given node when parsing.
+
+    We definitely want to ignore:
+     * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}\
+       docstring
+     * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
+    """
     return node.tag[0] == '{'  # in a namespace
 
 
 # pylint: disable=interface-not-implemented
 class InterfaceParser(object):
+
     """
     Parse a D-Bus introspection XML file.
 
@@ -64,20 +69,38 @@ class InterfaceParser(object):
     TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 
     def __init__(self, filename):
+        """
+        Construct a new InterfaceParser.
+
+        Args:
+            filename: path to the XML introspection file to parse
+        """
         self._filename = os.path.abspath(filename)
         self._output = []
 
     def _issue_output(self, message):
+        """Append a message to the parser output."""
         self._output.append(message)
 
     def print_output(self):
+        """Print all logged parser messages."""
         for message in self._output:
             sys.stderr.write('ERROR: %s\n' % message)
 
     def get_output(self):
+        """Return a list of all logged parser messages."""
         return self._output
 
     def parse(self):
+        """
+        Parse the introspection XML file and build an AST.
+
+        Returns:
+            A non-empty dict of interfaces in the file, mapping each interface
+            name to an ASTInterface instance.
+
+            If parsing fails, None is returned.
+        """
         self._output = []
         tree = ElementTree.parse(self._filename)
         out = self._parse_root(tree.getroot())
@@ -89,6 +112,7 @@ class InterfaceParser(object):
         return out
 
     def _parse_root(self, root):
+        """Parse the root node in the XML tree; return a dict of interfaces."""
         # Handle specifications wrapped in tp:spec.
         if root.tag == '{%s}spec' % self.TP_DTD:
             for node in root.getchildren():
@@ -125,6 +149,7 @@ class InterfaceParser(object):
 
     # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):  # noqa
+        """Parse an <interface> element; return an ASTInterface or None."""
         assert interface_node.tag == 'interface'
 
         if 'name' not in interface_node.attrib:
@@ -188,6 +213,7 @@ class InterfaceParser(object):
                                 annotations)
 
     def _parse_method(self, method_node):
+        """Parse a <method> element; return an ASTMethod or None."""
         assert method_node.tag == 'method'
 
         if 'name' not in method_node.attrib:
@@ -221,6 +247,7 @@ class InterfaceParser(object):
         return ast.ASTMethod(name, args, annotations)
 
     def _parse_signal(self, signal_node):
+        """Parse a <signal> element; return an ASTSignal or None."""
         assert signal_node.tag == 'signal'
 
         if 'name' not in signal_node.attrib:
@@ -254,6 +281,7 @@ class InterfaceParser(object):
         return ast.ASTSignal(name, args, annotations)
 
     def _parse_property(self, property_node):
+        """Parse a <property> element; return an ASTProperty or None."""
         assert property_node.tag == 'property'
 
         if 'name' not in property_node.attrib:
@@ -290,6 +318,7 @@ class InterfaceParser(object):
         return ast.ASTProperty(name, prop_type, access, annotations)
 
     def _parse_arg(self, arg_node):
+        """Parse an <arg> element; return an ASTArgument or None."""
         assert arg_node.tag == 'arg'
 
         if 'type' not in arg_node.attrib:
@@ -319,6 +348,7 @@ class InterfaceParser(object):
         return ast.ASTArgument(name, direction, arg_type, annotations)
 
     def _parse_annotation(self, annotation_node):
+        """Parse an <annotation> element; return an ASTAnnotation or None."""
         assert annotation_node.tag == 'annotation'
 
         if 'name' not in annotation_node.attrib:
