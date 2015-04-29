@@ -167,23 +167,47 @@ class InterfaceComparator(object):
     # pylint: disable=too-many-branches
     def _compare_annotations(self, old_node, new_node):  # noqa
         """Compare two ASTAnnotation instances."""
-        # Reference:
-        # http://dbus.freedesktop.org/doc/dbus-specification.html\
-        # #introspection-format
+
         def _get_string_annotation(node, annotation_name, default):
+            """
+            Get an annotation value as a string.
+
+            Reference: http://goo.gl/3EtdNf
+
+            Returns:
+                The value of the `annotation_name` annotation as a string, or
+                `default` if no annotation exists by that name.
+            """
             if annotation_name in node.annotations:
                 return node.annotations[annotation_name].value
             return default
 
         def _get_bool_annotation(node, annotation_name, default):
+            """
+            Get an annotation value as a boolean.
+
+            Reference: http://goo.gl/3EtdNf
+
+            Returns:
+                The value of the `annotation_name` annotation as a boolean, or
+                `default` if no annotation exists by that name.
+            """
             if annotation_name in node.annotations:
                 return node.annotations[annotation_name].value == 'true'
             return default
 
         def _get_ecs_annotation(node):
-            # Reference:
-            # http://dbus.freedesktop.org/doc/dbus-specification.html\
-            # #introspection-format
+            """
+            Get the value of the EmitsChangedSignal annotation.
+
+            Reference: http://goo.gl/3EtdNf
+
+            Returns:
+                The value of the
+                `org.freedesktop.DBus.Property.EmitsChangedSignal` annotation,
+                if it exists, or the default, calculated as per the
+                specification.
+            """
             name = 'org.freedesktop.DBus.Property.EmitsChangedSignal'
 
             if name in node.annotations:

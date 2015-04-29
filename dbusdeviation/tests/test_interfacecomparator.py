@@ -28,6 +28,10 @@
 Unit tests for dbus-interface-diff
 """
 
+
+# pylint: disable=missing-docstring
+
+
 from dbusapi.interfaceparser import InterfaceParser
 from dbusdeviation.interfacecomparator import InterfaceComparator
 import os
