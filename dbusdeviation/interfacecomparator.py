@@ -50,14 +50,14 @@ class InterfaceComparator(object):
 
     Differences are given different severity levels, depending on whether they
     affect
-     - nothing, and are purely decorative; for example, changing the name of a
-       method argument
-     - forwards compatibility, where code written against the new interface
-       may not work against the old interface; for example, because it uses a
-       newly added method
-     - backwards compatibility, where code written against the old interface
-       may not work against the new interface; for example, because it changes
-       the type of a property
+    * nothing, and are purely decorative; for example, changing the name of a
+      method argument
+    * forwards compatibility, where code written against the new interface
+      may not work against the old interface; for example, because it uses a
+      newly added method
+    * backwards compatibility, where code written against the old interface
+      may not work against the new interface; for example, because it changes
+      the type of a property
     """
 
     # Output severity levels.
