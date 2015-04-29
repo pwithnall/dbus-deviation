@@ -46,8 +46,7 @@ def _ignore_node(node):
     Decide whether to ignore the given node when parsing.
 
     We definitely want to ignore:
-     * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}\
-       docstring
+     * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}docstring
      * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
     """
     return node.tag[0] == '{'  # in a namespace
