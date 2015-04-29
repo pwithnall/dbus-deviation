@@ -28,10 +28,15 @@ TODO
 """
 
 
+# pylint: disable=too-few-public-methods
+
+
+# pylint: disable=interface-not-implemented
 class ASTInterface(object):
     """
     AST representation of an <interface> element.
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, name, methods, properties, signals, annotations):
         self.name = name
         self.methods = methods

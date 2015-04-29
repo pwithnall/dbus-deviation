@@ -31,6 +31,7 @@ import os
 import sys
 
 # PyPy support
+# pylint: disable=interface-not-implemented
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
@@ -39,6 +40,15 @@ except ImportError:
 from dbusapi import ast
 
 
+def _ignore_node(node):
+    # We definitely want to ignore:
+    #  - {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}\
+    #    docstring
+    #  - {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
+    return node.tag[0] == '{'  # in a namespace
+
+
+# pylint: disable=interface-not-implemented
 class InterfaceParser(object):
     """
     Parse a D-Bus introspection XML file.
@@ -55,13 +65,6 @@ class InterfaceParser(object):
     def __init__(self, filename):
         self._filename = os.path.abspath(filename)
         self._output = []
-
-    def _ignore_node(self, node):
-        # We definitely want to ignore:
-        #  - {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}\
-        #    docstring
-        #  - {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
-        return node.tag[0] == '{'  # in a namespace
 
     def _issue_output(self, message):
         self._output.append(message)
@@ -111,7 +114,7 @@ class InterfaceParser(object):
                     continue
 
                 interfaces[interface.name] = interface
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in root.' %
@@ -119,6 +122,7 @@ class InterfaceParser(object):
 
         return interfaces
 
+    # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):
         assert interface_node.tag == 'interface'
 
@@ -173,7 +177,7 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in interface '
@@ -207,7 +211,7 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in method ‘%s’.' %
@@ -240,7 +244,7 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in signal ‘%s’.' %
@@ -276,7 +280,7 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in property ‘%s’.' %
@@ -305,7 +309,7 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
-            elif self._ignore_node(node):
+            elif _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in arg ‘%s’.' %
@@ -329,7 +333,7 @@ class InterfaceParser(object):
         value = annotation_node.attrib.get('value')
 
         for node in annotation_node.getchildren():
-            if self._ignore_node(node):
+            if _ignore_node(node):
                 pass
             else:
                 self._issue_output('Unrecognised node ‘%s’ in annotation '
