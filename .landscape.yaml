@@ -1,5 +1,5 @@
-doc-warnings: yes
-test-warnings: yes
+doc-warnings: true
+test-warnings: false
 strictness: veryhigh
 pep8:
     full: true
