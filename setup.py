@@ -30,10 +30,11 @@ Parse D-Bus introspection XML and process it in various ways
 
 from setuptools import setup, find_packages
 import os
+import version  # https://gist.github.com/pwithnall/7bc5f320b3bdf418265a
 
 
 project_name = 'dbus-deviation'
-__version__ = '0.1.0'
+__version__ = version.get_version()
 project_author = 'Philip Withnall'
 README = open('README').read()
 NEWS = open('NEWS').read()
