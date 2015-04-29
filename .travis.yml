@@ -1,11 +1,13 @@
 language: python
 python:
   - "2.7"
-  - "3.2"
   - "3.3"
   - "3.4"
   - "nightly"
   - "pypy"
+# Disabled due to bugs in the logilab package on the Python 3.2 build slave.
+# See: https://travis-ci.org/pwithnall/dbus-deviation/jobs/60500460
+#  - "3.2"
 # command to install dependencies
 install:
   - pip install pylint .
