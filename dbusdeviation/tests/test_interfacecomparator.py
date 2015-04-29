@@ -68,11 +68,11 @@ class TestComparatorErrors(unittest.TestCase):
         return InterfaceComparator(old_interfaces, new_interfaces)
 
     # pylint: disable=invalid-name
-    def assertSuccess(self, old_xml, new_xml):
+    def assertSuccess(self, old_xml, new_xml):  # noqa
         self.assertOutput(old_xml, new_xml, [])
 
     # pylint: disable=invalid-name
-    def assertOutput(self, old_xml, new_xml, output):
+    def assertOutput(self, old_xml, new_xml, output):  # noqa
         comparator = self._test_comparator(old_xml, new_xml)
         self.assertEqual(comparator.compare(), output)
         self.assertEqual(comparator.get_output(), output)

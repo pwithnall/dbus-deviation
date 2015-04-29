@@ -143,7 +143,7 @@ class InterfaceComparator(object):
         return self.get_output()
 
     # pylint: disable=too-many-branches
-    def _compare_annotations(self, old_node, new_node):
+    def _compare_annotations(self, old_node, new_node):  # noqa
         # Reference:
         # http://dbus.freedesktop.org/doc/dbus-specification.html\
         # #introspection-format
@@ -252,7 +252,7 @@ class InterfaceComparator(object):
                                old_node.format_name())
 
     # pylint: disable=too-many-branches
-    def _compare_interfaces(self, old_interface, new_interface):
+    def _compare_interfaces(self, old_interface, new_interface):  # noqa
         # Precondition of calling this method.
         assert old_interface.name == new_interface.name
 
