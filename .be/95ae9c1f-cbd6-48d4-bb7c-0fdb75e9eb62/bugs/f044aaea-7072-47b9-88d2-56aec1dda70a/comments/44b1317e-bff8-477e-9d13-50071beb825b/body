@@ -1,0 +1,1 @@
+Improve the output formatting so it’s nicer to read. Give each log message an ID which can be used to refer to documentation, and which can be used to individually disable the message.
