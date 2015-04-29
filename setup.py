@@ -32,13 +32,15 @@ from setuptools import setup, find_packages
 import os
 
 
+project_name = 'dbus-deviation'
 __version__ = '0.1.0'
+project_author = 'Philip Withnall'
 README = open('README').read()
 NEWS = open('NEWS').read()
 
 
 setup(
-    name='dbus-deviation',
+    name=project_name,
     version=__version__,
     packages=find_packages(exclude=['*.tests']),
     include_package_data=True,
@@ -55,11 +57,18 @@ setup(
             'dbus-interface-diff = dbusdeviation.utilities.diff:main',
         ],
     },
-    author='Philip Withnall',
+    author=project_author,
     author_email='philip.withnall@collabora.co.uk',
     description=__doc__,
     long_description=README + '\n\n' + NEWS,
     license='GPLv2+',
     url='http://people.collabora.com/~pwith/dbus-deviation/',
     test_suite='dbusdeviation.tests',
+    command_options={
+        'build_sphinx': {
+            'project': ('setup.py', project_name),
+            'version': ('setup.py', __version__),
+            'release': ('setup.py', __version__),
+        },
+    },
 )
