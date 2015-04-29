@@ -34,6 +34,7 @@ TODO
 
 # pylint: disable=interface-not-implemented
 class ASTInterface(object):
+
     """
     AST representation of an <interface> element.
 
@@ -72,16 +73,18 @@ class ASTInterface(object):
             annotation.parent = self
 
     def format_name(self):
-        """Format the interface’s name as a human-readable string."""
+        u"""Format the interface’s name as a human-readable string."""
         return self.name
 
 
 class ASTProperty(object):
+
     """
     AST representation of a <property> element.
 
     This represents a readable or writable property of an interface.
     """
+
     ACCESS_READ = 'read'
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
@@ -107,19 +110,21 @@ class ASTProperty(object):
             annotation.parent = self
 
     def format_name(self):
-        """Format the property’s name as a human-readable string."""
+        u"""Format the property’s name as a human-readable string."""
         if self.interface is None:
             return self.name
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
 class ASTCallable(object):
-    """
+
+    u"""
     AST representation of a callable element.
 
     This represents a ‘callable’, such as a method or a signal. All callables
     contain a list of in and out arguments.
     """
+
     def __init__(self, name, args, annotations):
         """
         Construct a new ASTCallable.
@@ -146,11 +151,13 @@ class ASTCallable(object):
 
 
 class ASTMethod(ASTCallable):
+
     """
     AST representation of a <method> element.
 
     This represents a callable method of an interface.
     """
+
     def __init__(self, name, args, annotations):
         """
         Construct a new ASTMethod.
@@ -167,18 +174,20 @@ class ASTMethod(ASTCallable):
         self.interface = None
 
     def format_name(self):
-        """Format the method’s name as a human-readable string."""
+        u"""Format the method’s name as a human-readable string."""
         if self.interface is None:
             return self.name
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
 class ASTSignal(ASTCallable):
+
     """
     AST representation of a <signal> element.
 
     This represents an emittable signal on an interface.
     """
+
     def __init__(self, name, args, annotations):
         """
         Construct a new ASTSignal.
@@ -195,18 +204,20 @@ class ASTSignal(ASTCallable):
         self.interface = None
 
     def format_name(self):
-        """Format the signal’s name as a human-readable string."""
+        u"""Format the signal’s name as a human-readable string."""
         if self.interface is None:
             return self.name
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
 class ASTArgument(object):
+
     """
     AST representation of an <arg> element.
 
     This represents an argument to an ASTSignal or ASTMethod.
     """
+
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
@@ -231,7 +242,7 @@ class ASTArgument(object):
             annotation.parent = self
 
     def format_name(self):
-        """Format the argument’s name as a human-readable string."""
+        u"""Format the argument’s name as a human-readable string."""
         if self.index == -1 and self.name is None:
             return 'unnamed'
         elif self.name is None:
@@ -241,7 +252,8 @@ class ASTArgument(object):
 
 
 class ASTAnnotation(object):
-    """
+
+    u"""
     AST representation of an <annotation> element.
 
     This represents an arbitrary key–value metadata annotation attached to one
@@ -264,7 +276,7 @@ class ASTAnnotation(object):
         self.parent = None
 
     def format_name(self):
-        """Format the annotation’s name as a human-readable string."""
+        u"""Format the annotation’s name as a human-readable string."""
         if self.parent is None:
             return self.name
         return '%s.%s' % (self.parent.format_name(), self.name)
