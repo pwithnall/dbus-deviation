@@ -124,7 +124,7 @@ class InterfaceParser(object):
         return interfaces
 
     # pylint: disable=too-many-branches
-    def _parse_interface(self, interface_node):
+    def _parse_interface(self, interface_node):  # noqa
         assert interface_node.tag == 'interface'
 
         if 'name' not in interface_node.attrib:
