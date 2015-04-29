@@ -55,6 +55,7 @@ WARNING_CATEGORIES = [
 
 
 def main():
+    """Main utility implementation."""
     # Parse command line arguments.
     parser = argparse.ArgumentParser(
         description='Comparing D-Bus interface definitions')

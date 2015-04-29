@@ -36,6 +36,7 @@ import unittest
 
 
 def _create_temp_xml_file(xml):
+    """Create a temporary XML file with the given contents."""
     tmp_fd, tmp_name = tempfile.mkstemp(suffix='.xml', text=True)
     xml_fd = os.fdopen(tmp_fd, 'wt')
     xml_fd.write(xml)
@@ -46,7 +47,10 @@ def _create_temp_xml_file(xml):
 
 # pylint: disable=too-many-public-methods
 class TestComparatorErrors(unittest.TestCase):
+    """Test log output from InterfaceComparator."""
+
     def _test_comparator(self, old_xml, new_xml):
+        """Build an InterfaceComparator for the two parsed XML snippets."""
         old_tmpfile = _create_temp_xml_file(old_xml)
         new_tmpfile = _create_temp_xml_file(new_xml)
 
