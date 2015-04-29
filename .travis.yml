@@ -14,4 +14,5 @@ script:
   - python setup.py test
   - python setup.py check
   - python setup.py pep8
-  - pylint --errors-only
+  - pylint --errors-only dbusapi
+  - pylint --errors-only dbusdeviation
