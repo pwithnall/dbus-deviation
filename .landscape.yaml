@@ -5,3 +5,4 @@ pep8:
     full: true
 ignore-paths:
   - docs/conf.py
+  - setup.py
