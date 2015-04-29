@@ -74,9 +74,9 @@ class InterfaceComparator(object):
 
         Args:
             old_interfaces: non-empty dict of old interfaces, mapping
-                interface name to an ASTInterface instance
+                interface name to an ast.Interface instance
             new_interfaces: non-empty dict of new interfaces, mapping
-                interface name to an ASTInterface instance
+                interface name to an ast.Interface instance
             enabled_warnings: potentially empty list of warning category names
                 to enable
         """
@@ -166,7 +166,7 @@ class InterfaceComparator(object):
 
     # pylint: disable=too-many-branches
     def _compare_annotations(self, old_node, new_node):  # noqa
-        """Compare two ASTAnnotation instances."""
+        """Compare two ast.Annotation instances."""
 
         def _get_string_annotation(node, annotation_name, default):
             """
@@ -212,7 +212,7 @@ class InterfaceComparator(object):
 
             if name in node.annotations:
                 return node.annotations[name].value
-            elif isinstance(node, ast.ASTProperty):
+            elif isinstance(node, ast.Property):
                 assert node.interface is not None
                 return _get_ecs_annotation(node.interface)
             else:
@@ -300,7 +300,7 @@ class InterfaceComparator(object):
 
     # pylint: disable=too-many-branches
     def _compare_interfaces(self, old_interface, new_interface):  # noqa
-        """Compare two ASTInterface instances."""
+        """Compare two ast.Interface instances."""
         # Precondition of calling this method.
         assert old_interface.name == new_interface.name
 
@@ -354,7 +354,7 @@ class InterfaceComparator(object):
         self._compare_annotations(old_interface, new_interface)
 
     def _compare_methods(self, old_method, new_method):
-        """Compare two ASTMethod instances."""
+        """Compare two ast.Method instances."""
         # Precondition of calling this method.
         assert old_method.name == new_method.name
 
@@ -383,7 +383,7 @@ class InterfaceComparator(object):
         self._compare_annotations(old_method, new_method)
 
     def _compare_properties(self, old_property, new_property):
-        """Compare two ASTProperty instances."""
+        """Compare two ast.Property instances."""
         # Precondition of calling this method.
         assert old_property.name == new_property.name
 
@@ -394,9 +394,9 @@ class InterfaceComparator(object):
                                (old_property.format_name(),
                                 old_property.type, new_property.type))
 
-        if (old_property.access == ast.ASTProperty.ACCESS_READ or
-            old_property.access == ast.ASTProperty.ACCESS_WRITE) and \
-           new_property.access == ast.ASTProperty.ACCESS_READWRITE:
+        if (old_property.access == ast.Property.ACCESS_READ or
+            old_property.access == ast.Property.ACCESS_WRITE) and \
+           new_property.access == ast.Property.ACCESS_READWRITE:
             # Property has become less restrictive.
             self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
                                'Property ‘%s’ has changed access from '
@@ -415,7 +415,7 @@ class InterfaceComparator(object):
         self._compare_annotations(old_property, new_property)
 
     def _compare_signals(self, old_signal, new_signal):
-        """Compare two ASTSignal instances."""
+        """Compare two ast.Signal instances."""
         # Precondition of calling this method.
         assert old_signal.name == new_signal.name
 
@@ -444,7 +444,7 @@ class InterfaceComparator(object):
         self._compare_annotations(old_signal, new_signal)
 
     def _compare_arguments(self, old_arg, new_arg):
-        """Compare two ASTArgument instances."""
+        """Compare two ast.Argument instances."""
         if old_arg.name != new_arg.name:
             self._issue_output(self.OUTPUT_INFO,
                                'Argument %u of ‘%s’ has changed '

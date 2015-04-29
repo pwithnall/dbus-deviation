@@ -96,7 +96,7 @@ class InterfaceParser(object):
 
         Returns:
             A non-empty dict of interfaces in the file, mapping each interface
-            name to an ASTInterface instance.
+            name to an ast.Interface instance.
 
             If parsing fails, None is returned.
         """
@@ -148,7 +148,7 @@ class InterfaceParser(object):
 
     # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):  # noqa
-        """Parse an <interface> element; return an ASTInterface or None."""
+        """Parse an <interface> element; return an ast.Interface or None."""
         assert interface_node.tag == 'interface'
 
         if 'name' not in interface_node.attrib:
@@ -208,11 +208,11 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in interface '
                                    '‘%s’.' % (node.tag, name))
 
-        return ast.ASTInterface(name, methods, properties, signals,
-                                annotations)
+        return ast.Interface(name, methods, properties, signals,
+                             annotations)
 
     def _parse_method(self, method_node):
-        """Parse a <method> element; return an ASTMethod or None."""
+        """Parse a <method> element; return an ast.Method or None."""
         assert method_node.tag == 'method'
 
         if 'name' not in method_node.attrib:
@@ -243,10 +243,10 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in method ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTMethod(name, args, annotations)
+        return ast.Method(name, args, annotations)
 
     def _parse_signal(self, signal_node):
-        """Parse a <signal> element; return an ASTSignal or None."""
+        """Parse a <signal> element; return an ast.Signal or None."""
         assert signal_node.tag == 'signal'
 
         if 'name' not in signal_node.attrib:
@@ -277,10 +277,10 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in signal ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTSignal(name, args, annotations)
+        return ast.Signal(name, args, annotations)
 
     def _parse_property(self, property_node):
-        """Parse a <property> element; return an ASTProperty or None."""
+        """Parse a <property> element; return an ast.Property or None."""
         assert property_node.tag == 'property'
 
         if 'name' not in property_node.attrib:
@@ -314,10 +314,10 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in property ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTProperty(name, prop_type, access, annotations)
+        return ast.Property(name, prop_type, access, annotations)
 
     def _parse_arg(self, arg_node):
-        """Parse an <arg> element; return an ASTArgument or None."""
+        """Parse an <arg> element; return an ast.Argument or None."""
         assert arg_node.tag == 'arg'
 
         if 'type' not in arg_node.attrib:
@@ -327,7 +327,7 @@ class InterfaceParser(object):
 
         name = arg_node.attrib.get('name', None)
         direction = arg_node.attrib.get('direction',
-                                        ast.ASTArgument.DIRECTION_IN)
+                                        ast.Argument.DIRECTION_IN)
         arg_type = arg_node.attrib['type']
         annotations = {}
 
@@ -344,10 +344,10 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in arg ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTArgument(name, direction, arg_type, annotations)
+        return ast.Argument(name, direction, arg_type, annotations)
 
     def _parse_annotation(self, annotation_node):
-        """Parse an <annotation> element; return an ASTAnnotation or None."""
+        """Parse an <annotation> element; return an ast.Annotation or None."""
         assert annotation_node.tag == 'annotation'
 
         if 'name' not in annotation_node.attrib:
@@ -369,4 +369,4 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in annotation '
                                    '‘%s’.' % (node.tag, name))
 
-        return ast.ASTAnnotation(name, value)
+        return ast.Annotation(name, value)

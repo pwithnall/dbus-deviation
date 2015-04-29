@@ -33,7 +33,7 @@ TODO
 
 
 # pylint: disable=interface-not-implemented
-class ASTInterface(object):
+class Interface(object):
 
     """
     AST representation of an <interface> element.
@@ -44,18 +44,19 @@ class ASTInterface(object):
     # pylint: disable=too-many-arguments
     def __init__(self, name, methods, properties, signals, annotations):
         """
-        Construct a new ASTInterface.
+        Construct a new ast.Interface.
 
         Args:
             name: interface name; a non-empty string
             methods: potentially empty dict of methods in the interface,
-                mapping method name to an ASTMethod instance
+                mapping method name to an ast.Method instance
             properties: potentially empty dict of properties in the interface,
-                mapping property name to an ASTProperty instance
+                mapping property name to an ast.Property instance
             signals: potentially empty dict of signals in the interface,
-                mapping signal name to an ASTSignal instance
+                mapping signal name to an ast.Signal instance
             annotations: potentially empty dict of annotations applied to the
-                interface, mapping annotation name to an ASTAnnotation instance
+                interface, mapping annotation name to an ast.Annotation
+                instance
         """
         self.name = name
         self.methods = methods
@@ -77,7 +78,7 @@ class ASTInterface(object):
         return self.name
 
 
-class ASTProperty(object):
+class Property(object):
 
     """
     AST representation of a <property> element.
@@ -91,7 +92,7 @@ class ASTProperty(object):
 
     def __init__(self, name, prop_type, access, annotations):
         """
-        Construct a new ASTProperty.
+        Construct a new ast.Property.
 
         Args:
             name: property name; a non-empty string, not including the parent
@@ -99,7 +100,8 @@ class ASTProperty(object):
             prop_type: type string for the property; see http://goo.gl/uCpa5A
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
-                property, mapping annotation name to an ASTAnnotation instance
+                property, mapping annotation name to an ast.Annotation
+                instance
         """
         self.name = name
         self.type = prop_type
@@ -116,7 +118,7 @@ class ASTProperty(object):
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
-class ASTCallable(object):
+class Callable(object):
 
     u"""
     AST representation of a callable element.
@@ -127,15 +129,16 @@ class ASTCallable(object):
 
     def __init__(self, name, args, annotations):
         """
-        Construct a new ASTCallable.
+        Construct a new ast.Callable.
 
         Args:
             name: callable name; a non-empty string, not including the parent
                 interface name
-            args: potentially empty ordered list of ASTArguments accepted and
+            args: potentially empty ordered list of ast.Arguments accepted and
                 returned by the callable
             annotations: potentially empty dict of annotations applied to the
-                callable, mapping annotation name to an ASTAnnotation instance
+                callable, mapping annotation name to an ast.Annotation
+                instance
         """
         self.name = name
         self.arguments = args
@@ -150,7 +153,7 @@ class ASTCallable(object):
             i += 1
 
 
-class ASTMethod(ASTCallable):
+class Method(Callable):
 
     """
     AST representation of a <method> element.
@@ -160,17 +163,17 @@ class ASTMethod(ASTCallable):
 
     def __init__(self, name, args, annotations):
         """
-        Construct a new ASTMethod.
+        Construct a new ast.Method.
 
         Args:
             name: method name; a non-empty string, not including the parent
                 interface name
-            args: potentially empty ordered list of ASTArguments accepted and
+            args: potentially empty ordered list of ast.Arguments accepted and
                 returned by the method
             annotations: potentially empty dict of annotations applied to the
-                method, mapping annotation name to an ASTAnnotation instance
+                method, mapping annotation name to an ast.Annotation instance
         """
-        ASTCallable.__init__(self, name, args, annotations)
+        Callable.__init__(self, name, args, annotations)
         self.interface = None
 
     def format_name(self):
@@ -180,7 +183,7 @@ class ASTMethod(ASTCallable):
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
-class ASTSignal(ASTCallable):
+class Signal(Callable):
 
     """
     AST representation of a <signal> element.
@@ -190,17 +193,17 @@ class ASTSignal(ASTCallable):
 
     def __init__(self, name, args, annotations):
         """
-        Construct a new ASTSignal.
+        Construct a new ast.Signal.
 
         Args:
             name: annotation name; a non-empty string, not including the
                 parent interface name
-            args: potentially empty ordered list of ASTArguments provided by
+            args: potentially empty ordered list of ast.Arguments provided by
                 the signal
             annotations: potentially empty dict of annotations applied to the
-                signal, mapping annotation name to an ASTAnnotation instance
+                signal, mapping annotation name to an ast.Annotation instance
         """
-        ASTCallable.__init__(self, name, args, annotations)
+        Callable.__init__(self, name, args, annotations)
         self.interface = None
 
     def format_name(self):
@@ -210,12 +213,12 @@ class ASTSignal(ASTCallable):
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
-class ASTArgument(object):
+class Argument(object):
 
     """
     AST representation of an <arg> element.
 
-    This represents an argument to an ASTSignal or ASTMethod.
+    This represents an argument to an ast.Signal or ast.Method.
     """
 
     DIRECTION_IN = 'in'
@@ -223,14 +226,15 @@ class ASTArgument(object):
 
     def __init__(self, name, direction, arg_type, annotations):
         """
-        Construct a new ASTArgument.
+        Construct a new ast.Argument.
 
         Args:
             name: argument name; may be empty
             direction: DIRECTION_IN or DIRECTION_OUT
             arg_type: type string for the argument; see http://goo.gl/uCpa5A
             annotations: potentially empty dict of annotations applied to the
-                argument, mapping annotation name to an ASTAnnotation instance
+                argument, mapping annotation name to an ast.Annotation
+                instance
         """
         self.name = name
         self.direction = direction
@@ -251,7 +255,7 @@ class ASTArgument(object):
             return '%u (‘%s’)' % (self.index, self.name)
 
 
-class ASTAnnotation(object):
+class Annotation(object):
 
     u"""
     AST representation of an <annotation> element.
@@ -265,7 +269,7 @@ class ASTAnnotation(object):
 
     def __init__(self, name, value):
         """
-        Construct a new ASTAnnotation.
+        Construct a new ast.Annotation.
 
         Args:
             name: annotation name; a non-empty string
