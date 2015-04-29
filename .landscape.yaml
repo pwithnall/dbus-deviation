@@ -6,3 +6,4 @@ pep8:
 ignore-paths:
   - docs/conf.py
   - setup.py
+  - version.py
