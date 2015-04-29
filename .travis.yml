@@ -8,7 +8,7 @@ python:
   - "pypy"
 # command to install dependencies
 install:
-  - pip install .
+  - pip install pylint .
 # command to run tests
 script:
   - python setup.py test
