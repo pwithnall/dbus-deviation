@@ -157,16 +157,16 @@ class InterfaceParser(object):
 
                 signals[signal.name] = signal
             elif node.tag == 'property':
-                property = self._parse_property(node)
-                if property is None:
+                prop = self._parse_property(node)
+                if prop is None:
                     continue
 
-                if property.name in properties:
+                if prop.name in properties:
                     self._issue_output('Duplicate property definition '
-                                       '‘%s.%s’.' % property.format_name())
+                                       '‘%s.%s’.' % prop.format_name())
                     continue
 
-                properties[property.name] = property
+                properties[prop.name] = prop
             elif node.tag == 'annotation':
                 annotation = self._parse_annotation(node)
                 if annotation is None:
@@ -265,7 +265,7 @@ class InterfaceParser(object):
             return None
 
         name = property_node.attrib['name']
-        type = property_node.attrib['type']
+        prop_type = property_node.attrib['type']
         access = property_node.attrib['access']
         annotations = {}
 
@@ -282,7 +282,7 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in property ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTProperty(name, type, access, annotations)
+        return ast.ASTProperty(name, prop_type, access, annotations)
 
     def _parse_arg(self, arg_node):
         assert arg_node.tag == 'arg'
@@ -295,7 +295,7 @@ class InterfaceParser(object):
         name = arg_node.attrib.get('name', None)
         direction = arg_node.attrib.get('direction',
                                         ast.ASTArgument.DIRECTION_IN)
-        type = arg_node.attrib['type']
+        arg_type = arg_node.attrib['type']
         annotations = {}
 
         for node in arg_node.getchildren():
@@ -311,7 +311,7 @@ class InterfaceParser(object):
                 self._issue_output('Unrecognised node ‘%s’ in arg ‘%s’.' %
                                    (node.tag, name))
 
-        return ast.ASTArgument(name, direction, type, annotations)
+        return ast.ASTArgument(name, direction, arg_type, annotations)
 
     def _parse_annotation(self, annotation_node):
         assert annotation_node.tag == 'annotation'

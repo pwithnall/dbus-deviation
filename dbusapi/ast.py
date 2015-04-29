@@ -41,8 +41,8 @@ class ASTInterface(object):
 
         for method in self.methods.values():
             method.interface = self
-        for property in self.properties.values():
-            property.interface = self
+        for prop in self.properties.values():
+            prop.interface = self
         for signal in self.signals.values():
             signal.interface = self
         for annotation in self.annotations.values():
@@ -60,9 +60,9 @@ class ASTProperty(object):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, type, access, annotations):
+    def __init__(self, name, prop_type, access, annotations):
         self.name = name
-        self.type = type
+        self.type = prop_type
         self.access = access
         self.interface = None
         self.annotations = annotations
@@ -129,10 +129,10 @@ class ASTArgument(object):
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, type, annotations):
+    def __init__(self, name, direction, arg_type, annotations):
         self.name = name
         self.direction = direction
-        self.type = type
+        self.type = arg_type
         self.index = -1
         self.parent = None
         self.annotations = annotations
