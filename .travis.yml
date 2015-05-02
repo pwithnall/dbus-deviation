@@ -10,7 +10,7 @@ python:
 #  - "3.2"
 # command to install dependencies
 install:
-  - pip install pylint coverage coveralls .
+  - pip install pylint coverage coveralls codecov .
 # command to run tests
 script:
   - coverage run --source dbusapi,dbusdeviation setup.py test
@@ -19,6 +19,7 @@ script:
   - python setup.py pep8
   - pylint --errors-only dbusapi
   - pylint --errors-only dbusdeviation
-# Submit coverage data to coveralls.io
+# Submit coverage data to coveralls.io and codecov.io
 after_success:
     coveralls
+    codecov
