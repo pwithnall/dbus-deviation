@@ -42,7 +42,8 @@ class Interface(object):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, name, methods, properties, signals, annotations):
+    def __init__(self, name, methods={}, properties={},
+                 signals={}, annotations={}):
         """
         Construct a new ast.Interface.
 
@@ -90,7 +91,7 @@ class Property(object):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, prop_type, access, annotations):
+    def __init__(self, name, prop_type, access, annotations={}):
         """
         Construct a new ast.Property.
 
@@ -127,7 +128,7 @@ class Callable(object):
     contain a list of in and out arguments.
     """
 
-    def __init__(self, name, args, annotations):
+    def __init__(self, name, args, annotations={}):
         """
         Construct a new ast.Callable.
 
@@ -161,7 +162,7 @@ class Method(Callable):
     This represents a callable method of an interface.
     """
 
-    def __init__(self, name, args, annotations):
+    def __init__(self, name, args, annotations={}):
         """
         Construct a new ast.Method.
 
@@ -191,7 +192,7 @@ class Signal(Callable):
     This represents an emittable signal on an interface.
     """
 
-    def __init__(self, name, args, annotations):
+    def __init__(self, name, args, annotations={}):
         """
         Construct a new ast.Signal.
 
@@ -224,7 +225,7 @@ class Argument(object):
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, arg_type, annotations):
+    def __init__(self, name, direction, arg_type, annotations={}):
         """
         Construct a new ast.Argument.
 
