@@ -68,7 +68,6 @@ class Interface(object):
         if annotations is None:
             annotations = {}
 
-
         self.name = name
         self.methods = methods
         self.properties = properties
