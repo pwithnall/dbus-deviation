@@ -150,14 +150,7 @@ class TestAstNames(unittest.TestCase):
 
     def test_annotation_unparented(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
-        method = ast.Method('AMethod', [], {
-            'SomeAnnotation': annotation,
-        })
-        iface = ast.Interface('SomeInterface', {
-            'AMethod': method,
-        })
-        self.assertEqual(annotation.format_name(),
-                         'SomeInterface.AMethod.SomeAnnotation')
+        self.assertEqual(annotation.format_name(), 'SomeAnnotation')
 
 
 # pylint: disable=too-many-public-methods
