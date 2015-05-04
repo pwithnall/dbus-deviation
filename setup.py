@@ -40,6 +40,58 @@ README = open('README').read()
 NEWS = open('NEWS').read()
 
 
+# From http://stackoverflow.com/a/17004263/2931197
+def discover_and_run_tests():
+    import os
+    import sys
+    import unittest
+
+    # get setup.py directory
+    setup_file = sys.modules['__main__'].__file__
+    setup_dir = os.path.abspath(os.path.dirname(setup_file))
+
+    # use the default shared TestLoader instance
+    test_loader = unittest.defaultTestLoader
+
+    # use the basic test runner that outputs to sys.stderr
+    test_runner = unittest.TextTestRunner()
+
+    # automatically discover all tests
+    # NOTE: only works for python 2.7 and later
+    test_suite = test_loader.discover(setup_dir)
+
+    # run the test suite
+    test_runner.run(test_suite)
+
+try:
+    from setuptools.command.test import test
+
+    class DiscoverTest(test):
+
+        def finalize_options(self):
+            test.finalize_options(self)
+            self.test_args = []
+            self.test_suite = True
+
+        def run_tests(self):
+            discover_and_run_tests()
+
+except ImportError:
+    from distutils.core import Command
+
+    class DiscoverTest(Command):
+        user_options = []
+
+        def initialize_options(self):
+                pass
+
+        def finalize_options(self):
+            pass
+
+        def run(self):
+            discover_and_run_tests()
+
+
 setup(
     name=project_name,
     version=__version__,
@@ -49,7 +101,6 @@ setup(
     zip_safe=True,
     setup_requires=[
         'setuptools_git >= 0.3',
-        'setuptools_pep8',
         'sphinx',
     ],
     install_requires=[],
@@ -65,7 +116,7 @@ setup(
     long_description=README + '\n\n' + NEWS,
     license='GPLv2+',
     url='http://people.collabora.com/~pwith/dbus-deviation/',
-    test_suite='dbusdeviation.tests',
+    cmdclass={'test': DiscoverTest},
     command_options={
         'build_sphinx': {
             'project': ('setup.py', project_name),
