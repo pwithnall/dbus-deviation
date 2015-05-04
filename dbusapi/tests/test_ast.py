@@ -160,6 +160,71 @@ class TestAstNames(unittest.TestCase):
                          'SomeInterface.AMethod.SomeAnnotation')
 
 
+# pylint: disable=too-many-public-methods
+class TestAstParenting(unittest.TestCase):
+    """Test AST node parenting."""
+
+    def test_property(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        self.assertEqual(annotation.parent, None)
+
+        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ, {
+            'SomeAnnotation': annotation,
+        })
+        self.assertEqual(prop.interface, None)
+        self.assertEqual(annotation.parent, prop)
+
+        iface = ast.Interface('SomeInterface', {}, {
+            'AProperty': prop,
+        })
+        self.assertEqual(prop.interface, iface)
+
+    def test_method(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        self.assertEqual(annotation.parent, None)
+
+        method = ast.Method('AMethod', [], {
+            'SomeAnnotation': annotation,
+        })
+        self.assertEqual(method.interface, None)
+        self.assertEqual(annotation.parent, method)
+
+        iface = ast.Interface('SomeInterface', {
+            'AMethod': method,
+        })
+        self.assertEqual(method.interface, iface)
+
+    def test_signal(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        self.assertEqual(annotation.parent, None)
+
+        signal = ast.Signal('ASignal', [], {
+            'SomeAnnotation': annotation,
+        })
+        self.assertEqual(signal.interface, None)
+        self.assertEqual(annotation.parent, signal)
+
+        iface = ast.Interface('SomeInterface', {}, {
+            'ASignal': signal,
+        })
+        self.assertEqual(signal.interface, iface)
+
+    def test_argument(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        self.assertEqual(annotation.parent, None)
+
+        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN, 's', {
+            'SomeAnnotation': annotation,
+        })
+        self.assertEqual(arg.parent, None)
+        self.assertEqual(arg.index, -1)
+        self.assertEqual(annotation.parent, arg)
+
+        method = ast.Method('AMethod', [arg])
+        self.assertEqual(arg.parent, method)
+        self.assertEqual(arg.index, 0)
+
+
 if __name__ == '__main__':
     # Run test suite
     unittest.main()
