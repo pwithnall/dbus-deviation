@@ -250,6 +250,8 @@ class Argument(object):
         u"""Format the argument’s name as a human-readable string."""
         if self.index == -1 and self.name is None:
             return 'unnamed'
+        elif self.index == -1:
+            return '‘%s’' % self.name
         elif self.name is None:
             return '%u' % self.index
         else:
