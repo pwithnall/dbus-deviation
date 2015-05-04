@@ -42,8 +42,8 @@ class Interface(object):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, name, methods={}, properties={},
-                 signals={}, annotations={}):
+    def __init__(self, name, methods=None, properties=None,
+                 signals=None, annotations=None):
         """
         Construct a new ast.Interface.
 
@@ -59,6 +59,16 @@ class Interface(object):
                 interface, mapping annotation name to an ast.Annotation
                 instance
         """
+        if methods is None:
+            methods = {}
+        if properties is None:
+            properties = {}
+        if signals is None:
+            signals = {}
+        if annotations is None:
+            annotations = {}
+
+
         self.name = name
         self.methods = methods
         self.properties = properties
@@ -91,7 +101,7 @@ class Property(object):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, prop_type, access, annotations={}):
+    def __init__(self, name, prop_type, access, annotations=None):
         """
         Construct a new ast.Property.
 
@@ -104,6 +114,9 @@ class Property(object):
                 property, mapping annotation name to an ast.Annotation
                 instance
         """
+        if annotations is None:
+            annotations = {}
+
         self.name = name
         self.type = prop_type
         self.access = access
@@ -128,7 +141,7 @@ class Callable(object):
     contain a list of in and out arguments.
     """
 
-    def __init__(self, name, args, annotations={}):
+    def __init__(self, name, args, annotations=None):
         """
         Construct a new ast.Callable.
 
@@ -141,6 +154,9 @@ class Callable(object):
                 callable, mapping annotation name to an ast.Annotation
                 instance
         """
+        if annotations is None:
+            annotations = {}
+
         self.name = name
         self.arguments = args
         self.annotations = annotations
@@ -162,7 +178,7 @@ class Method(Callable):
     This represents a callable method of an interface.
     """
 
-    def __init__(self, name, args, annotations={}):
+    def __init__(self, name, args, annotations=None):
         """
         Construct a new ast.Method.
 
@@ -174,6 +190,9 @@ class Method(Callable):
             annotations: potentially empty dict of annotations applied to the
                 method, mapping annotation name to an ast.Annotation instance
         """
+        if annotations is None:
+            annotations = {}
+
         Callable.__init__(self, name, args, annotations)
         self.interface = None
 
@@ -192,7 +211,7 @@ class Signal(Callable):
     This represents an emittable signal on an interface.
     """
 
-    def __init__(self, name, args, annotations={}):
+    def __init__(self, name, args, annotations=None):
         """
         Construct a new ast.Signal.
 
@@ -204,6 +223,9 @@ class Signal(Callable):
             annotations: potentially empty dict of annotations applied to the
                 signal, mapping annotation name to an ast.Annotation instance
         """
+        if annotations is None:
+            annotations = {}
+
         Callable.__init__(self, name, args, annotations)
         self.interface = None
 
@@ -225,7 +247,7 @@ class Argument(object):
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, arg_type, annotations={}):
+    def __init__(self, name, direction, arg_type, annotations=None):
         """
         Construct a new ast.Argument.
 
@@ -237,6 +259,9 @@ class Argument(object):
                 argument, mapping annotation name to an ast.Annotation
                 instance
         """
+        if annotations is None:
+            annotations = {}
+
         self.name = name
         self.direction = direction
         self.type = arg_type
