@@ -35,6 +35,7 @@ explanation of the two types of compatibility.
 """
 
 import argparse
+import os
 import sys
 
 # PyPy support
@@ -90,13 +91,22 @@ def main():
     try:
         old_interfaces = old_parser.parse()
     except ElementTree.ParseError as err:
-        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, err))
-        sys.exit(1)
+        # If the file is empty, treat it as a non-existent Interface. This
+        # allows for diffs of added files.
+        if os.path.getsize(args.old_file) == 0:
+            old_interfaces = {}
+        else:
+            sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, err))
+            sys.exit(1)
     try:
         new_interfaces = new_parser.parse()
     except ElementTree.ParseError as err:
-        sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, err))
-        sys.exit(1)
+        # Similarly to above.
+        if os.path.getsize(args.new_file) == 0:
+            new_interfaces = {}
+        else:
+            sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, err))
+            sys.exit(1)
 
     # Handle errors
     if old_interfaces is None:
