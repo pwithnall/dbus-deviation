@@ -307,7 +307,7 @@ def command_install(args):
                 outputted = True
             except subprocess.CalledProcessError:
                 # Ignore it
-                pass
+                continue
 
         if not outputted:
             sys.stdout.write('%s: Nothing to do\n' % tag)
