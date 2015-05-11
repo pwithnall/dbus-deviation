@@ -55,6 +55,31 @@ WARNING_CATEGORIES = [
 ]
 
 
+def _parse_file(filename, parser):
+    """
+    Parse an XML interface file.
+
+    Return a list of ast.Interfaces. If the file is empty, return an empty
+    list. Print an error and exit if parsing fails.
+    """
+    try:
+        interfaces = parser.parse()
+
+        # Handle parse errors.
+        if interfaces is None:
+            sys.stderr.write('Error parsing ‘%s’:\n' % filename)
+            parser.print_output()
+            sys.exit(1)
+    except ElementTree.ParseError as err:
+        # If the file is empty, treat it as a non-existent Interface. This
+        # allows for diffs of added files.
+        if os.path.getsize(filename) == 0:
+            return interfaces
+        else:
+            sys.stderr.write('Error parsing ‘%s’: %s\n' % (filename, err))
+            sys.exit(1)
+
+
 def main():
     """Main utility implementation."""
     # Parse command line arguments.
@@ -90,35 +115,8 @@ def main():
     old_parser = InterfaceParser(args.old_file)
     new_parser = InterfaceParser(args.new_file)
 
-    try:
-        old_interfaces = old_parser.parse()
-    except ElementTree.ParseError as err:
-        # If the file is empty, treat it as a non-existent Interface. This
-        # allows for diffs of added files.
-        if os.path.getsize(args.old_file) == 0:
-            old_interfaces = {}
-        else:
-            sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.old_file, err))
-            sys.exit(1)
-    try:
-        new_interfaces = new_parser.parse()
-    except ElementTree.ParseError as err:
-        # Similarly to above.
-        if os.path.getsize(args.new_file) == 0:
-            new_interfaces = {}
-        else:
-            sys.stderr.write('Error parsing ‘%s’: %s\n' % (args.new_file, err))
-            sys.exit(1)
-
-    # Handle errors
-    if old_interfaces is None:
-        sys.stderr.write('Error parsing ‘%s’:\n' % args.old_file)
-        old_parser.print_output()
-        sys.exit(1)
-    if new_interfaces is None:
-        sys.stderr.write('Error parsing ‘%s’:\n' % args.new_file)
-        new_parser.print_output()
-        sys.exit(1)
+    old_interfaces = _parse_file(args.old_file, old_parser)
+    new_interfaces = _parse_file(args.new_file, new_parser)
 
     # Compare the interfaces.
     comparator = InterfaceComparator(old_interfaces, new_interfaces,
