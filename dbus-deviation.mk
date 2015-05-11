@@ -45,7 +45,7 @@
 #
 #    xml_file=path/to/generated-api-description.xml
 #    tag=release_tag_name
-#    dbus_api_git_refs=notes/dbus/introspection  # matches the Makefile config
+#    dbus_api_git_refs=notes/dbus/api  # matches the Makefile config
 #    git_remote_origin=origin  # matches the Makefile config
 #
 #    git checkout "$tag"
@@ -72,7 +72,7 @@
 #    dbus_api_diff_warnings (default: all):
 #       Comma-separated list of warnings to enable when running
 #       dbus-interface-diff.
-#    dbus_api_git_refs (default: notes/dbus/introspection):
+#    dbus_api_git_refs (default: notes/dbus/api):
 #       Path beneath refs/ where the git notes will be stored containing the
 #       API signatures database.
 #    GIT (default: git):
@@ -89,24 +89,29 @@ dbus_api_xml_files ?=
 # Optional configuration.
 git_remote_origin ?= origin
 dbus_api_diff_warnings ?= info,forwards-compatibility,backwards-compatibility
-dbus_api_git_refs ?= notes/dbus/introspection
+dbus_api_git_refs ?= notes/dbus/api
 GIT = git
 
-# Needed for the process substitution in check-dbus-api-compatibility.
-SHELL=/bin/bash
+# Silent rules for dbus-interface-vcs-helper
+helper_v = $(helper_v_@AM_V@)
+helper_v_ = $(helper_v_@AM_DEFAULT_V@)
+helper_v_0 = --silent
+helper_v_1 =
+
+V_api = $(v_api_@AM_V@)
+v_api_ = $(v_api_@AM_DEFAULT_V@)
+v_api_0 = @echo "  API     " $@;
+v_api_1 =
 
 
 # For each XML file in $(dbus_api_xml_files), add it to the API signature
 # database for the most recent git tag.
 dist-dbus-api-compatibility:
-	$(AM_V_at)latest_tag="$$($(GIT) describe --tags `$(GIT) rev-list --tags --max-count=1`)"; \
-	for introspection_xml_file in $(dbus_api_xml_files); do \
-		notes=$$($(GIT) rev-parse --verify --quiet "$$latest_tag^{tag}":"$$introspection_xml_file"); \
-		introspection_xml_basename=$$(basename "$$introspection_xml_file"); \
-		$(GIT) notes --ref "refs/$(dbus_api_git_refs)/$$introspection_xml_basename" add -C "$$notes" "$$latest_tag"; \
-	done
-	$(AM_V_at)$(GIT) push "$(git_remote_origin)" refs/$(dbus_api_git_refs)/*
-
+	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+		--git "$(GIT)" \
+		--git-refs "$(dbus_api_git_refs)" \
+		--git-remote "$(git_remote_origin)" \
+		dist $(dbus_api_xml_files)
 dist-hook: dist-dbus-api-compatibility
 .PHONY: dist-dbus-api-compatibility
 
@@ -122,53 +127,13 @@ dist-hook: dist-dbus-api-compatibility
 # distcheck, it effectively checks the release-in-progress against the
 # previous release, which is exactly what is expected of distcheck.
 check-dbus-api-compatibility:
-	$(AM_V_at)if [ "$(OLD_REF)" != "" ] && ! $(GIT) rev-parse --verify "$(OLD_REF)" &> /dev/null; then \
-		echo "error: Invalid OLD_REF." >&2; \
-		exit 1; \
-	fi
-	$(AM_V_at)if [ "$(NEW_REF)" != "" ] && ! $(GIT) rev-parse --verify "$(NEW_REF)" &> /dev/null; then \
-		echo "error: Invalid NEW_REF." >&2; \
-		exit 1; \
-	fi
-	$(AM_V_at)$(GIT) fetch "$(git_remote_origin)" refs/$(dbus_api_git_refs)/*:refs/$(dbus_api_git_refs)/*
-	$(AM_V_at)old_ref="$(OLD_REF)"; \
-	new_ref="$(NEW_REF)"; \
-	\
-	if [ "$$old_ref" = "" ]; then \
-		old_ref="$$($(GIT) describe --tags `$(GIT) rev-list --tags --max-count=1`)"; \
-	fi; \
-	\
-	$(GIT) for-each-ref --shell --format="note_ref=%(refname)" refs/$(dbus_api_git_refs) | \
-		while read entry; do \
-			eval "$$entry"; \
-			introspection_xml_file_basename="$$(basename "$$note_ref")"; \
-			if $(AM_V_P); then \
-				echo "Comparing $$introspection_xml_file_basename"; \
-			else \
-				echo " DIFF      $$introspection_xml_file_basename"; \
-			fi; \
-			\
-			if [ "$$new_ref" = "" ]; then \
-				# Debug output. Can't get `set -v` to do this usefully. \
-				if $(AM_V_P); then \
-					echo -e "dbus-interface-diff --warnings \"$(dbus_api_diff_warnings)\" \\\\\n\t<($(GIT) notes --ref \"$$note_ref\" show \"$$old_ref\" || echo \"\") \\\\\n\t\`$(GIT) ls-files \"*/$$introspection_xml_file_basename\"\`"; \
-				fi; \
-				\
-				dbus-interface-diff --warnings "$(dbus_api_diff_warnings)" \
-					<($(GIT) notes --ref "$$note_ref" show "$$old_ref" 2> /dev/null || echo "") \
-					`$(GIT) ls-files "*/$$introspection_xml_file_basename"`; \
-			else \
-				# Debug output. \
-				if $(AM_V_P); then \
-					echo -e "dbus-interface-diff --warnings \"$(dbus_api_diff_warnings)\" \\\\\n\t<($(GIT) notes --ref \"$$note_ref\" show \"$$old_ref\" || echo \"\") \\\\\n\t<($(GIT) notes --ref \"$$note_ref\" show \"$$new_ref\" || echo \"\")"; \
-				fi; \
-				\
-				dbus-interface-diff --warnings "$(dbus_api_diff_warnings)" \
-					<($(GIT) notes --ref "$$note_ref" show "$$old_ref" 2> /dev/null || echo "") \
-					<($(GIT) notes --ref "$$note_ref" show "$$new_ref" 2> /dev/null || echo ""); \
-			fi \
-		done
-
+	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+		--git "$(GIT)" \
+		--git-refs "$(dbus_api_git_refs)" \
+		--git-remote "$(git_remote_origin)" \
+		check \
+		--diff-warnings "$(dbus_api_diff_warnings)" \
+		"$(OLD_REF)" "$(NEW_REF)"
 check-local: check-dbus-api-compatibility
 .PHONY: check-dbus-api-compatibility
 
@@ -176,24 +141,9 @@ check-local: check-dbus-api-compatibility
 # Installation rule to set up an API signature database for each existing tag.
 # It is safe to run this multiple times.
 dbus-deviation-mk-install:
-	$(AM_V_at)$(GIT) tag | \
-		while read tag; do \
-			outputted=0; \
-			for introspection_xml_file in $(dbus_api_xml_files); do \
-				notes=$$($(GIT) rev-parse --verify --quiet "$$tag^{tag}":"$$introspection_xml_file"); \
-				if [ "$$notes" != "" ]; then \
-					introspection_xml_basename=$$(basename "$$introspection_xml_file"); \
-					if $(GIT) notes --ref "refs/$(dbus_api_git_refs)/$$introspection_xml_basename" add -C "$$notes" "$$tag" 2> /dev/null; then \
-						echo "$$tag: Added note $$notes for XML file $$introspection_xml_basename"; \
-						outputted=1; \
-					fi \
-				fi \
-			done; \
-			\
-			if [ $$outputted == 0 ]; then \
-				echo "$$tag: Nothing to do"; \
-			fi \
-		done
-	$(AM_V_at)$(GIT) push "$(git_remote_origin)" refs/$(dbus_api_git_refs)/*
-
+	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+		--git "$(GIT)" \
+		--git-refs "$(dbus_api_git_refs)" \
+		--git-remote "$(git_remote_origin)" \
+		install $(dbus_api_xml_files)
 .PHONY: dbus-deviation-mk-install
