@@ -73,9 +73,11 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if args.warnings is None:
+    if args.warnings is None or args.warnings == 'all':
         # Enable all warnings by default
         enabled_warnings = WARNING_CATEGORIES
+    elif args.warnings == 'none':
+        enabled_warnings = []
     else:
         enabled_warnings = args.warnings.split(',')
 
