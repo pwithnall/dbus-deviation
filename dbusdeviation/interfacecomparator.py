@@ -68,7 +68,7 @@ class InterfaceComparator(object):
     OUTPUT_BACKWARDS_INCOMPATIBLE = 2
 
     def __init__(self, old_interfaces, new_interfaces,
-                 enabled_warnings=WARNING_CATEGORIES):
+                 enabled_warnings=None):
         """
         Construct a new InterfaceComparator.
 
@@ -83,7 +83,10 @@ class InterfaceComparator(object):
         self._old_interfaces = old_interfaces
         self._new_interfaces = new_interfaces
         self._output = []
-        self._enabled_warnings = enabled_warnings
+        if enabled_warnings is not None:
+            self._enabled_warnings = enabled_warnings
+        else:
+            self._enabled_warnings = WARNING_CATEGORIES
 
     def _issue_output(self, level, message):
         """Append a message to the comparator output."""
