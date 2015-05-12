@@ -70,6 +70,8 @@ def _parse_file(filename, parser):
             sys.stderr.write('Error parsing ‘%s’:\n' % filename)
             parser.print_output()
             sys.exit(1)
+
+        return interfaces
     except ElementTree.ParseError as err:
         # If the file is empty, treat it as a non-existent Interface. This
         # allows for diffs of added files.
