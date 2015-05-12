@@ -156,7 +156,7 @@ def command_dist(args):
             sys.stdout.write('%s: Added note ‘%s’ for XML file ‘%s’\n' %
                              (latest_tag, notes, api_xml_basename))
         except subprocess.CalledProcessError:
-            sys.stderr.write('error: Failed to store notes for API file ' +
+            sys.stderr.write('error: Failed to store notes for API file '
                              '‘%s’ and git tag ‘%s’.\n' %
                              (api_xml_file, latest_tag))
             return 1
@@ -270,9 +270,9 @@ def command_check(args):
                         else:
                             git_work_tree = ''
 
-                        sys.stdout.write(('%s \\\n' +
-                                          '   <(%s) \\\n' +
-                                          '   %s`%s`\n') %
+                        sys.stdout.write('%s \\\n'
+                                         '   <(%s) \\\n'
+                                         '   %s`%s`\n' %
                                          (' '.join(diff_command[:-2]),
                                           ' '.join(old_notes_command),
                                           git_work_tree,
@@ -285,9 +285,9 @@ def command_check(args):
 
                     # Debug output. Roughly equivalent to `set -v`.
                     if not args.silent:
-                        sys.stdout.write(('%s \\\n' +
-                                          '   <(%s) \\\n' +
-                                          '   <(%s)\n') %
+                        sys.stdout.write('%s \\\n'
+                                         '   <(%s) \\\n'
+                                         '   <(%s)\n' %
                                          (' '.join(diff_command[:-2]),
                                           ' '.join(old_notes_command),
                                           ' '.join(new_notes_command)))
@@ -367,10 +367,10 @@ def main():
                         help='Silence all non-error output')
     # pylint: disable=bad-continuation
     parser.add_argument('--git', type=str, default='git', metavar='COMMAND',
-                        help='Path to the git command, including extra ' +
+                        help='Path to the git command, including extra '
                              'arguments')
     parser.add_argument('--git-dir', type=str, default='', metavar='PATH',
-                        help='Path to the git directory in the project ' +
+                        help='Path to the git directory in the project '
                              'checkout')
     parser.add_argument('--git-work-tree', type=str, default='',
                         metavar='PATH',
@@ -381,7 +381,7 @@ def main():
     # pylint: disable=bad-continuation
     parser.add_argument('--git-refs', dest='dbus_api_git_refs', type=str,
                         default='notes/dbus/api', metavar='REF-PATH',
-                        help='Path beneath refs/ where the git notes will be' +
+                        help='Path beneath refs/ where the git notes will be'
                              ' stored containing the API signatures database')
 
     subparsers = parser.add_subparsers()
@@ -397,7 +397,7 @@ def main():
     parser_check = subparsers.add_parser('check')
     parser_check.add_argument('--diff-warnings', dest='warnings', type=str,
                               default='all',
-                              help='Comma-separated list of warnings to ' +
+                              help='Comma-separated list of warnings to '
                                    'enable when running dbus-interface-diff')
     # pylint: disable=bad-continuation
     parser_check.add_argument('old_ref', metavar='OLD-REF',
