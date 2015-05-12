@@ -417,6 +417,17 @@ def main():
     parser_install.set_defaults(func=command_install)
 
     args = parser.parse_args()
+
+    # Bail early if the .git directory does not exist, since that's our data
+    # store.
+    git_dir = args.git_dir
+    if git_dir == '':
+        git_dir = os.path.join(args.git_work_tree, '.git')
+    if not os.path.isdir(git_dir):
+        sys.stderr.write('error: Could not find git directory ‘%s’. '
+                         'Skipping.\n' % git_dir)
+        return 0
+
     return args.func(args)
 
 if __name__ == '__main__':
