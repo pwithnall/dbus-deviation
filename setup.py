@@ -109,8 +109,8 @@ setup(
     entry_points={
         'console_scripts': [
             'dbus-interface-diff = dbusdeviation.utilities.diff:main',
-            'dbus-interface-vcs-helper = ' +
-                'dbusdeviation.utilities.vcs_helper:main',
+            'dbus-interface-vcs-helper = '
+            'dbusdeviation.utilities.vcs_helper:main',
         ],
     },
     author=project_author,
