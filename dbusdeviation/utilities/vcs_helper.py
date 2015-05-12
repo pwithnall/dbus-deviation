@@ -53,10 +53,21 @@ def named_pipe():
         shutil.rmtree(dirname)
 
 
+def _git_command(args, command):
+    """Build a git command line with standard arguments."""
+    out = [args.git]
+    if args.git_dir != '':
+        out += ['--git-dir', args.git_dir]
+    if args.git_work_tree != '':
+        out += ['--work-tree', args.git_work_tree]
+
+    return out + [command]
+
+
 def _get_contents_of_file(args, tag, api_xml_file):
     """Get the git object ID of api_xml_file in the tag revision."""
-    rev = subprocess.check_output([args.git, 'rev-parse',
-                                   '--verify', '--quiet',
+    rev = subprocess.check_output(_git_command(args, 'rev-parse') +
+                                  ['--verify', '--quiet',
                                    '%s^{tag}:%s' % (tag, api_xml_file)])
     return rev.strip().decode('utf-8')
 
@@ -64,8 +75,8 @@ def _get_contents_of_file(args, tag, api_xml_file):
 def _set_notes_for_ref(args, tag, api_xml_basename, notes):
     """Store the notes object ID as api_xml_basename in the tag revision."""
     with open(os.devnull, 'w') as dev_null:
-        subprocess.check_output([args.git, 'notes',
-                                 '--ref',
+        subprocess.check_output(_git_command(args, 'notes') +
+                                ['--ref',
                                  'refs/%s/%s' %
                                  (args.dbus_api_git_refs, api_xml_basename),
                                  'add', '-C', notes, tag],
@@ -73,40 +84,50 @@ def _set_notes_for_ref(args, tag, api_xml_basename, notes):
 
 
 def _get_notes_filename_for_head(args, api_xml_basename):
-    """Get the filename of api_xml_basename in the current working tree."""
-    out = subprocess.check_output([args.git, 'ls-files',
-                                   '*/%s' % api_xml_basename])
-    return out.strip().decode('utf-8')
+    """Get the filename of api_xml_basename in the git work tree."""
+    filename = subprocess.check_output(_git_command(args, 'ls-files') +
+                                       ['--full-name',
+                                        '*/%s' % api_xml_basename])
+    filename = filename.strip().decode('utf-8')
+
+    # Resolve the relative path against the work tree.
+    if args.git_work_tree != '':
+        filename = os.path.join(args.git_work_tree, filename)
+
+    return filename
 
 
 def _fetch_notes(args):
     """Fetch the latest API signature database from the remote."""
-    subprocess.check_output([args.git, 'fetch', args.git_remote_origin,
+    subprocess.check_output(_git_command(args, 'fetch') +
+                            [args.git_remote_origin,
                              'refs/%s/*:refs/%s/*' %
                              (args.dbus_api_git_refs, args.dbus_api_git_refs)])
 
 
 def _push_notes(args):
     """Push the local API signature database to the remote."""
-    subprocess.check_output([args.git, 'push', args.git_remote_origin,
+    subprocess.check_output(_git_command(args, 'push') +
+                            [args.git_remote_origin,
                              'refs/' + args.dbus_api_git_refs + '/*'])
 
 
 def _is_release(args, ref):
     """Check whether ref identifies a signed tag."""
     with open(os.devnull, 'w') as dev_null:
-        code = subprocess.call([args.git, 'rev-parse', '--verify', ref],
+        code = subprocess.call(_git_command(args, 'rev-parse') +
+                               ['--verify', ref],
                                stdout=dev_null, stderr=dev_null)
     return code == 0
 
 
 def _get_latest_release(args):
     """Get the name of the latest signed tag."""
-    tag_list = subprocess.check_output([args.git, 'rev-list',
-                                        '--tags', '--max-count=1'])
+    tag_list = subprocess.check_output(_git_command(args, 'rev-list') +
+                                       ['--tags', '--max-count=1'])
     tag_list = tag_list.strip().decode('utf-8').split('\n')
-    latest_tag = subprocess.check_output([args.git, 'describe',
-                                          '--tags'] + tag_list)
+    latest_tag = subprocess.check_output(_git_command(args, 'describe') +
+                                         ['--tags'] + tag_list)
 
     return latest_tag.strip().decode('utf-8')
 
@@ -125,7 +146,8 @@ def command_dist(args):
         try:
             notes = _get_contents_of_file(args, latest_tag, api_xml_file)
             api_xml_basename = os.path.basename(api_xml_file)
-            subprocess.check_output([args.git, 'notes', '--ref',
+            subprocess.check_output(_git_command(args, 'notes') +
+                                    ['--ref',
                                      'refs/%s/%s' %
                                      (args.dbus_api_git_refs,
                                       api_xml_basename),
@@ -156,7 +178,7 @@ def command_check(args):
     Check for API differences between two tags.
 
     If old_ref is not specified, it defaults to the latest signed tag. If
-    new_ref is not specified, it defaults to the current working tree.
+    new_ref is not specified, it defaults to the git work tree.
     """
     if args.old_ref != '' and not _is_release(args, args.old_ref):
         sys.stderr.write('error: Invalid --old-ref ‘%s’\n' % args.old_ref)
@@ -184,8 +206,8 @@ def command_check(args):
             return 1
 
     try:
-        refs = subprocess.check_output([args.git, 'for-each-ref',
-                                        '--format=%(refname)',
+        refs = subprocess.check_output(_git_command(args, 'for-each-ref') +
+                                       ['--format=%(refname)',
                                         'refs/%s' % args.dbus_api_git_refs])
         refs = refs.strip().decode('utf-8').split('\n')
     except subprocess.CalledProcessError:
@@ -214,16 +236,16 @@ def command_check(args):
             diff_command = ['dbus-interface-diff',
                             '--warnings', args.warnings,
                             old_notes_filename, new_notes_filename]
-            old_notes_command = [args.git, 'notes',
-                                 '--ref',
-                                 'refs/%s/%s' %
-                                 (args.dbus_api_git_refs, api_xml_basename),
-                                 'show', old_ref]
-            new_notes_command = [args.git, 'notes',
-                                 '--ref',
-                                 'refs/%s/%s' %
-                                 (args.dbus_api_git_refs, api_xml_basename),
-                                 'show', new_ref]
+            old_notes_command = _git_command(args, 'notes') + [
+                '--ref',
+                'refs/%s/%s' % (args.dbus_api_git_refs, api_xml_basename),
+                'show', old_ref,
+            ]
+            new_notes_command = _git_command(args, 'notes') + [
+                '--ref',
+                'refs/%s/%s' % (args.dbus_api_git_refs, api_xml_basename),
+                'show', new_ref,
+            ]
 
             diff_proc = subprocess.Popen(diff_command)
 
@@ -238,13 +260,23 @@ def command_check(args):
 
                     # Debug output. Roughly equivalent to `set -v`.
                     if not args.silent:
+                        ls_files_command = _git_command(args, 'ls-files') + [
+                            '--full-name',
+                            '*/%s' % api_xml_basename,
+                        ]
+
+                        if args.git_work_tree != '':
+                            git_work_tree = args.git_work_tree + '/'
+                        else:
+                            git_work_tree = ''
+
                         sys.stdout.write(('%s \\\n' +
                                           '   <(%s) \\\n' +
-                                          '   `%s`\n') %
+                                          '   %s`%s`\n') %
                                          (' '.join(diff_command[:-2]),
                                           ' '.join(old_notes_command),
-                                          args.git + ' ls-files "*/' +
-                                          api_xml_basename + '"'))
+                                          git_work_tree,
+                                          ' '.join(ls_files_command)))
                 else:
                     with open(new_pipe_path, 'wb') as new_pipe:
                         new_notes_proc = subprocess.Popen(new_notes_command,
@@ -278,7 +310,7 @@ def command_check(args):
 def command_install(args):
     """Set up the API signature database for all existing signed tags."""
     try:
-        tag_list = subprocess.check_output([args.git, 'tag'])
+        tag_list = subprocess.check_output(_git_command(args, 'tag'))
         tag_list = tag_list.strip().decode('utf-8').split('\n')
     except subprocess.CalledProcessError:
         sys.stderr.write('error: Failed to get tag list.\n')
@@ -337,6 +369,12 @@ def main():
     parser.add_argument('--git', type=str, default='git', metavar='COMMAND',
                         help='Path to the git command, including extra ' +
                              'arguments')
+    parser.add_argument('--git-dir', type=str, default='', metavar='PATH',
+                        help='Path to the git directory in the project ' +
+                             'checkout')
+    parser.add_argument('--git-work-tree', type=str, default='',
+                        metavar='PATH',
+                        help='Path to the git work tree for the project')
     parser.add_argument('--git-remote', dest='git_remote_origin', type=str,
                         default='origin', metavar='REMOTE',
                         help='git remote to push notes to')

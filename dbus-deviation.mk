@@ -90,6 +90,8 @@ dbus_api_xml_files ?=
 git_remote_origin ?= origin
 dbus_api_diff_warnings ?= info,forwards-compatibility,backwards-compatibility
 dbus_api_git_refs ?= notes/dbus/api
+dbus_api_git_work_tree ?= $(top_srcdir)
+dbus_api_git_dir ?= $(dbus_api_git_work_tree)/.git
 GIT = git
 
 # Silent rules for dbus-interface-vcs-helper
@@ -109,6 +111,8 @@ v_api_1 =
 dist-dbus-api-compatibility:
 	$(V_api)dbus-interface-vcs-helper $(helper_v) \
 		--git "$(GIT)" \
+		--git-dir "$(dbus_api_git_dir)" \
+		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
 		dist $(dbus_api_xml_files)
@@ -129,6 +133,8 @@ dist-hook: dist-dbus-api-compatibility
 check-dbus-api-compatibility:
 	$(V_api)dbus-interface-vcs-helper $(helper_v) \
 		--git "$(GIT)" \
+		--git-dir "$(dbus_api_git_dir)" \
+		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
 		check \
@@ -143,6 +149,8 @@ check-local: check-dbus-api-compatibility
 dbus-deviation-mk-install:
 	$(V_api)dbus-interface-vcs-helper $(helper_v) \
 		--git "$(GIT)" \
+		--git-dir "$(dbus_api_git_dir)" \
+		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
 		install $(dbus_api_xml_files)
