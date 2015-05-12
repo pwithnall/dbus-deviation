@@ -95,13 +95,13 @@ dbus_api_git_dir ?= $(dbus_api_git_work_tree)/.git
 GIT = git
 
 # Silent rules for dbus-interface-vcs-helper
-helper_v = $(helper_v_@AM_V@)
-helper_v_ = $(helper_v_@AM_DEFAULT_V@)
-helper_v_0 = --silent
-helper_v_1 =
+dbus_interface_vcs_helper_v = $(dbus_interface_vcs_helper_v_$(V))
+dbus_interface_vcs_helper_v_ = $(dbus_interface_vcs_helper_v_$(AM_DEFAULT_VERBOSITY))
+dbus_interface_vcs_helper_v_0 = --silent
+dbus_interface_vcs_helper_v_1 =
 
-V_api = $(v_api_@AM_V@)
-v_api_ = $(v_api_@AM_DEFAULT_V@)
+V_api = $(v_api_$(V))
+v_api_ = $(v_api_$(AM_DEFAULT_VERBOSITY))
 v_api_0 = @echo "  API     " $@;
 v_api_1 =
 
@@ -109,7 +109,7 @@ v_api_1 =
 # For each XML file in $(dbus_api_xml_files), add it to the API signature
 # database for the most recent git tag.
 dist-dbus-api-compatibility:
-	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+	$(V_api)dbus-interface-vcs-helper $(dbus_interface_vcs_helper_v) \
 		--git "$(GIT)" \
 		--git-dir "$(dbus_api_git_dir)" \
 		--git-work-tree "$(dbus_api_git_work_tree)" \
@@ -131,7 +131,7 @@ dist-hook: dist-dbus-api-compatibility
 # distcheck, it effectively checks the release-in-progress against the
 # previous release, which is exactly what is expected of distcheck.
 check-dbus-api-compatibility:
-	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+	$(V_api)dbus-interface-vcs-helper $(dbus_interface_vcs_helper_v) \
 		--git "$(GIT)" \
 		--git-dir "$(dbus_api_git_dir)" \
 		--git-work-tree "$(dbus_api_git_work_tree)" \
@@ -147,7 +147,7 @@ check-local: check-dbus-api-compatibility
 # Installation rule to set up an API signature database for each existing tag.
 # It is safe to run this multiple times.
 dbus-deviation-mk-install:
-	$(V_api)dbus-interface-vcs-helper $(helper_v) \
+	$(V_api)dbus-interface-vcs-helper $(dbus_interface_vcs_helper_v) \
 		--git "$(GIT)" \
 		--git-dir "$(dbus_api_git_dir)" \
 		--git-work-tree "$(dbus_api_git_work_tree)" \
