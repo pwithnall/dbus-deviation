@@ -76,7 +76,7 @@ def _parse_file(filename, parser):
         # If the file is empty, treat it as a non-existent Interface. This
         # allows for diffs of added files.
         if os.path.getsize(filename) == 0:
-            return interfaces
+            return {}
         else:
             sys.stderr.write('Error parsing ‘%s’: %s\n' % (filename, err))
             sys.exit(1)
