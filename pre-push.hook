@@ -1,0 +1,46 @@
+#!/bin/sh
+
+# A hook script to update the D-Bus API signature database every time a release
+# tag is pushed. See the git-hooks documentation for the parameters it’s called
+# with. See $(top_srcdir)/dbus-deviation.mk for more information about how this
+# project uses dbus-deviation to check D-Bus API stability.
+#
+# If the API signature database is updated, a git note will be added to the new
+# tag for each D-Bus API in the project, and the notes will be pushed remotely.
+
+remote="$1"
+url="$2"
+
+# Get the configuration from the Makefile.
+# This is pretty terrible.
+eval `make dbus-deviation-mk-config`
+
+if [ "$GIT" == "" ]; then
+	GIT=git
+fi
+
+if [ "$GIT_DIR" == "" ]; then
+	GIT_DIR=`git rev-parse --git-dir`
+fi
+
+if [ "$GIT_WORK_TREE" == "" ]; then
+	GIT_WORK_TREE=`pwd`
+fi
+
+IFS=' '
+while read local_ref local_sha remote_ref remote_sha; do
+	if ! $GIT rev-parse --verify $local_ref^{tag} &> /dev/null; then
+		continue
+	fi
+
+	# Ignore failures from this.
+	dbus-interface-vcs-helper \
+		--git "$GIT" \
+		--git-dir "$GIT_DIR" \
+		--git-work-tree "$GIT_WORK_TREE" \
+		--git-refs "$dbus_api_git_refs" \
+		--git-remote "$remote" \
+		dist --ignore-existing $dbus_api_xml_files
+done
+
+exit 0

@@ -48,6 +48,13 @@ Then run:
 to set up the API signature database. This assumes that your project defines
 D-Bus interfaces in XML files, and does not generate them at runtime.
 
+Finally, copy pre-push.hook to .git/hooks/pre-push and ensure it’s executable.
+This script will automatically update the API signature database when a new
+release tag is pushed to the git remote.
+
+There is currently no streamlined support for projects which generate D-Bus
+interfaces at runtime.
+
 dbus-deviation.mk defines the following rules:
  • dist-dbus-api-compatibility (a dependency of dist-hook)
  • check-dbus-api-compatibility (a dependency of check-local)

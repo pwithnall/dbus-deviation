@@ -39,6 +39,10 @@
 #
 # It is safe to run this command multiple times, though there is no need to.
 #
+# Finally, copy pre-push.hook to .git/hooks/pre-push and ensure it’s
+# executable. This script will automatically update the API signature database
+# when a new release tag is pushed to the git remote.
+#
 # If your project builds D-Bus interfaces at runtime, rather than automatically
 # generating the code for them from XML files, you must populate the database
 # manually. For each tagged release, and for each D-Bus interface, run:
@@ -118,7 +122,7 @@ dist-dbus-api-compatibility:
 		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
-		dist $(dbus_api_xml_files)
+		dist --ignore-existing $(dbus_api_xml_files)
 dist-hook: dist-dbus-api-compatibility
 .PHONY: dist-dbus-api-compatibility
 
@@ -162,3 +166,11 @@ dbus-deviation-mk-install:
 		--git-remote "$(git_remote_origin)" \
 		install $(dbus_api_xml_files)
 .PHONY: dbus-deviation-mk-install
+
+
+# Helper for the pre-push git hook to export the configuration.
+# Exports in bash syntax so this can be directly evaled.
+dbus-deviation-mk-config:
+	@echo "dbus_api_git_refs=\"$(dbus_api_git_refs)\""
+	@echo "dbus_api_xml_files=\"$(dbus_api_xml_files)\""
+.PHONY: dbus-deviation-mk-config
