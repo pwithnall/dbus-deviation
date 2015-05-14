@@ -90,6 +90,19 @@ def _set_notes_for_ref(args, tag, api_xml_basename, notes):
                                 stderr=dev_null)
 
 
+def _notes_exist_for_ref(args, tag, api_xml_basename):
+    """Check whether notes have already been stored for this file and tag."""
+    with open(os.devnull, 'w') as dev_null:
+        status = subprocess.call(_git_command(args, 'notes') +
+                                 ['--ref',
+                                  'refs/%s/%s' %
+                                  (args.dbus_api_git_refs, api_xml_basename),
+                                  'show', tag],
+                                 stdout=dev_null,
+                                 stderr=dev_null)
+        return status == 0
+
+
 def _get_notes_filename_for_head(args, api_xml_basename):
     """Get the filename of api_xml_basename in the git work tree."""
     filename = subprocess.check_output(_git_command(args, 'ls-files') +
@@ -151,8 +164,17 @@ def command_dist(args):
     # Store notes for each API file
     for api_xml_file in args.dbus_api_xml_files:
         try:
-            notes = _get_contents_of_file(args, latest_tag, api_xml_file)
             api_xml_basename = os.path.basename(api_xml_file)
+
+            # Do notes already exist for this file and tag?
+            if args.ignore_existing and \
+               _notes_exist_for_ref(args, latest_tag, api_xml_basename):
+                sys.stdout.write('%s: Ignored XML file ‘%s’; already has '
+                                 'a note\n' %
+                                 (latest_tag, api_xml_basename))
+                continue
+
+            notes = _get_contents_of_file(args, latest_tag, api_xml_file)
             subprocess.check_output(_git_command(args, 'notes') +
                                     ['--ref',
                                      'refs/%s/%s' %
@@ -398,6 +420,10 @@ def main():
     parser_dist.add_argument('dbus_api_xml_files', metavar='API-FILE',
                              type=str, nargs='+',
                              help='D-Bus API XML file to check')
+    parser_dist.add_argument('--ignore-existing', action='store_const',
+                             const=True, default=False,
+                             help='Ignore existing API signatures rather than '
+                                  'erroring')
     parser_dist.set_defaults(func=command_dist)
 
     # check command
