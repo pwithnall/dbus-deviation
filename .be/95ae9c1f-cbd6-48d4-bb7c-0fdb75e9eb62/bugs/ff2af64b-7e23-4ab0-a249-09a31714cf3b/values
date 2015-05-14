@@ -26,21 +26,21 @@
 
 
 
-    "status": "fixed", 
+    "status": "open", 
 
 
 
 
 
 
-    "summary": "Add to coveralls.io", 
+    "summary": "Add a helper for dynamically generated APIs", 
 
 
 
 
 
 
-    "time": "Wed, 29 Apr 2015 13:52:18 +0000"
+    "time": "Thu, 14 May 2015 16:36:29 +0000"
 
 
 

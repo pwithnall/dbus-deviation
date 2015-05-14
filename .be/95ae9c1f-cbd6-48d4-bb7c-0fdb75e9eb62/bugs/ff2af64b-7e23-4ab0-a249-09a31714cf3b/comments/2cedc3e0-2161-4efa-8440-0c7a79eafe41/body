@@ -1,0 +1,5 @@
+Support projects which generate their D-Bus introspection data at runtime, and define their D-Bus APIs using C structs, rather than static XML files.
+
+This requires building and running the project, then calling the D-Bus Introspect() method on it to get the API signature to put in the database.;
+
+Build a tool which stores given generated files, then lists the remaining tags which don't have API signatures stored for them; doing something stateful like `git rebase -i` would be too complex to integrate with a build process for a first attempt.
