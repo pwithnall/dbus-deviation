@@ -82,6 +82,9 @@
 # The Makefile hooks in to dist-hook and check-local to update the API
 # signature database and to check for differences between the most recent
 # release and the current working tree.
+#
+# This file support out-of-tree builds, and git repositories with non-standard
+# GIT_WORK_TREE or GIT_DIR settings (bare repositories).
 
 # Mandatory configuration.
 dbus_api_xml_files ?=
@@ -130,6 +133,10 @@ dist-hook: dist-dbus-api-compatibility
 # current working tree against the latest release. If this happens during
 # distcheck, it effectively checks the release-in-progress against the
 # previous release, which is exactly what is expected of distcheck.
+#
+# If this is run on a source directory where $(dbus_api_git_dir) does not
+# exist, it will print a message and exit successfully. This supports the use
+# case where `make distcheck` is run on an extracted tarball of a release.
 check-dbus-api-compatibility:
 	$(V_api)dbus-interface-vcs-helper $(dbus_interface_vcs_helper_v) \
 		--git "$(GIT)" \

@@ -30,6 +30,13 @@ Wrapper around dbus-interface-diff to integrate it with a VCS
 This implements an API signature database in the project’s version control
 system so that all users of the VCS can do API compatibility between all past
 signed releases. Currently, only git is supported.
+
+Requirements:
+ • Support out-of-tree builds, where srcdir ≠ builddir.
+ • Support bare repositories, or where GIT_WORK_TREE ≠ .git.
+ • Exit with status 0 if GIT_DIR does not exist; support the use case of
+   running `make distcheck` inside an extracted release tarball.
+ • Support both tag-before-dist and tag-after-dist workflows.
 """
 
 import argparse

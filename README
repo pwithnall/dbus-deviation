@@ -28,9 +28,30 @@ The utility programs:
            com.example.Interface1.xml \  # old version of the interface
            com.example.Interface2.xml    # new version of the interface
 
+ • dbus-interface-vcs-helper:
+     This is a helper program designed to be used by dbus-deviation.mk.
+
 As a library, the core object is an InterfaceParser, allowing a D-Bus API to
 be parsed and represented as an AST. See the API documentation for more
 explanation and examples.
+
+dbus-deviation.mk
+-----------------
+
+This is a Makefile snippet which should be copied into your project, added to
+git, and the following two lines included in your top-level Makefile.am:
+   dbus_api_xml_files = list of D-Bus interface XML files
+   -include $(top_srcdir)/dbus-deviation.mk
+
+Then run:
+   make dbus-deviation-mk-install
+to set up the API signature database. This assumes that your project defines
+D-Bus interfaces in XML files, and does not generate them at runtime.
+
+dbus-deviation.mk defines the following rules:
+ • dist-dbus-api-compatibility (a dependency of dist-hook)
+ • check-dbus-api-compatibility (a dependency of check-local)
+ • dbus-deviation-mk-install (never triggered automatically)
 
 Dependencies
 ============
