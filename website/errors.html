@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<title>dbus-deviation: Error codes</title>
+	<style type="text/css">
+	.filename, .program-name, .command, .env-var, .function-name {
+		font-family: monospace;
+	}
+
+	.replaceable {
+		font-style: italic;
+	}
+	</style>
+</head>
+
+<body>
+<h1>dbus-deviation: Error codes</h1>
+
+<p>A list of all the possible error codes produced by dbus-deviation, along
+   with potential causes, what problems result, and how to avoid them.</p>
+
+<h2 id="parser">Parser errors</h2>
+
+<table>
+	<thead>
+		<tr>
+			<th>Error code</th>
+			<th>Compatibility</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<!-- Please keep this list alphabetically sorted. -->
+	<tbody>
+		<tr id="duplicate-interface" class="compatibility-error">
+			<th>duplicate-interface</th>
+			<td>error</td>
+			<td>Two D-Bus interfaces with the same name were defined
+			    in a single API file. One of the interfaces may be
+			    misnamed.</td>
+		</tr>
+
+		<tr id="duplicate-method" class="compatibility-error">
+			<th>duplicate-method</th>
+			<td>error</td>
+			<td>Two methods with the same name were defined in a
+			    single D-Bus interface. One of the methods may be
+			    misnamed.</td>
+		</tr>
+
+		<tr id="duplicate-property" class="compatibility-error">
+			<th>duplicate-property</th>
+			<td>error</td>
+			<td>Two properties with the same name were defined in a
+			    single D-Bus interface. One of the properties may be
+			    misnamed.</td>
+		</tr>
+
+		<tr id="duplicate-signal" class="compatibility-error">
+			<th>duplicate-signal</th>
+			<td>error</td>
+			<td>Two signals with the same name were defined in a
+			    single D-Bus interface. One of the signals may be
+			    misnamed.</td>
+		</tr>
+
+		<tr id="missing-attribute" class="compatibility-error">
+			<th>missing-attribute</th>
+			<td>error</td>
+			<td>An XML node in the API file was missing a required
+			    attribute. Typically, a ‘name’ attribute is
+			    required — check the
+			    <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Data Format specification</a>.</td>
+		</tr>
+
+		<tr id="unknown-node" class="compatibility-error">
+			<th>unknown-node</th>
+			<td>error</td>
+			<td>An XML node in the API file was not recognized.
+			    Check the
+			    <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Data Format specification</a>.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2 id="comparator">Comparator errors</h2>
+
+<table>
+	<thead>
+		<tr>
+			<th>Error code</th>
+			<th>Compatibility</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<!-- Please keep this list alphabetically sorted. -->
+	<tbody>
+		<tr id="argument-added" class="compatibility-backwards-incompatible">
+			<th>argument-added</th>
+			<td>backwards-incompatible</td>
+			<td>A new argument was added to a method or signal. This
+			    is backwards incompatible as all existing call sites
+			    and signal handlers need to be changed to handle
+			    it.</td>
+		</tr>
+
+		<tr id="argument-direction-changed" class="compatibility-backwards-incompatible">
+			<th>argument-direction-changed-*-*</th>
+			<!-- Other codes this goes by: -->
+			<a id="argument-direction-changed-in-out"/>
+			<a id="argument-direction-changed-out-in"/>
+			<td>backwards-incompatible</td>
+			<td>An argument’s direction was changed from ‘in’ to
+			    ‘out’ or vice-versa. This is backwards incompatible
+			    as all existing call sites and signal handlers need
+			    to be changed to write the argument when they would
+			    have previously read it, or vice-versa.</td>
+		</tr>
+
+		<tr id="argument-name-changed" class="compatibility-info">
+			<th>argument-name-changed</th>
+			<td>info</td>
+			<td>An argument changed name. This is not an API break,
+			    as arguments are looked up by index. Note that it
+			    is an API break if two arguments have swapped places
+			    though. You should check that the name change is not
+			    accompanied by a change in the semantics of the
+			    argument.</td>
+		</tr>
+
+		<tr id="argument-removed" class="compatibility-backwards-incompatible">
+			<th>argument-removed</th>
+			<td>backwards-incompatible</td>
+			<td>An argument was removed from a method or signal.
+			    This is backwards incompatible as all existing call
+			    sites and signal handlers need to be changed to stop
+			    using it.</td>
+		</tr>
+
+		<tr id="argument-type-changed" class="compatibility-backwards-incompatible">
+			<th>argument-type-changed</th>
+			<td>backwards-incompatible</td>
+			<td>An argument changed type. This is backwards
+			    incompatible as all existing call sites and signal
+			    handlers need to be changed to use the new type.
+			    This might have been caused by another argument
+			    being added or removed; so check other error
+			    messages too.</td>
+		</tr>
+
+		<tr id="c-symbol-changed" class="compatibility-info">
+			<th>c-symbol-changed</th>
+			<td>info</td>
+			<td>The C symbol corresponding to a D-Bus API changed
+			    name. This does not affect stability of the D-Bus
+			    API, but may change the API of any generated C
+			    bindings. You should check whether that is the
+			    case.</td>
+		</tr>
+
+		<tr id="deprecated" class="compatibility-info">
+			<th>deprecated</th>
+			<td>info</td>
+			<td>A D-Bus API has been marked as deprecated using the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Deprecated</a></tt> annotation.
+			    The API can still be used, but you might want to
+			    port applications away from using it, to use the
+			    documented replacement instead.</td>
+		</tr>
+
+		<tr class="compatibility-forwards-incompatible">
+			<th>ecs-changed-true-false,
+			    ecs-changed-true-const,
+			    ecs-changed-invalidates-false,
+			    ecs-changed-invalidates-const</th>
+			<!-- Other codes this goes by: -->
+			<a id="ecs-changed-true-false"/>
+			<a id="ecs-changed-true-const"/>
+			<a id="ecs-changed-invalidates-false"/>
+			<a id="ecs-changed-invalidates-const"/>
+			<td>forwards-incompatible</td>
+			<td>A D-Bus property which previously emitted the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal when its value changed will no longer emit
+			    that signal. It either now has a constant value (for
+			    the lifetime of the D-Bus object containing the
+			    property), or simply is no longer guaranteed to emit
+			    the signal when its value changes. Applications
+			    which previously handled notifications for this
+			    property will no longer receive them, but will
+			    otherwise continue to function.</td>
+		</tr>
+
+		<tr class="compatibility-backwards-incompatible">
+			<th>ecs-changed-false-true,
+			    ecs-changed-false-invalidates,
+			    ecs-changed-const-true,
+			    ecs-changed-const-invalidates</th>
+			<!-- Other codes this goes by: -->
+			<a id="ecs-changed-false-true"/>
+			<a id="ecs-changed-false-invalidates"/>
+			<a id="ecs-changed-const-true"/>
+			<a id="ecs-changed-const-invalidates"/>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus property which previously did not emit the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal will now emit that signal when its value
+			    changes. The signal may contain the updated value of
+			    the property, or may simply mark the property as
+			    ‘invalidated’. Applications which previously assumed
+			    the property had a constant value should be changed
+			    to handle notifications for it.</td>
+		</tr>
+
+		<tr id="ecs-changed-true-invalidates" class="compatibility-backwards-incompatible">
+			<th>ecs-changed-true-invalidates</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus property which previously emitted its
+			    updated value in the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal when its value changed will no longer include
+			    the updated value, and will instead notify the
+			    property as ‘invalidated’. Applications which
+			    expected the property to be listed in the
+			    <tt>changed_properties</tt> argument of the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal should be changed to look in the
+			    <tt>invalidated_properties</tt> argument — or to
+			    look in both, for maximum compatibility.</td>
+		</tr>
+
+		<tr id="ecs-changed-invalidates-true" class="compatibility-backwards-incompatible">
+			<th>ecs-changed-invalidates-true</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus property which previously did not emit its
+			    updated value in the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal when its value changed will now include
+			    the updated value, and will no longer notify the
+			    property as ‘invalidated’. Applications which
+			    expected the property to be listed in the
+			    <tt>invalidated_properties</tt> argument of the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal should be changed to look in the
+			    <tt>changed_properties</tt> argument — or to
+			    look in both, for maximum compatibility.</td>
+		</tr>
+
+		<tr id="ecs-changed-const-false" class="compatibility-backwards-incompatible">
+			<th>ecs-changed-const-false</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus property which was previously marked as
+			    constant, with a value which did not change
+			    throughout the lifetime of the containing D-Bus
+			    object, is now marked as non-constant. Its value may
+			    now change; however, such changes will not be
+			    notified using the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal. Applications should be changed to re-query
+			    the property when appropriate, and to no longer
+			    assume that its value is constant.</td>
+		</tr>
+
+		<tr id="ecs-changed-false-const" class="compatibility-forwards-incompatible">
+			<th>ecs-changed-false-const</th>
+			<td>forwards-incompatible</td>
+			<td>A D-Bus property which was previously marked as
+			    non-constant, is now marked as constant, with a
+			    value which cannot change throughout the lifetime
+			    of the containing D-Bus object. The property will
+			    continue to <em>not</em> be notified through the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Properties.PropertiesChanged</a></tt>
+			    signal. Applications may be changed to assume the
+			    property’s value is constant, and hence no longer
+			    need to re-query its value after the initial
+			    query.</td>
+		</tr>
+
+		<tr id="interface-added" class="compatibility-forwards-incompatible">
+			<th>interface-added</th>
+			<td>forwards-incompatible</td>
+			<td>A new D-Bus interface was added to the API, and can
+			    now be used in applications. You must bump your
+			    application’s dependency on the D-Bus API version,
+			    or check that the new interface is implemented at
+			    runtime before using it, otherwise your application
+			    will not run correctly against older versions of the
+			    D-Bus service.</td>
+		</tr>
+
+		<tr id="interface-removed" class="compatibility-backwards-incompatible">
+			<th>interface-removed</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus interface was removed from the API, and can
+			    no longer be used in applications. This is a
+			    backwards-incompatible change, and all applications
+			    which were using that interface must be ported away
+			    from it, or have runtime version checks added so
+			    they only use the interface when the D-Bus service
+			    implements it at runtime.</td>
+		</tr>
+
+		<tr id="method-added" class="compatibility-forwards-incompatible">
+			<th>method-added</th>
+			<td>forwards-incompatible</td>
+			<td>A new method was added to a D-Bus interface in the
+			    API, and can now be used in applications. You must
+			    bump your application’s dependency on the D-Bus API
+			    version, or check that the new method is available
+			    at runtime before using it, otherwise your
+			    application will not run correctly against older
+			    versions of the D-Bus service.</td>
+		</tr>
+
+		<tr id="method-removed" class="compatibility-backwards-incompatible">
+			<th>method-removed</th>
+			<td>backwards-incompatible</td>
+			<td>A method was removed from a D-Bus interface in the
+			    API, and can no longer be used in applications. This
+			    is a backwards-incompatible change, and all
+			    applications which were using that method must be
+			    ported away from it, or have runtime version checks
+			    added so they only use the method when the D-Bus
+			    service implements it at runtime.</td>
+		</tr>
+
+		<tr class="compatibility-forwards-incompatible">
+			<th>property-access-changed-read-readwrite,
+			    property-access-changed-write-readwrite</th>
+			<!-- Other codes this goes by: -->
+			<a id="property-access-changed-read-readwrite"/>
+			<a id="property-access-changed-write-readwrite"/>
+			<td>forwards-incompatible</td>
+			<td>A property changed access flags from ‘read’ or
+			    ‘write’ to ‘readwrite’, making it less restrictive.
+			    Applications may now get <em>and</em> set the
+			    property, which was not possible before. This is a
+			    forwards-incompatible change, so any applications
+			    which start using the lessened restrictions should
+			    gracefully handle failure to use them, so that
+			    they continue to work with older versions of the
+			    D-Bus service.</td>
+		</tr>
+
+		<tr class="compatibility-backwards-incompatible">
+			<th>property-access-changed-read-write,
+			    property-access-changed-write-read,
+			    property-access-changed-readwrite-read,
+			    property-access-changed-readwrite-write</th>
+			<!-- Other codes this goes by: -->
+			<a id="property-access-changed-read-write"/>
+			<a id="property-access-changed-write-read"/>
+			<a id="property-access-changed-readwrite-read"/>
+			<a id="property-access-changed-readwrite-write"/>
+			<td>backwards-incompatible</td>
+			<td>A property changed access flags to be more
+			    restrictive. This is a backwards incompatible
+			    change, and applications will need to be changed to
+			    stop accessing the property how they were before, or
+			    to gracefully handle failure of set or get calls on
+			    the property.</td>
+		</tr>
+
+		<tr id="property-added" class="compatibility-forwards-incompatible">
+			<th>property-added</th>
+			<td>forwards-incompatible</td>
+			<td>A new property was added to a D-Bus interface in the
+			    API, and can now be used in applications. You must
+			    bump your application’s dependency on the D-Bus API
+			    version, or check that the new property is available
+			    at runtime before using it, otherwise your
+			    application will not run correctly against older
+			    versions of the D-Bus service.</td>
+		</tr>
+
+		<tr id="property-removed" class="compatibility-backwards-incompatible">
+			<th>property-removed</th>
+			<td>backwards-incompatible</td>
+			<td>A property was removed from a D-Bus interface in the
+			    API, and can no longer be used in applications. This
+			    is a backwards-incompatible change, and all
+			    applications which were using that property must be
+			    ported away from it, or have runtime version checks
+			    added so they only use the property when the D-Bus
+			    service implements it at runtime.</td>
+		</tr>
+
+		<tr id="property-type-changed" class="compatibility-backwards-incompatible">
+			<th>property-type-changed</th>
+			<td>backwards-incompatible</td>
+			<td>A property changed type. This is backwards
+			    incompatible as all existing set and get sites need
+			    to be changed to use the new type.</td>
+		</tr>
+
+		<tr id="reply-added" class="compatibility-backwards-incompatible">
+			<th>reply-added</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus method which was previously marked as not
+			    returning a reply will now return a reply. All call
+			    sites using the method should be modified to
+			    asynchronously wait for a reply and handle any
+			    errors or return values it provides. This may be
+			    coupled with a change in the method’s type to add
+			    new ‘out’ arguments
+			    (<tt><a href="#argument-added">argument-added</a></tt>),
+			    which should be handled as appropriate.</td>
+		</tr>
+
+		<tr id="reply-removed" class="compatibility-backwards-incompatible">
+			<th>reply-removed</th>
+			<td>backwards-incompatible</td>
+			<td>A D-Bus method which was previously marked as
+			    returning a reply will now not return a reply. All
+			    call sites using the method should be modified to
+			    not wait for a reply, and any code which handles
+			    errors or return values can be removed. This may be
+			    coupled with a change in the method’s type to remove
+			    ‘out’ arguments
+			    (<tt><a href="#argument-removed">argument-removed</a></tt>),
+			    support for which should be removed as
+			    appropriate.</td>
+		</tr>
+
+		<tr id="signal-added" class="compatibility-forwards-incompatible">
+			<th>signal-added</th>
+			<td>forwards-incompatible</td>
+			<td>A new signal was added to a D-Bus interface in the
+			    API, and can now be connected to in applications.
+			    You must bump your application’s dependency on the
+			    D-Bus API version, or check that the new signal is
+			    available at runtime before connecting to it,
+			    otherwise your application will not run correctly
+			    against older versions of the D-Bus service.</td>
+		</tr>
+
+		<tr id="signal-removed" class="compatibility-backwards-incompatible">
+			<th>signal-removed</th>
+			<td>backwards-incompatible</td>
+			<td>A signal was removed from a D-Bus interface in the
+			    API, and can no longer be used in applications. This
+			    is a backwards-incompatible change, and all
+			    applications which were connecting to that signal
+			    must be ported away from it, or have runtime version
+			    checks added so they only connect to the signal when
+			    the D-Bus service implements it at runtime.</td>
+		</tr>
+
+		<tr id="undeprecated" class="compatibility-info">
+			<th>undeprecated</th>
+			<td>info</td>
+			<td>A D-Bus API which was previously marked as
+			    deprecated using the
+			    <tt><a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">org.freedesktop.DBus.Deprecated</a></tt> annotation
+			    is no longer marked as deprecated. You may start
+			    using it in applications again, although you should
+			    check whether the un-deprecation was intentional
+			    first.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2 id="bugs">Bugs and problems</h2>
+
+<p>If you have found a bug on this page, have found missing documentation, or
+   if some of the documentation is unclear, please
+   <a href="./index.html#bugs">file a bug</a>.</p>
+
+</body>
+</html>
