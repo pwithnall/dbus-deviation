@@ -153,6 +153,28 @@ def _print_output(output, include_uris=True, enable_colour=True):
             fd_for_level.write('   %s\n' % explanation_uri)
 
 
+def _calculate_exit_status(args, output):
+    """
+    Build the exit status for the program.
+
+    This will be non-zero if any errors were outputted, or if --fatal-warnings
+    was passed and any warnings were outputted. Otherwise it will be zero.
+    """
+    outputted_errors = False
+    outputted_warnings = False
+
+    for (_, level, _, _) in output:
+        if level in ['backwards-compatibility', 'parser']:
+            outputted_errors = True
+        elif level in ['forwards-compatibility']:
+            outputted_warnings = True
+
+    if outputted_errors or (args.fatal_warnings and outputted_warnings):
+        return len(output)
+
+    return 0
+
+
 def main():
     """Main utility implementation."""
     # Parse command line arguments.
@@ -164,6 +186,8 @@ def main():
                         type=str,
                         help='Human-readable name for new interface XML file '
                              '(if --new-file is a pipe, for example)')
+    parser.add_argument('--fatal-warnings', action='store_const', const=True,
+                        default=False, help='Treat all warnings as fatal')
     parser.add_argument('--warnings', dest='warnings', metavar='CATEGORY,…',
                         type=str,
                         help='Warning categories (%s)' %
@@ -206,7 +230,7 @@ def main():
                                      enabled_warnings, new_filename)
     out = comparator.compare()
     _print_output(out)
-    sys.exit(len(out))
+    sys.exit(_calculate_exit_status(args, out))
 
 if __name__ == '__main__':
     main()
