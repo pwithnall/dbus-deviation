@@ -44,7 +44,8 @@
 #
 # Finally, copy pre-push.hook to .git/hooks/pre-push and ensure it’s
 # executable. This script will automatically update the API signature database
-# when a new release tag is pushed to the git remote.
+# when a new release tag is pushed to the git remote. It is required for dist
+# to succeed.
 #
 # If your project builds D-Bus interfaces at runtime, rather than automatically
 # generating the code for them from XML files, you must populate the database
@@ -126,8 +127,22 @@ dist-dbus-api-compatibility:
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
 		dist --ignore-existing $(dbus_api_xml_files)
-dist-hook: dist-dbus-api-compatibility
-.PHONY: dist-dbus-api-compatibility
+
+# Check the pre-push hook is installed, otherwise the API signature database
+# will not get pushed to the remote after the release tag is created.
+dist-dbus-api-compatibility-check-hook:
+	@if [ ! -x "$(dbus_api_git_dir)/hooks/pre-push" ] || \
+	    ! grep dbus-interface-vcs-helper "$(dbus_api_git_dir)/hooks/pre-push"; then \
+		echo "error: dbus-deviation git hook is not installed. Copy pre-push.hook to" 1>&2; \
+		echo "          $(dbus_api_git_dir)/hooks/pre-push" 1>&2; \
+		echo "       to enable updates to the D-Bus API signature database." 1>&2; \
+		echo "       See dbus-deviation.mk for more details." 1>&2; \
+		echo "Aborting." 1>&2; \
+		exit 1; \
+	fi
+
+dist-hook: dist-dbus-api-compatibility dist-dbus-api-compatibility-check-hook
+.PHONY: dist-dbus-api-compatibility dist-dbus-api-compatibility-check-hook
 
 
 # Check that the D-Bus API signatures for the two refs given as OLD_REF and
