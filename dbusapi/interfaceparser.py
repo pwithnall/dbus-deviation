@@ -29,7 +29,6 @@ TODO
 """
 
 import os
-import sys
 
 # PyPy support
 # pylint: disable=interface-not-implemented
