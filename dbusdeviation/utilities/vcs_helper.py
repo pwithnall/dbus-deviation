@@ -287,7 +287,7 @@ def command_check(args):
 
             diff_command = ['dbus-interface-diff',
                             '--warnings', args.warnings,
-                            '--file-display-name', note_ref,
+                            '--file-display-name', api_xml_basename,
                             old_notes_filename, new_notes_filename]
             old_notes_command = _git_command(args, 'notes') + [
                 '--ref',
