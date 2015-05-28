@@ -28,7 +28,6 @@
 TODO
 """
 
-import sys
 from dbusapi import ast
 
 
