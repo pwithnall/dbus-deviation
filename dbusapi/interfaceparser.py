@@ -77,9 +77,9 @@ class InterfaceParser(object):
         self._filename = filename
         self._output = []
 
-    def _issue_output(self, message):
+    def _issue_output(self, code, message):
         """Append a message to the parser output."""
-        self._output.append((self._filename, 'parser', 'parser', message))
+        self._output.append((self._filename, 'parser', code, message))
 
     def get_output(self):
         """Return a list of all logged parser messages."""
@@ -118,7 +118,8 @@ class InterfaceParser(object):
         interfaces = {}
 
         if root.tag != 'node':
-            self._issue_output('Unrecognised root node ‘%s’.' % root.tag)
+            self._issue_output('unknown-node',
+                               'Unknown root node ‘%s’.' % root.tag)
             return interfaces
 
         for node in root.getchildren():
@@ -128,15 +129,17 @@ class InterfaceParser(object):
                     continue
 
                 if interface.name in interfaces:
-                    self._issue_output('Duplicate interface definition '
-                                       '‘%s’.' % interface.format_name())
+                    self._issue_output('duplicate-interface',
+                                       'Duplicate interface definition ‘%s’.' %
+                                       interface.format_name())
                     continue
 
                 interfaces[interface.name] = interface
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in root.' %
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in root.' %
                                    node.tag)
 
         return interfaces
@@ -147,7 +150,8 @@ class InterfaceParser(object):
         assert interface_node.tag == 'interface'
 
         if 'name' not in interface_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in '
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in '
                                'interface.' % 'name')
             return None
 
@@ -164,7 +168,8 @@ class InterfaceParser(object):
                     continue
 
                 if method.name in methods:
-                    self._issue_output('Duplicate method definition ‘%s’.' %
+                    self._issue_output('duplicate-method',
+                                       'Duplicate method definition ‘%s’.' %
                                        method.format_name())
                     continue
 
@@ -175,7 +180,8 @@ class InterfaceParser(object):
                     continue
 
                 if signal.name in signals:
-                    self._issue_output('Duplicate signal definition ‘%s’.' %
+                    self._issue_output('duplicate-signal',
+                                       'Duplicate signal definition ‘%s’.' %
                                        signal.format_name())
                     continue
 
@@ -186,7 +192,8 @@ class InterfaceParser(object):
                     continue
 
                 if prop.name in properties:
-                    self._issue_output('Duplicate property definition ‘%s’.' %
+                    self._issue_output('duplicate-property',
+                                       'Duplicate property definition ‘%s’.' %
                                        prop.format_name())
                     continue
 
@@ -200,7 +207,8 @@ class InterfaceParser(object):
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in interface '
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in interface '
                                    '‘%s’.' % (node.tag, name))
 
         return ast.Interface(name, methods, properties, signals,
@@ -211,7 +219,8 @@ class InterfaceParser(object):
         assert method_node.tag == 'method'
 
         if 'name' not in method_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in method.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in method.' %
                                'name')
             return None
 
@@ -235,7 +244,8 @@ class InterfaceParser(object):
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in method ‘%s’.' %
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in method ‘%s’.' %
                                    (node.tag, name))
 
         return ast.Method(name, args, annotations)
@@ -245,7 +255,8 @@ class InterfaceParser(object):
         assert signal_node.tag == 'signal'
 
         if 'name' not in signal_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in signal.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in signal.' %
                                'name')
             return None
 
@@ -269,7 +280,8 @@ class InterfaceParser(object):
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in signal ‘%s’.' %
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in signal ‘%s’.' %
                                    (node.tag, name))
 
         return ast.Signal(name, args, annotations)
@@ -279,15 +291,18 @@ class InterfaceParser(object):
         assert property_node.tag == 'property'
 
         if 'name' not in property_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in property.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in property.' %
                                'name')
             return None
         elif 'type' not in property_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in property.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in property.' %
                                'type')
             return None
         elif 'access' not in property_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in property.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in property.' %
                                'access')
             return None
 
@@ -306,7 +321,8 @@ class InterfaceParser(object):
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in property ‘%s’.' %
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in property ‘%s’.' %
                                    (node.tag, name))
 
         return ast.Property(name, prop_type, access, annotations)
@@ -316,7 +332,8 @@ class InterfaceParser(object):
         assert arg_node.tag == 'arg'
 
         if 'type' not in arg_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in arg.' %
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in arg.' %
                                'type')
             return None
 
@@ -336,7 +353,8 @@ class InterfaceParser(object):
             elif _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in arg ‘%s’.' %
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in arg ‘%s’.' %
                                    (node.tag, name))
 
         return ast.Argument(name, direction, arg_type, annotations)
@@ -346,11 +364,13 @@ class InterfaceParser(object):
         assert annotation_node.tag == 'annotation'
 
         if 'name' not in annotation_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in '
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in '
                                'annotation.' % 'name')
             return None
         if 'value' not in annotation_node.attrib:
-            self._issue_output('Missing required attribute ‘%s’ in '
+            self._issue_output('missing-attribute',
+                               'Missing required attribute ‘%s’ in '
                                'annotation.' % 'value')
             return None
 
@@ -361,7 +381,8 @@ class InterfaceParser(object):
             if _ignore_node(node):
                 pass
             else:
-                self._issue_output('Unrecognised node ‘%s’ in annotation '
+                self._issue_output('unknown-node',
+                                   'Unknown node ‘%s’ in annotation '
                                    '‘%s’.' % (node.tag, name))
 
         return ast.Annotation(name, value)
