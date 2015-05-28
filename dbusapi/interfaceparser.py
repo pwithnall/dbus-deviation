@@ -76,6 +76,19 @@ class InterfaceParser(object):
         self._filename = filename
         self._output = []
 
+    @staticmethod
+    def get_output_codes():
+        """Return a list of all possible output codes."""
+        # FIXME: Hard-coded for the moment.
+        return [
+            'unknown-node',
+            'duplicate-interface',
+            'missing-attribute',
+            'duplicate-method',
+            'duplicate-signal',
+            'duplicate-property',
+        ]
+
     def _issue_output(self, code, message):
         """Append a message to the parser output."""
         self._output.append((self._filename, 'parser', code, message))

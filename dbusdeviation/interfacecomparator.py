@@ -62,7 +62,8 @@ class InterfaceComparator(object):
     OUTPUT_BACKWARDS_INCOMPATIBLE = 'backwards-compatibility'
 
     def __init__(self, old_interfaces, new_interfaces,
-                 enabled_warnings=None, new_filename=None):
+                 enabled_warnings=None, disabled_warnings=None,
+                 new_filename=None):
         """
         Construct a new InterfaceComparator.
 
@@ -71,8 +72,10 @@ class InterfaceComparator(object):
                 interface name to an ast.Interface instance
             new_interfaces: non-empty dict of new interfaces, mapping
                 interface name to an ast.Interface instance
-            enabled_warnings: potentially empty list of warning category names
-                to enable
+            enabled_warnings: potentially empty list of warning categories and
+                codes to enable
+            disabled_warnings: potentially empty list of warning categories and
+                codes to disable
             new_filename: path to the new D-Bus interface file,
                 or None if unknown
         """
@@ -80,23 +83,75 @@ class InterfaceComparator(object):
         self._new_interfaces = new_interfaces
         self._new_filename = new_filename
         self._output = []
+
         if enabled_warnings is not None:
             self._enabled_warnings = enabled_warnings
         else:
             self._enabled_warnings = WARNING_CATEGORIES
 
+        if disabled_warnings is not None:
+            self._disabled_warnings = disabled_warnings
+        else:
+            self._disabled_warnings = []
+
+    @staticmethod
+    def get_output_codes():
+        """Return a list of all possible output codes."""
+        # FIXME: Hard-coded for the moment.
+        return [
+            'interface-added',
+            'interface-removed',
+            'deprecated',
+            'undeprecated'
+            'c-symbol-changed',
+            'reply-added',
+            'reply-removed',
+            'ecs-changed-true-invalidates',
+            'ecs-changed-true-false',
+            'ecs-changed-true-const',
+            'ecs-changed-invalidates-true',
+            'ecs-changed-invalidates-false',
+            'ecs-changed-invalidates-const',
+            'ecs-changed-false-invalidates',
+            'ecs-changed-false-true',
+            'ecs-changed-false-const',
+            'ecs-changed-const-invalidates',
+            'ecs-changed-const-true',
+            'ecs-changed-const-false',
+            'method-added',
+            'method-removed',
+            'property-added',
+            'property-removed',
+            'signal-added',
+            'signal-removed',
+            'argument-added',
+            'argument-removed',
+            'property-type-changed',
+            'property-access-changed-read-readwrite',
+            'property-access-changed-read-write',
+            'property-access-changed-write-read',
+            'property-access-changed-write-readwrite',
+            'property-access-changed-readwrite-read',
+            'property-access-changed-readwrite-write',
+            'argument-added',
+            'argument-removed',
+            'argument-name-changed',
+            'argument-type-changed',
+            'argument-direction-changed-in-out',
+            'argument-direction-changed-out-in',
+        ]
+
     def _issue_output(self, level, code, message):
         """Append a message to the comparator output."""
         self._output.append((self._new_filename, level, code, message))
 
-    def _warning_enabled(self, level):
+    def _warning_enabled(self, level, code):
         """Determine whether the given output level is enabled for output."""
-        return (level == self.OUTPUT_INFO and
-                'info' in self._enabled_warnings) or \
-               (level == self.OUTPUT_FORWARDS_INCOMPATIBLE and
-                'forwards-compatibility' in self._enabled_warnings) or \
-               (level == self.OUTPUT_BACKWARDS_INCOMPATIBLE and
-                'backwards-compatibility' in self._enabled_warnings)
+        return ((level in self._enabled_warnings and
+                 level not in self._disabled_warnings and
+                 code not in self._disabled_warnings) or
+                (code in self._enabled_warnings and
+                 code not in self._disabled_warnings))
 
     def get_output(self):
         """
@@ -107,7 +162,7 @@ class InterfaceComparator(object):
         out = []
 
         for (filename, level, code, message) in self._output:
-            if not self._warning_enabled(level):
+            if not self._warning_enabled(level, code):
                 continue
 
             out.append((filename, level, code, message))

@@ -52,6 +52,7 @@ WARNING_CATEGORIES = [
     'info',
     'backwards-compatibility',
     'forwards-compatibility',
+    'parser',
 ]
 
 
@@ -177,6 +178,9 @@ def _calculate_exit_status(args, output):
 
 def main():
     """Main utility implementation."""
+    codes = InterfaceComparator.get_output_codes()
+    codes += InterfaceParser.get_output_codes()
+
     # Parse command line arguments.
     parser = argparse.ArgumentParser(
         description='Comparing D-Bus interface definitions')
@@ -190,8 +194,9 @@ def main():
                         default=False, help='Treat all warnings as fatal')
     parser.add_argument('--warnings', dest='warnings', metavar='CATEGORY,…',
                         type=str,
-                        help='Warning categories (%s)' %
-                             ', '.join(WARNING_CATEGORIES))
+                        help='Warning categories (%s; %s)' %
+                             (', '.join(WARNING_CATEGORIES),
+                              ', '.join(codes)))
 
     args = parser.parse_args()
 
@@ -201,16 +206,23 @@ def main():
 
     if args.warnings is None or args.warnings == 'all':
         # Enable all warnings by default
-        enabled_warnings = WARNING_CATEGORIES
+        warnings_args = WARNING_CATEGORIES
     elif args.warnings == 'none':
-        enabled_warnings = []
+        warnings_args = []
     else:
-        enabled_warnings = args.warnings.split(',')
+        warnings_args = args.warnings.split(',')
 
-    for category in enabled_warnings:
-        if category not in WARNING_CATEGORIES:
+    for arg in warnings_args:
+        if arg[:3] == 'no-':
+            arg = arg[3:]
+        if arg not in WARNING_CATEGORIES and arg not in codes:
+            sys.stderr.write('%s: Unrecognized warning ‘%s’.\n' %
+                             (sys.argv[0], arg))
             parser.print_help()
             sys.exit(1)
+
+    enabled_warnings = [arg for arg in warnings_args if arg[:3] != 'no-']
+    disabled_warnings = [arg[3:] for arg in warnings_args if arg[:3] == 'no-']
 
     # Parse the two files.
     old_parser = InterfaceParser(args.old_file)
@@ -227,7 +239,8 @@ def main():
 
     # Compare the interfaces.
     comparator = InterfaceComparator(old_interfaces, new_interfaces,
-                                     enabled_warnings, new_filename)
+                                     enabled_warnings, disabled_warnings,
+                                     new_filename)
     out = comparator.compare()
     _print_output(out)
     sys.exit(_calculate_exit_status(args, out))
