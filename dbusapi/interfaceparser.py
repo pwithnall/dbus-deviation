@@ -169,8 +169,8 @@ class InterfaceParser(object):
                     continue
 
                 if method.name in methods:
-                    self._issue_output('Duplicate method definition '
-                                       '‘%s.%s’.' % method.format_name())
+                    self._issue_output('Duplicate method definition ‘%s’.' %
+                                       method.format_name())
                     continue
 
                 methods[method.name] = method
@@ -180,8 +180,8 @@ class InterfaceParser(object):
                     continue
 
                 if signal.name in signals:
-                    self._issue_output('Duplicate signal definition '
-                                       '‘%s.%s’.' % signal.format_name())
+                    self._issue_output('Duplicate signal definition ‘%s’.' %
+                                       signal.format_name())
                     continue
 
                 signals[signal.name] = signal
@@ -191,8 +191,8 @@ class InterfaceParser(object):
                     continue
 
                 if prop.name in properties:
-                    self._issue_output('Duplicate property definition '
-                                       '‘%s.%s’.' % prop.format_name())
+                    self._issue_output('Duplicate property definition ‘%s’.' %
+                                       prop.format_name())
                     continue
 
                 properties[prop.name] = prop
