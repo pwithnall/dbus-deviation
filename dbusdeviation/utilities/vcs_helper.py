@@ -127,9 +127,16 @@ def _fetch_notes(args):
 
 def _push_notes(args):
     """Push the local API signature database to the remote."""
-    subprocess.check_output(_git_command(args, 'push') +
-                            [args.git_remote_origin,
-                             'refs/' + args.dbus_api_git_refs + '/*'])
+    command = _git_command(args, 'push')
+    command += [args.git_remote_origin,
+                'refs/' + args.dbus_api_git_refs + '/*']
+
+    if not args.no_push:
+        subprocess.check_output(command)
+    else:
+        sys.stdout.write('Run this command to push the API signature '
+                         'database:\n'
+                         '   %s\n' % ' '.join(command))
 
 
 def _is_release(args, ref):
@@ -412,6 +419,10 @@ def main():
                         default='notes/dbus/api', metavar='REF-PATH',
                         help='Path beneath refs/ where the git notes will be'
                              ' stored containing the API signatures database')
+    parser.add_argument('--no-push', action='store_const', const=True,
+                        default=False,
+                        help='Disable automatic pushing the API signature '
+                             'database to a remote repository')
 
     subparsers = parser.add_subparsers()
 

@@ -39,6 +39,8 @@
 #    make dbus-deviation-mk-install
 #
 # It is safe to run this command multiple times, though there is no need to.
+# It will not make changes to your remote repository, but will give you a
+# `git push` command to run to push the database to a remote.
 #
 # Finally, copy pre-push.hook to .git/hooks/pre-push and ensure it’s
 # executable. This script will automatically update the API signature database
@@ -165,6 +167,7 @@ dbus-deviation-mk-install:
 		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
+		--no-push \
 		install $(dbus_api_xml_files)
 .PHONY: dbus-deviation-mk-install
 
