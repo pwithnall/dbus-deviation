@@ -58,9 +58,9 @@ class InterfaceComparator(object):
     """
 
     # Output severity levels.
-    OUTPUT_INFO = 0
-    OUTPUT_FORWARDS_INCOMPATIBLE = 1
-    OUTPUT_BACKWARDS_INCOMPATIBLE = 2
+    OUTPUT_INFO = 'info'
+    OUTPUT_FORWARDS_INCOMPATIBLE = 'forwards-compatibility'
+    OUTPUT_BACKWARDS_INCOMPATIBLE = 'backwards-compatibility'
 
     def __init__(self, old_interfaces, new_interfaces,
                  enabled_warnings=None, new_filename=None):
@@ -88,7 +88,7 @@ class InterfaceComparator(object):
 
     def _issue_output(self, level, message):
         """Append a message to the comparator output."""
-        self._output.append((self._new_filename, level, message))
+        self._output.append((self._new_filename, level, 'comparator', message))
 
     def _warning_enabled(self, level):
         """Determine whether the given output level is enabled for output."""
@@ -107,11 +107,11 @@ class InterfaceComparator(object):
         """
         out = []
 
-        for (filename, level, message) in self._output:
+        for (filename, level, code, message) in self._output:
             if not self._warning_enabled(level):
                 continue
 
-            out.append((filename, level, message))
+            out.append((filename, level, code, message))
 
         return out
 

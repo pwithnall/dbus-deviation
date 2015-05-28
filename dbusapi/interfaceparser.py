@@ -79,7 +79,7 @@ class InterfaceParser(object):
 
     def _issue_output(self, message):
         """Append a message to the parser output."""
-        self._output.append((self._filename, 2, message))
+        self._output.append((self._filename, 'parser', 'parser', message))
 
     def get_output(self):
         """Return a list of all logged parser messages."""
