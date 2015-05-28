@@ -43,6 +43,8 @@ git, and the following two lines included in your top-level Makefile.am:
    dbus_api_xml_files = list of D-Bus interface XML files
    -include $(top_srcdir)/dbus-deviation.mk
 
+Do not add it to EXTRA_DIST. It is designed to work from git checkouts only.
+
 Then run:
    make dbus-deviation-mk-install
 to set up the API signature database. This assumes that your project defines

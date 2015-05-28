@@ -30,7 +30,8 @@
 #    dbus_api_xml_files = list of D-Bus interface XML files
 #    -include $(top_srcdir)/dbus-deviation.mk
 #
-# Further configuration options are documented below.
+# Do not list this file in EXTRA_DIST or similar — it is designed to be used
+# from git checkouts only. Further configuration options are documented below.
 #
 # Then, run the following command to initialise the database of past versions
 # of the XML files:
