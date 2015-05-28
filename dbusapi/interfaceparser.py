@@ -74,7 +74,7 @@ class InterfaceParser(object):
         Args:
             filename: path to the XML introspection file to parse
         """
-        self._filename = os.path.abspath(filename)
+        self._filename = filename
         self._output = []
 
     def _issue_output(self, message):
@@ -84,7 +84,7 @@ class InterfaceParser(object):
     def print_output(self):
         """Print all logged parser messages."""
         for message in self._output:
-            sys.stderr.write('ERROR: %s\n' % message)
+            sys.stderr.write('%s: error: %s\n' % (self._filename, message))
 
     def get_output(self):
         """Return a list of all logged parser messages."""
@@ -101,7 +101,7 @@ class InterfaceParser(object):
             If parsing fails, None is returned.
         """
         self._output = []
-        tree = ElementTree.parse(self._filename)
+        tree = ElementTree.parse(os.path.abspath(self._filename))
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
