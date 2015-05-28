@@ -86,9 +86,9 @@ class InterfaceComparator(object):
         else:
             self._enabled_warnings = WARNING_CATEGORIES
 
-    def _issue_output(self, level, message):
+    def _issue_output(self, level, code, message):
         """Append a message to the comparator output."""
-        self._output.append((self._new_filename, level, 'comparator', message))
+        self._output.append((self._new_filename, level, code, message))
 
     def _warning_enabled(self, level):
         """Determine whether the given output level is enabled for output."""
@@ -130,6 +130,7 @@ class InterfaceComparator(object):
             # See if the old interface exists in the new file.
             if name not in self._new_interfaces:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'interface-removed',
                                    'Interface ‘%s’ has been removed.' % name)
             else:
                 # Compare the two.
@@ -139,6 +140,7 @@ class InterfaceComparator(object):
             # See if the new interface exists in the old file.
             if name not in self._old_interfaces:
                 self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+                                   'interface-added',
                                    'Interface ‘%s’ has been added.' % name)
 
         # Work out the exit status.
@@ -206,11 +208,11 @@ class InterfaceComparator(object):
                                  'org.freedesktop.DBus.Deprecated', False)
 
         if old_deprecated and not new_deprecated:
-            self._issue_output(self.OUTPUT_INFO,
+            self._issue_output(self.OUTPUT_INFO, 'undeprecated',
                                'Node ‘%s’ has been un-deprecated.' %
                                old_node.format_name())
         elif not old_deprecated and new_deprecated:
-            self._issue_output(self.OUTPUT_INFO,
+            self._issue_output(self.OUTPUT_INFO, 'deprecated',
                                'Node ‘%s’ has been deprecated.' %
                                old_node.format_name())
 
@@ -222,7 +224,7 @@ class InterfaceComparator(object):
                                    'org.freedesktop.DBus.GLib.CSymbol', '')
 
         if old_c_symbol != new_c_symbol:
-            self._issue_output(self.OUTPUT_INFO,
+            self._issue_output(self.OUTPUT_INFO, 'c-symbol-changed',
                                'Node ‘%s’ has changed its C symbol from ‘%s’ '
                                'to ‘%s’.' %
                                (old_node.format_name(), old_c_symbol,
@@ -237,44 +239,47 @@ class InterfaceComparator(object):
 
         if old_no_reply and not new_no_reply:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                               'reply-added',
                                'Node ‘%s’ has been marked as returning a '
                                'reply.' % old_node.format_name())
         elif not old_no_reply and new_no_reply:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                               'reply-removed',
                                'Node ‘%s’ has been marked as not returning a '
                                'reply.' % old_node.format_name())
 
         old_ecs = _get_ecs_annotation(old_node)
         new_ecs = _get_ecs_annotation(new_node)
+        output_code = 'ecs-changed-%s-%s' % (old_ecs, new_ecs)
 
         if old_ecs in ['true', 'invalidates'] and \
            new_ecs in ['false', 'const']:
-            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ stopped emitting '
                                'org.freedesktop.DBus.PropertiesChanged.' %
                                old_node.format_name())
         elif (old_ecs in ['false', 'const'] and
               new_ecs in ['true', 'invalidates']):
-            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ started emitting '
                                'org.freedesktop.DBus.PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'true' and new_ecs == 'invalidates':
-            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ stopped emitting its new value in '
                                'org.freedesktop.DBus.PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'invalidates' and new_ecs == 'true':
-            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ started emitting its new value in '
                                'org.freedesktop.DBus.PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'const' and new_ecs == 'false':
-            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ stopped being a constant.' %
                                old_node.format_name())
         elif old_ecs == 'false' and new_ecs == 'const':
-            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ became a constant.' %
                                old_node.format_name())
 
@@ -288,6 +293,7 @@ class InterfaceComparator(object):
         for (name, method) in old_interface.methods.items():
             if name not in new_interface.methods:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'method-removed',
                                    'Method ‘%s’ has been removed.' %
                                    method.format_name())
             else:
@@ -296,6 +302,7 @@ class InterfaceComparator(object):
         for (name, method) in new_interface.methods.items():
             if name not in old_interface.methods:
                 self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+                                   'method-added',
                                    'Method ‘%s’ has been added.' %
                                    method.format_name())
 
@@ -303,6 +310,7 @@ class InterfaceComparator(object):
         for (name, prop) in old_interface.properties.items():
             if name not in new_interface.properties:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'property-removed',
                                    'Property ‘%s’ has been removed.' %
                                    prop.format_name())
             else:
@@ -311,6 +319,7 @@ class InterfaceComparator(object):
         for (name, prop) in new_interface.properties.items():
             if name not in old_interface.properties:
                 self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+                                   'property-added',
                                    'Property ‘%s’ has been added.' %
                                    prop.format_name())
 
@@ -318,6 +327,7 @@ class InterfaceComparator(object):
         for (name, signal) in old_interface.signals.items():
             if name not in new_interface.signals:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'signal-removed',
                                    'Signal ‘%s’ has been removed.' %
                                    signal.format_name())
             else:
@@ -327,6 +337,7 @@ class InterfaceComparator(object):
         for (name, signal) in new_interface.signals.items():
             if name not in old_interface.signals:
                 self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+                                   'signal-added',
                                    'Signal ‘%s’ has been added.' %
                                    signal.format_name())
 
@@ -345,12 +356,14 @@ class InterfaceComparator(object):
         for i in range(max(n_old_args, n_new_args)):
             if i >= n_old_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'argument-added',
                                    'Argument %s of method ‘%s’ '
                                    'has been added.' %
                                    (new_method.arguments[i].format_name(),
                                     new_method.format_name()))
             elif i >= n_new_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'argument-removed',
                                    'Argument %s of method ‘%s’ '
                                    'has been removed.' %
                                    (old_method.arguments[i].format_name(),
@@ -369,23 +382,27 @@ class InterfaceComparator(object):
 
         if old_property.type != new_property.type:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                               'property-type-changed',
                                'Property ‘%s’ has changed type from ‘%s’ '
                                'to ‘%s’.' %
                                (old_property.format_name(),
                                 old_property.type, new_property.type))
 
+        error_code = 'property-access-changed-%s-%s' % \
+                     (old_property.access, new_property.access)
+
         if (old_property.access == ast.Property.ACCESS_READ or
             old_property.access == ast.Property.ACCESS_WRITE) and \
            new_property.access == ast.Property.ACCESS_READWRITE:
             # Property has become less restrictive.
-            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE, error_code,
                                'Property ‘%s’ has changed access from '
                                '‘%s’ to ‘%s’, becoming less restrictive.' %
                                (old_property.format_name(),
                                 old_property.access, new_property.access))
         elif old_property.access != new_property.access:
             # Access has changed incompatibly.
-            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+            self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, error_code,
                                'Property ‘%s’ has changed access from '
                                '‘%s’ to ‘%s’.' %
                                (old_property.format_name(),
@@ -406,12 +423,14 @@ class InterfaceComparator(object):
         for i in range(max(n_old_args, n_new_args)):
             if i >= n_old_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'argument-added',
                                    'Argument %s of signal ‘%s’ '
                                    'has been added.' %
                                    (new_signal.arguments[i].format_name(),
                                     new_signal.format_name()))
             elif i >= n_new_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                                   'argument-removed',
                                    'Argument %s of signal ‘%s’ '
                                    'has been removed.' %
                                    (old_signal.arguments[i].format_name(),
@@ -427,6 +446,7 @@ class InterfaceComparator(object):
         """Compare two ast.Argument instances."""
         if old_arg.name != new_arg.name:
             self._issue_output(self.OUTPUT_INFO,
+                               'argument-name-changed',
                                'Argument %u of ‘%s’ has changed '
                                'name from ‘%s’ to ‘%s’.' %
                                (old_arg.index, old_arg.parent.format_name(),
@@ -434,6 +454,7 @@ class InterfaceComparator(object):
 
         if old_arg.type != new_arg.type:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                               'argument-type-changed',
                                'Argument %u of ‘%s’ has changed '
                                'type from ‘%s’ to ‘%s’.' %
                                (old_arg.index, old_arg.parent.format_name(),
@@ -441,6 +462,8 @@ class InterfaceComparator(object):
 
         if old_arg.direction != new_arg.direction:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                               'argument-direction-changed-%s-%s' %
+                               (old_arg.direction, new_arg.direction),
                                'Argument %u of ‘%s’ has changed '
                                'direction from ‘%s’ to ‘%s’.' %
                                (old_arg.index, old_arg.parent.format_name(),
