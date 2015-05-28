@@ -133,8 +133,6 @@ class InterfaceComparator(object):
             'property-access-changed-write-readwrite',
             'property-access-changed-readwrite-read',
             'property-access-changed-readwrite-write',
-            'argument-added',
-            'argument-removed',
             'argument-name-changed',
             'argument-type-changed',
             'argument-direction-changed-in-out',
