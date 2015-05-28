@@ -67,7 +67,6 @@ def _parse_file(filename, parser):
 
         # Handle parse errors.
         if interfaces is None:
-            sys.stderr.write('Error parsing ‘%s’:\n' % filename)
             parser.print_output()
             sys.exit(1)
 
@@ -78,7 +77,7 @@ def _parse_file(filename, parser):
         if os.path.getsize(filename) == 0:
             return {}
         else:
-            sys.stderr.write('Error parsing ‘%s’: %s\n' % (filename, err))
+            sys.stderr.write('%s: error: %s\n' % (filename, err))
             sys.exit(1)
 
 
@@ -89,6 +88,10 @@ def main():
         description='Comparing D-Bus interface definitions')
     parser.add_argument('old_file', type=str, help='Old interface XML file')
     parser.add_argument('new_file', type=str, help='New interface XML file')
+    parser.add_argument('--file-display-name', dest='file_display_name',
+                        type=str,
+                        help='Human-readable name for new interface XML file '
+                             '(if --new-file is a pipe, for example)')
     parser.add_argument('--warnings', dest='warnings', metavar='CATEGORY,…',
                         type=str,
                         help='Warning categories (%s)' %
@@ -120,9 +123,15 @@ def main():
     old_interfaces = _parse_file(args.old_file, old_parser)
     new_interfaces = _parse_file(args.new_file, new_parser)
 
+    # Work out the human-readable name of the new XML filename.
+    if args.file_display_name is not None:
+        new_filename = args.file_display_name
+    else:
+        new_filename = args.new_file
+
     # Compare the interfaces.
     comparator = InterfaceComparator(old_interfaces, new_interfaces,
-                                     enabled_warnings)
+                                     enabled_warnings, new_filename)
     out = comparator.compare()
     comparator.print_output()
     sys.exit(len(out))

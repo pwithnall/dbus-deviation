@@ -42,7 +42,7 @@ WARNING_CATEGORIES = [
 
 def _format_level(level):
     """Format a warning level integer as a human-readable string."""
-    return [' INFO', ' WARN', 'ERROR'][level]
+    return ['info', 'warning', 'error'][level]
 
 
 class InterfaceComparator(object):
@@ -68,7 +68,7 @@ class InterfaceComparator(object):
     OUTPUT_BACKWARDS_INCOMPATIBLE = 2
 
     def __init__(self, old_interfaces, new_interfaces,
-                 enabled_warnings=None):
+                 enabled_warnings=None, new_filename=None):
         """
         Construct a new InterfaceComparator.
 
@@ -79,9 +79,12 @@ class InterfaceComparator(object):
                 interface name to an ast.Interface instance
             enabled_warnings: potentially empty list of warning category names
                 to enable
+            new_filename: path to the new D-Bus interface file,
+                or None if unknown
         """
         self._old_interfaces = old_interfaces
         self._new_interfaces = new_interfaces
+        self._new_filename = new_filename
         self._output = []
         if enabled_warnings is not None:
             self._enabled_warnings = enabled_warnings
@@ -90,7 +93,7 @@ class InterfaceComparator(object):
 
     def _issue_output(self, level, message):
         """Append a message to the comparator output."""
-        self._output.append((level, message))
+        self._output.append((self._new_filename, level, message))
 
     def _get_fd_for_level(self, level):
         """Get the output file descriptor to use for the output level."""
@@ -114,13 +117,18 @@ class InterfaceComparator(object):
         The messages will be printed to stdout and/or stderr as appropriate.
         Disabled warnings will not be printed.
         """
-        for (level, message) in self._output:
+        for (filename, level, message) in self._output:
             if not self._warning_enabled(level):
                 continue
 
             formatted_level = _format_level(level)
+            if filename is None:
+                output = '%s: %s\n' % (formatted_level, message)
+            else:
+                output = '%s: %s: %s\n' % (filename, formatted_level, message)
+
             output_fd = self._get_fd_for_level(level)
-            output_fd.write('%s: %s\n' % (formatted_level, message))
+            output_fd.write(output)
 
     def get_output(self):
         """
@@ -130,11 +138,11 @@ class InterfaceComparator(object):
         """
         out = []
 
-        for (level, message) in self._output:
+        for (filename, level, message) in self._output:
             if not self._warning_enabled(level):
                 continue
 
-            out.append((level, message))
+            out.append((filename, level, message))
 
         return out
 
