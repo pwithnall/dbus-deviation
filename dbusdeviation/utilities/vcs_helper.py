@@ -42,6 +42,8 @@ Requirements:
 import argparse
 from contextlib import contextmanager
 import os
+import pipes
+import shlex
 import shutil
 import subprocess
 import sys
@@ -69,6 +71,14 @@ def _git_command(args, command):
         out += ['--work-tree', args.git_work_tree]
 
     return out + [command]
+
+
+def _format_command(args):
+    """Local wrapper for pipes.quote() with support for Python 2.7."""
+    try:
+        return ' '.join(shlex.quote(a) for a in args)
+    except:
+        return ' '.join(pipes.quote(a) for a in args)
 
 
 def _get_contents_of_file(args, tag, api_xml_file):
@@ -136,7 +146,7 @@ def _push_notes(args):
     else:
         sys.stdout.write('Run this command to push the API signature '
                          'database:\n'
-                         '   %s\n' % ' '.join(command))
+                         '   %s\n' % _format_command(command))
 
 
 def _is_release(args, ref):
@@ -309,10 +319,10 @@ def command_check(args):
                         sys.stdout.write('%s \\\n'
                                          '   <(%s) \\\n'
                                          '   %s`%s`\n' %
-                                         (' '.join(diff_command[:-2]),
-                                          ' '.join(old_notes_command),
+                                         (_format_command(diff_command[:-2]),
+                                          _format_command(old_notes_command),
                                           git_work_tree,
-                                          ' '.join(ls_files_command)))
+                                          _format_command(ls_files_command)))
                 else:
                     with open(new_pipe_path, 'wb') as new_pipe:
                         new_notes_proc = subprocess.Popen(new_notes_command,
@@ -324,9 +334,9 @@ def command_check(args):
                         sys.stdout.write('%s \\\n'
                                          '   <(%s) \\\n'
                                          '   <(%s)\n' %
-                                         (' '.join(diff_command[:-2]),
-                                          ' '.join(old_notes_command),
-                                          ' '.join(new_notes_command)))
+                                         (_format_command(diff_command[:-2]),
+                                          _format_command(old_notes_command),
+                                          _format_command(new_notes_command)))
 
                 old_notes_proc.communicate()
                 old_notes_proc.wait()
