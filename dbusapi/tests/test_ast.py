@@ -91,6 +91,7 @@ class TestAstNames(unittest.TestCase):
         method = ast.Method('ParentMethod', [arg])
         self.assertEqual(arg.format_name(), '0')
 
+    # pylint: disable=invalid-name
     def test_argument_unnamed_unparented(self):
         arg = ast.Argument(None, ast.Argument.DIRECTION_IN, 's')
         self.assertEqual(arg.format_name(), 'unnamed')
