@@ -28,6 +28,7 @@
 # and add the following lines to your top-level Makefile.am:
 #
 #    dbus_api_xml_files = list of D-Bus interface XML files
+#    dbus_api_checkflags = --fatal-warnings
 #    -include $(top_srcdir)/dbus-deviation.mk
 #
 # Do not list this file in EXTRA_DIST or similar — it is designed to be used
@@ -80,6 +81,11 @@
 #    dbus_api_diff_warnings (default: all):
 #       Comma-separated list of warnings to enable when running
 #       dbus-interface-diff.
+#    dbus_api_checkflags (default: empty):
+#       Flags to pass to the ‘check’ operation of dbus-interface-vcs-helper.
+#       Typically, this should be --fatal-warnings.
+#    dbus_api_distflags (default: empty):
+#       Flags to pass to the ‘dist’ operation of dbus-interface-vcs-helper.
 #    dbus_api_git_refs (default: notes/dbus/api):
 #       Path beneath refs/ where the git notes will be stored containing the
 #       API signatures database.
@@ -100,6 +106,8 @@ dbus_api_xml_files ?=
 # Optional configuration.
 git_remote_origin ?= origin
 dbus_api_diff_warnings ?= info,forwards-compatibility,backwards-compatibility
+dbus_api_checkflags ?=
+dbus_api_distflags ?=
 dbus_api_git_refs ?= notes/dbus/api
 dbus_api_git_work_tree ?= $(top_srcdir)
 dbus_api_git_dir ?= $(dbus_api_git_work_tree)/.git
@@ -126,7 +134,8 @@ dist-dbus-api-compatibility:
 		--git-work-tree "$(dbus_api_git_work_tree)" \
 		--git-refs "$(dbus_api_git_refs)" \
 		--git-remote "$(git_remote_origin)" \
-		dist --ignore-existing $(dbus_api_xml_files)
+		dist --ignore-existing $(dbus_api_distflags) \
+		$(dbus_api_xml_files)
 
 # Check the pre-push hook is installed, otherwise the API signature database
 # will not get pushed to the remote after the release tag is created.
@@ -168,6 +177,7 @@ check-dbus-api-compatibility:
 		--git-remote "$(git_remote_origin)" \
 		check \
 		--diff-warnings "$(dbus_api_diff_warnings)" \
+		$(dbus_api_checkflags) \
 		"$(OLD_REF)" "$(NEW_REF)"
 check-local: check-dbus-api-compatibility
 .PHONY: check-dbus-api-compatibility
