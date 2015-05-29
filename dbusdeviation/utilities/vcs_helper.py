@@ -287,8 +287,10 @@ def command_check(args):
 
             diff_command = ['dbus-interface-diff',
                             '--warnings', args.warnings,
-                            '--file-display-name', api_xml_basename,
-                            old_notes_filename, new_notes_filename]
+                            '--file-display-name', api_xml_basename]
+            if args.fatal_warnings:
+                diff_command += ['--fatal-warnings']
+            diff_command += [old_notes_filename, new_notes_filename]
             old_notes_command = _git_command(args, 'notes') + [
                 '--ref',
                 'refs/%s/%s' % (args.dbus_api_git_refs, api_xml_basename),
@@ -460,6 +462,9 @@ def main():
                               default='all',
                               help='Comma-separated list of warnings to '
                                    'enable when running dbus-interface-diff')
+    parser_check.add_argument('--fatal-warnings', action='store_const',
+                              const=True, default=False,
+                              help='Treat all warnings as fatal')
     # pylint: disable=bad-continuation
     parser_check.add_argument('old_ref', metavar='OLD-REF',
                               type=str, nargs='?', default='',
