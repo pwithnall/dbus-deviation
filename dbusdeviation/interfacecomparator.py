@@ -308,23 +308,27 @@ class InterfaceComparator(object):
            new_ecs in ['false', 'const']:
             self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ stopped emitting '
-                               'org.freedesktop.DBus.PropertiesChanged.' %
+                               'org.freedesktop.DBus.Properties.'
+                               'PropertiesChanged.' %
                                old_node.format_name())
         elif (old_ecs in ['false', 'const'] and
               new_ecs in ['true', 'invalidates']):
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ started emitting '
-                               'org.freedesktop.DBus.PropertiesChanged.' %
+                               'org.freedesktop.DBus.Properties.'
+                               'PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'true' and new_ecs == 'invalidates':
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ stopped emitting its new value in '
-                               'org.freedesktop.DBus.PropertiesChanged.' %
+                               'org.freedesktop.DBus.Properties.'
+                               'PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'invalidates' and new_ecs == 'true':
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,
                                'Node ‘%s’ started emitting its new value in '
-                               'org.freedesktop.DBus.PropertiesChanged.' %
+                               'org.freedesktop.DBus.Properties.'
+                               'PropertiesChanged.' %
                                old_node.format_name())
         elif old_ecs == 'const' and new_ecs == 'false':
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE, output_code,

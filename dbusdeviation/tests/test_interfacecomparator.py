@@ -417,22 +417,22 @@ class TestComparatorErrors(unittest.TestCase):
         error1 = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
             'Node ‘A.P’ started emitting '
-            'org.freedesktop.DBus.PropertiesChanged.'
+            'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error2a = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
             'Node ‘A.P’ stopped emitting its new value in '
-            'org.freedesktop.DBus.PropertiesChanged.'
+            'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error2b = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
             'Node ‘A.P’ started emitting its new value in '
-            'org.freedesktop.DBus.PropertiesChanged.'
+            'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error3 = (
             InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
             'Node ‘A.P’ stopped emitting '
-            'org.freedesktop.DBus.PropertiesChanged.'
+            'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error4a = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
