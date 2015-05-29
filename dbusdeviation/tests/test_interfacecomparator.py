@@ -85,7 +85,8 @@ class TestComparatorErrors(unittest.TestCase):
         self.assertOutput(
             "<node><interface name='A'/></node>",
             "<node></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'interface-removed',
                  'Interface ‘A’ has been removed.'),
             ])
 
@@ -93,7 +94,8 @@ class TestComparatorErrors(unittest.TestCase):
         self.assertOutput(
             "<node></node>",
             "<node><interface name='A'/></node>", [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'interface-added',
                  'Interface ‘A’ has been added.'),
             ])
 
@@ -103,7 +105,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>", [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'deprecated',
                  'Node ‘A’ has been deprecated.'),
             ])
 
@@ -116,7 +119,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>", [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'deprecated',
                  'Node ‘A’ has been deprecated.'),
             ])
 
@@ -126,7 +130,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>",
             "<node><interface name='A'/></node>", [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'undeprecated',
                  'Node ‘A’ has been un-deprecated.'),
             ])
 
@@ -139,7 +144,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<annotation name='org.freedesktop.DBus.Deprecated' "
             "value='false'/>"
             "</interface></node>", [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'undeprecated',
                  'Node ‘A’ has been un-deprecated.'),
             ])
 
@@ -147,9 +153,11 @@ class TestComparatorErrors(unittest.TestCase):
         self.assertOutput(
             "<node><interface name='A'/></node>",
             "<node><interface name='A2'/></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'interface-removed',
                  'Interface ‘A’ has been removed.'),
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'interface-added',
                  'Interface ‘A2’ has been added.')
             ])
 
@@ -157,7 +165,8 @@ class TestComparatorErrors(unittest.TestCase):
         self.assertOutput(
             "<node><interface name='A'><method name='M'/></interface></node>",
             "<node><interface name='A'/></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'method-removed',
                  'Method ‘A.M’ has been removed.'),
             ])
 
@@ -166,7 +175,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'/></node>",
             "<node><interface name='A'><method name='M'/></interface></node>",
             [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'method-added',
                  'Method ‘A.M’ has been added.'),
             ])
 
@@ -175,9 +185,11 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'><method name='M'/></interface></node>",
             "<node><interface name='A'><method name='M2'/></interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'method-removed',
                  'Method ‘A.M’ has been removed.'),
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'method-added',
                  'Method ‘A.M2’ has been added.'),
             ])
 
@@ -188,7 +200,8 @@ class TestComparatorErrors(unittest.TestCase):
             "</interface></node>",
             "<node><interface name='A'><method name='M'/></interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-removed',
                  'Argument 0 of method ‘A.M’ has been removed.'),
             ])
 
@@ -199,7 +212,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<method name='M'><arg type='s' direction='in'/></method>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-added',
                  'Argument 0 of method ‘A.M’ has been added.'),
             ])
 
@@ -212,7 +226,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<method name='M'><arg type='s' name='Z' direction='in'/></method>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'argument-name-changed',
                  'Argument 0 of ‘A.M’ has changed name from ‘A’ to ‘Z’.'),
             ])
 
@@ -225,7 +240,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<method name='M'><arg type='b' direction='in'/></method>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-type-changed',
                  'Argument 0 of ‘A.M’ has changed type from ‘s’ to ‘b’.'),
             ])
 
@@ -238,7 +254,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<method name='M'><arg type='s' direction='out'/></method>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-direction-changed-in-out',
                  'Argument 0 of ‘A.M’ has changed direction from ‘in’ to '
                  '‘out’.'),
             ])
@@ -251,7 +268,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.GLib.CSymbol' value='S2'/>"
             "</method></interface></node>", [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'c-symbol-changed',
                  'Node ‘A.M’ has changed its C symbol from ‘S1’ to ‘S2’.'),
             ])
 
@@ -265,7 +283,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='false'/>"
             "</method></interface></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'reply-added',
                  'Node ‘A.M’ has been marked as returning a reply.'),
             ])
 
@@ -276,7 +295,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='true'/>"
             "</method></interface></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'reply-removed',
                  'Node ‘A.M’ has been marked as not returning a reply.'),
             ])
 
@@ -290,7 +310,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='true'/>"
             "</method></interface></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'reply-removed',
                  'Node ‘A.M’ has been marked as not returning a reply.'),
             ])
 
@@ -300,7 +321,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             "<node><interface name='A'/></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-removed',
                  'Property ‘A.P’ has been removed.'),
             ])
 
@@ -311,7 +333,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'property-added',
                  'Property ‘A.P’ has been added.'),
             ])
 
@@ -324,9 +347,11 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P2' type='b' access='readwrite'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-removed',
                  'Property ‘A.P’ has been removed.'),
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'property-added',
                  'Property ‘A.P2’ has been added.'),
             ])
 
@@ -339,7 +364,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='s' access='readwrite'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-type-changed',
                  'Property ‘A.P’ has changed type from ‘b’ to ‘s’.'),
             ])
 
@@ -352,7 +378,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'property-access-changed-read-readwrite',
                  'Property ‘A.P’ has changed access from ‘read’ to '
                  '‘readwrite’, becoming less restrictive.'),
             ])
@@ -366,7 +393,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'property-access-changed-write-readwrite',
                  'Property ‘A.P’ has changed access from ‘write’ to '
                  '‘readwrite’, becoming less restrictive.'),
             ])
@@ -380,7 +408,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='write'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-access-changed-read-write',
                  'Property ‘A.P’ has changed access from ‘read’ to ‘write’.'),
             ])
 
@@ -393,7 +422,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='read'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-access-changed-readwrite-read',
                  'Property ‘A.P’ has changed access from ‘readwrite’ to '
                  '‘read’.'),
             ])
@@ -407,7 +437,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<property name='P' type='b' access='write'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'property-access-changed-readwrite-write',
                  'Property ‘A.P’ has changed access from ‘readwrite’ to '
                  '‘write’.'),
             ])
@@ -458,6 +489,13 @@ class TestComparatorErrors(unittest.TestCase):
         for i in range(0, len(vectors)):
             for j in range(0, len(vectors[0])):
                 vector = vectors[i][j]
+                if vector is not None:
+                    vector = (
+                        None,
+                        vector[0],
+                        'ecs-changed-%s-%s' % (labels[i], labels[j]),
+                        vector[1],
+                    )
                 expected_errors = [vector] if vector is not None else []
 
                 self.assertOutput(
@@ -482,7 +520,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'><signal name='S'/>"
             "</interface></node>",
             "<node><interface name='A'/></node>", [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'signal-removed',
                  'Signal ‘A.S’ has been removed.'),
             ])
 
@@ -492,7 +531,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'><signal name='S'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'signal-added',
                  'Signal ‘A.S’ has been added.'),
             ])
 
@@ -503,9 +543,11 @@ class TestComparatorErrors(unittest.TestCase):
             "<node><interface name='A'><signal name='S2'/>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'signal-removed',
                  'Signal ‘A.S’ has been removed.'),
-                (InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
+                 'signal-added',
                  'Signal ‘A.S2’ has been added.'),
             ])
 
@@ -516,7 +558,8 @@ class TestComparatorErrors(unittest.TestCase):
             "</interface></node>",
             "<node><interface name='A'><signal name='S'/></interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-removed',
                  'Argument 0 of signal ‘A.S’ has been removed.'),
             ])
 
@@ -527,7 +570,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<signal name='S'><arg type='s' direction='in'/></signal>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-added',
                  'Argument 0 of signal ‘A.S’ has been added.'),
             ])
 
@@ -540,7 +584,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<signal name='S'><arg type='s' name='Z' direction='in'/></signal>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_INFO,
+                (None, InterfaceComparator.OUTPUT_INFO,
+                 'argument-name-changed',
                  'Argument 0 of ‘A.S’ has changed name from ‘A’ to ‘Z’.'),
             ])
 
@@ -553,7 +598,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<signal name='S'><arg type='b' direction='in'/></signal>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-type-changed',
                  'Argument 0 of ‘A.S’ has changed type from ‘s’ to ‘b’.'),
             ])
 
@@ -566,7 +612,8 @@ class TestComparatorErrors(unittest.TestCase):
             "<signal name='S'><arg type='s' direction='out'/></signal>"
             "</interface></node>",
             [
-                (InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
+                 'argument-direction-changed-in-out',
                  'Argument 0 of ‘A.S’ has changed direction from ‘in’ to '
                  '‘out’.'),
             ])
