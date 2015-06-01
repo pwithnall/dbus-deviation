@@ -1,0 +1,3 @@
+Allow different D-Bus interfaces to have different stability policies, so that one interface could be stable while another is unstable, and both be checked by dbus-interface-diff.
+
+In fact, it might make sense to add an attribute to the D-Bus introspection XML files which states the stability of each interface in a machine readable manner.
