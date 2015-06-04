@@ -13,7 +13,7 @@ install:
   - pip install pylint coverage coveralls codecov .
 # command to run tests
 script:
-  - coverage run --source dbusapi,dbusdeviation setup.py test
+  - coverage run --source dbusapi,dbusdeviation --omit 'dbusdeviation/utilities/*' setup.py test
   - coverage report --fail-under=70
   - python setup.py check
   - python setup.py pep8
