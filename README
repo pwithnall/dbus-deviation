@@ -68,6 +68,16 @@ Dependencies
  • argparse
  • xml.etree
 
+Development
+===========
+
+For fun, dbus-deviation uses the following services to do continuous
+integration and gather build statistics:
+ • https://travis-ci.org/pwithnall/dbus-deviation
+ • https://landscape.io/github/pwithnall/dbus-deviation
+ • https://coveralls.io/r/pwithnall/dbus-deviation
+ • https://codecov.io/github/pwithnall/dbus-deviation
+
 Licensing
 =========
 
