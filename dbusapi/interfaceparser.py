@@ -175,43 +175,44 @@ class InterfaceParser(object):
 
         for node in interface_node.getchildren():
             if node.tag == 'method':
-                method = self._parse_method(node)
+                method = self._parse_method(node, name)
                 if method is None:
                     continue
 
                 if method.name in methods:
                     self._issue_output('duplicate-method',
-                                       'Duplicate method definition ‘%s’.' %
-                                       method.format_name())
+                                       'Duplicate method definition ‘%s.%s’.' %
+                                       (name, method.format_name()))
                     continue
 
                 methods[method.name] = method
             elif node.tag == 'signal':
-                signal = self._parse_signal(node)
+                signal = self._parse_signal(node, name)
                 if signal is None:
                     continue
 
                 if signal.name in signals:
                     self._issue_output('duplicate-signal',
-                                       'Duplicate signal definition ‘%s’.' %
-                                       signal.format_name())
+                                       'Duplicate signal definition ‘%s.%s’.' %
+                                       (name, signal.format_name()))
                     continue
 
                 signals[signal.name] = signal
             elif node.tag == 'property':
-                prop = self._parse_property(node)
+                prop = self._parse_property(node, name)
                 if prop is None:
                     continue
 
                 if prop.name in properties:
                     self._issue_output('duplicate-property',
-                                       'Duplicate property definition ‘%s’.' %
-                                       prop.format_name())
+                                       'Duplicate property definition '
+                                       '‘%s.%s’.' %
+                                       (name, prop.format_name()))
                     continue
 
                 properties[prop.name] = prop
             elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node)
+                annotation = self._parse_annotation(node, name)
                 if annotation is None:
                     continue
 
@@ -226,7 +227,7 @@ class InterfaceParser(object):
         return ast.Interface(name, methods, properties, signals,
                              annotations)
 
-    def _parse_method(self, method_node):
+    def _parse_method(self, method_node, interface_name=None):
         """Parse a <method> element; return an ast.Method or None."""
         assert method_node.tag == 'method'
 
@@ -240,15 +241,17 @@ class InterfaceParser(object):
         args = []
         annotations = {}
 
+        pretty_method_name = interface_name + '.' + name
+
         for node in method_node.getchildren():
             if node.tag == 'arg':
-                arg = self._parse_arg(node)
+                arg = self._parse_arg(node, pretty_method_name)
                 if arg is None:
                     continue
 
                 args.append(arg)
             elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node)
+                annotation = self._parse_annotation(node, pretty_method_name)
                 if annotation is None:
                     continue
 
@@ -258,11 +261,11 @@ class InterfaceParser(object):
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in method ‘%s’.' %
-                                   (node.tag, name))
+                                   (node.tag, pretty_method_name))
 
         return ast.Method(name, args, annotations)
 
-    def _parse_signal(self, signal_node):
+    def _parse_signal(self, signal_node, interface_name=None):
         """Parse a <signal> element; return an ast.Signal or None."""
         assert signal_node.tag == 'signal'
 
@@ -276,15 +279,17 @@ class InterfaceParser(object):
         args = []
         annotations = {}
 
+        pretty_signal_name = interface_name + '.' + name
+
         for node in signal_node.getchildren():
             if node.tag == 'arg':
-                arg = self._parse_arg(node)
+                arg = self._parse_arg(node, pretty_signal_name)
                 if arg is None:
                     continue
 
                 args.append(arg)
             elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node)
+                annotation = self._parse_annotation(node, pretty_signal_name)
                 if annotation is None:
                     continue
 
@@ -294,11 +299,11 @@ class InterfaceParser(object):
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in signal ‘%s’.' %
-                                   (node.tag, name))
+                                   (node.tag, pretty_signal_name))
 
         return ast.Signal(name, args, annotations)
 
-    def _parse_property(self, property_node):
+    def _parse_property(self, property_node, interface_name=None):
         """Parse a <property> element; return an ast.Property or None."""
         assert property_node.tag == 'property'
 
@@ -323,9 +328,11 @@ class InterfaceParser(object):
         access = property_node.attrib['access']
         annotations = {}
 
+        pretty_prop_name = interface_name + '.' + name
+
         for node in property_node.getchildren():
             if node.tag == 'annotation':
-                annotation = self._parse_annotation(node)
+                annotation = self._parse_annotation(node, pretty_prop_name)
                 if annotation is None:
                     continue
 
@@ -335,11 +342,11 @@ class InterfaceParser(object):
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in property ‘%s’.' %
-                                   (node.tag, name))
+                                   (node.tag, pretty_prop_name))
 
         return ast.Property(name, prop_type, access, annotations)
 
-    def _parse_arg(self, arg_node):
+    def _parse_arg(self, arg_node, parent_name=None):
         """Parse an <arg> element; return an ast.Argument or None."""
         assert arg_node.tag == 'arg'
 
@@ -355,9 +362,11 @@ class InterfaceParser(object):
         arg_type = arg_node.attrib['type']
         annotations = {}
 
+        pretty_arg_name = name if name is not None else 'unnamed'
+
         for node in arg_node.getchildren():
             if node.tag == 'annotation':
-                annotation = self._parse_annotation(node)
+                annotation = self._parse_annotation(node, pretty_arg_name)
                 if annotation is None:
                     continue
 
@@ -366,12 +375,12 @@ class InterfaceParser(object):
                 pass
             else:
                 self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in arg ‘%s’.' %
-                                   (node.tag, name))
+                                   'Unknown node ‘%s’ in arg ‘%s’ of ‘%s’.' %
+                                   (node.tag, pretty_arg_name, parent_name))
 
         return ast.Argument(name, direction, arg_type, annotations)
 
-    def _parse_annotation(self, annotation_node):
+    def _parse_annotation(self, annotation_node, parent_name=None):
         """Parse an <annotation> element; return an ast.Annotation or None."""
         assert annotation_node.tag == 'annotation'
 
@@ -395,6 +404,6 @@ class InterfaceParser(object):
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in annotation '
-                                   '‘%s’.' % (node.tag, name))
+                                   '‘%s.%s’.' % (node.tag, parent_name, name))
 
         return ast.Annotation(name, value)
