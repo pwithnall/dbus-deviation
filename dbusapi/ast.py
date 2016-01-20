@@ -32,13 +32,53 @@ TODO
 # pylint: disable=too-few-public-methods
 
 
+class Node(object):
+
+    """
+    AST representation of a <node> element.
+
+    This represents the top level of a D-Bus API.
+    """
+
+    # pylint: disable=too-many-arguments
+    def __init__(self, name=None, interfaces=None, nodes=None):
+        """
+        Construct a new ast.Node.
+
+        Args:
+            name: node name; a non-empty string
+            intterfaces: potentially empty dict of interfaces in the node
+                containing ast.Interface instances
+            nodes: potentially empty dict of sub-nodes in the node
+                containing ast.Node instances
+        """
+        if interfaces is None:
+            interfaces = {}
+        if nodes is None:
+            nodes = {}
+
+        self.node = None
+        self.name = name
+        self.interfaces = interfaces
+        self.nodes = nodes
+
+        for interface in self.interfaces.values():
+            interface.node = self
+        for node in self.nodes.values():
+            node.node = self
+
+    def format_name(self):
+        u"""Format the node’s name as a human-readable string."""
+        return self.name
+
+
 # pylint: disable=interface-not-implemented
 class Interface(object):
 
     """
     AST representation of an <interface> element.
 
-    This represents the top level of a D-Bus API.
+    This represents the most common node member of a D-Bus API.
     """
 
     # pylint: disable=too-many-arguments
@@ -68,6 +108,7 @@ class Interface(object):
         if annotations is None:
             annotations = {}
 
+        self.node = None
         self.name = name
         self.methods = methods
         self.properties = properties
