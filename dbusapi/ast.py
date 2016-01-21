@@ -32,6 +32,205 @@ TODO
 # pylint: disable=too-few-public-methods
 
 
+class Type(object):
+
+    def __init__(self):
+        """Constructor."""
+        self.type = "\0"
+        self.name = "INVALID"
+        self.alignment = 1
+
+    def format_type(self):
+        """Format the type’s type as a human-readable string."""
+        return self.type
+
+    def format_name(self):
+        """Format the type’s name as a human-readable string."""
+        return self.name
+
+    def format_alignment(self):
+        """Format the type’s alignment as a human-readable string."""
+        return str(self.alignment)
+
+
+class Byte(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "y"
+        self.name = "BYTE"
+        self.alignment = 1
+
+
+class Boolean(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "b"
+        self.name = "BOOLEAN"
+        self.alignment = 4
+
+
+class Int16(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "n"
+        self.name = "INT16"
+        self.alignment = 2
+
+
+class UInt16(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "q"
+        self.name = "UINT16"
+        self.alignment = 2
+
+
+class Int32(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "i"
+        self.name = "INT32"
+        self.alignment = 4
+
+
+class UInt32(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "u"
+        self.name = "UINT32"
+        self.alignment = 4
+
+
+class Int64(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "x"
+        self.name = "INT64"
+        self.alignment = 8
+
+
+class UInt64(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "t"
+        self.name = "UINT64"
+        self.alignment = 8
+
+
+class Double(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "d"
+        self.name = "DOUBLE"
+        self.alignment = 8
+
+
+class String(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "s"
+        self.name = "STRING"
+        self.alignment = 4
+
+
+class ObjectPath(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "o"
+        self.name = "OBJECT_PATH"
+        self.alignment = 4
+
+
+class Signature(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "g"
+        self.name = "SIGNATURE"
+        self.alignment = 1
+
+
+class Variant(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "v"
+        self.name = "VARIANT"
+        self.alignment = 1
+
+
+class UnixFD(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "h"
+        self.name = "UNIX_FD"
+        self.alignment = 4
+
+
+class Container(Type):
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.members = []
+
+
+class Array(Container):
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "a"
+        self.name = "ARRAY"
+        self.alignment = 4
+
+
+class Struct(Container):
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "r"
+        self.name = "STRUCT"
+        self.alignment = 8
+
+
+class DictEntry(Container):
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "e"
+        self.name = "DICT_ENTRY"
+        self.alignment = 8
+
+
 class Node(object):
 
     """
