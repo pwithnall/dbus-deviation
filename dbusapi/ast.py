@@ -32,13 +32,371 @@ TODO
 # pylint: disable=too-few-public-methods
 
 
-# pylint: disable=interface-not-implemented
+class Type(object):
+
+    """
+    AST representation of a D-Bus type.
+
+    See http://dbus.freedesktop.org/doc/dbus-specification.html#type-system
+    """
+
+    def __init__(self):
+        """Constructor."""
+        self.type = "\0"
+        self.name = "INVALID"
+        self.alignment = 1
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return self.type
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+                self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class Byte(Type):
+
+    """
+    AST representation of the D-Bus BYTE type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "y"
+        self.name = "BYTE"
+        self.alignment = 1
+
+
+class Boolean(Type):
+
+    """
+    AST representation of the D-Bus BOOLEAN type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "b"
+        self.name = "BOOLEAN"
+        self.alignment = 4
+
+
+class Int16(Type):
+
+    """
+    AST representation of the D-Bus INT16 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "n"
+        self.name = "INT16"
+        self.alignment = 2
+
+
+class UInt16(Type):
+
+    """
+    AST representation of the D-Bus UINT16 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "q"
+        self.name = "UINT16"
+        self.alignment = 2
+
+
+class Int32(Type):
+
+    """
+    AST representation of the D-Bus INT32 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "i"
+        self.name = "INT32"
+        self.alignment = 4
+
+
+class UInt32(Type):
+
+    """
+    AST representation of the D-Bus UINT32 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "u"
+        self.name = "UINT32"
+        self.alignment = 4
+
+
+class Int64(Type):
+
+    """
+    AST representation of the D-Bus INT64 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "x"
+        self.name = "INT64"
+        self.alignment = 8
+
+
+class UInt64(Type):
+
+    """
+    AST representation of the D-Bus UINT64 type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "t"
+        self.name = "UINT64"
+        self.alignment = 8
+
+
+class Double(Type):
+
+    """
+    AST representation of the D-Bus DOUBLE type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "d"
+        self.name = "DOUBLE"
+        self.alignment = 8
+
+
+class String(Type):
+
+    """
+    AST representation of the D-Bus STRING type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "s"
+        self.name = "STRING"
+        self.alignment = 4
+
+
+class ObjectPath(Type):
+
+    """
+    AST representation of the D-Bus OBJECT_PATH type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "o"
+        self.name = "OBJECT_PATH"
+        self.alignment = 4
+
+
+class Signature(Type):
+
+    """
+    AST representation of the D-Bus SIGNATURE type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "g"
+        self.name = "SIGNATURE"
+        self.alignment = 1
+
+
+class Variant(Type):
+
+    """
+    AST representation of the D-Bus VARIANT type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "v"
+        self.name = "VARIANT"
+        self.alignment = 1
+
+
+class UnixFD(Type):
+
+    """
+    AST representation of the D-Bus UNIX_FD type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.type = "h"
+        self.name = "UNIX_FD"
+        self.alignment = 4
+
+
+class Container(Type):
+
+    """
+    AST representation of the D-Bus container type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Type.__init__(self)
+        self.members = []
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "".join(map(str, self.members))
+
+
+class Array(Container):
+
+    """
+    AST representation of the D-Bus ARRAY type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "a"
+        self.name = "ARRAY"
+        self.alignment = 4
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        member = str(self.members[0]) if len(self.members) > 0 else "?"
+        return "{}{}".format(self.type, member)
+
+
+class Struct(Container):
+
+    """
+    AST representation of the D-Bus STRUCT type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "r"
+        self.name = "STRUCT"
+        self.alignment = 8
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "({})".format("".join(map(str, self.members)))
+
+
+class DictEntry(Container):
+
+    """
+    AST representation of the D-Bus DICT_ENTRY type.
+    """
+
+    def __init__(self):
+        """Constructor."""
+        Container.__init__(self)
+        self.type = "e"
+        self.name = "DICT_ENTRY"
+        self.alignment = 8
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        key = str(self.members[0]) if self.members > 0 else "?"
+        val = str(self.members[1]) if self.members > 1 else "?"
+        return "{{{}{}}}".format(key, val)
+
+
+class TypeSignature(object):
+
+    """
+    AST representation of a D-Bus signature.
+
+    See http://dbus.freedesktop.org/doc/dbus-specification.html#type-system
+    """
+
+    def __init__(self):
+        """Constructor."""
+        self.members = []
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "".join(map(str, self.members))
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+                self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class Node(object):
+
+    """
+    AST representation of a <node> element.
+
+    This represents the top level of a D-Bus API.
+    """
+
+    # pylint: disable=too-many-arguments
+    def __init__(self, name=None, interfaces=None, nodes=None):
+        """
+        Construct a new ast.Node.
+
+        Args:
+            name: node name; a non-empty string
+            interfaces: potentially empty dict of interfaces in the node
+                containing ast.Interface instances
+            nodes: potentially empty dict of sub-nodes in the node
+                containing ast.Node instances
+        """
+        if interfaces is None:
+            interfaces = {}
+        if nodes is None:
+            nodes = {}
+
+        self.node = None
+        self.name = name
+        self.interfaces = interfaces
+        self.nodes = nodes
+
+        for interface in self.interfaces.values():
+            interface.node = self
+        for node in self.nodes.values():
+            node.node = self
+
+    def format_name(self):
+        u"""Format the node’s name as a human-readable string."""
+        return self.name
+
+
 class Interface(object):
 
     """
     AST representation of an <interface> element.
 
-    This represents the top level of a D-Bus API.
+    This represents the most common node member of a D-Bus API.
     """
 
     # pylint: disable=too-many-arguments
@@ -68,6 +426,7 @@ class Interface(object):
         if annotations is None:
             annotations = {}
 
+        self.node = None
         self.name = name
         self.methods = methods
         self.properties = properties
@@ -107,7 +466,7 @@ class Property(object):
         Args:
             name: property name; a non-empty string, not including the parent
                 interface name
-            prop_type: type string for the property; see http://goo.gl/uCpa5A
+            prop_type: TypeSignature instance
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
                 property, mapping annotation name to an ast.Annotation
@@ -253,7 +612,7 @@ class Argument(object):
         Args:
             name: argument name; may be empty
             direction: DIRECTION_IN or DIRECTION_OUT
-            arg_type: type string for the argument; see http://goo.gl/uCpa5A
+            arg_type: TypeSignature instance for the argument
             annotations: potentially empty dict of annotations applied to the
                 argument, mapping annotation name to an ast.Annotation
                 instance
