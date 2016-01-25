@@ -59,7 +59,7 @@ def named_pipe():
         os.mkfifo(path)
         yield path
     finally:
-        shutil.rmtree(dirname)
+        shutil.rmtree(dirname),
 
 
 def _git_command(args, command):

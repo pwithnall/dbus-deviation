@@ -61,8 +61,10 @@ class TestComparatorErrors(unittest.TestCase):
         old_parser = InterfaceParser(old_tmpfile)
         new_parser = InterfaceParser(new_tmpfile)
 
-        old_interfaces = old_parser.parse()
-        new_interfaces = new_parser.parse()
+        old_root_node = old_parser.parse()
+        old_interfaces = old_root_node.interfaces
+        new_root_node = new_parser.parse()
+        new_interfaces = new_root_node.interfaces
 
         os.unlink(new_tmpfile)
         os.unlink(old_tmpfile)

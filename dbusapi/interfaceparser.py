@@ -31,13 +31,13 @@ TODO
 import os
 
 # PyPy support
-# pylint: disable=interface-not-implemented
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
     from xml.etree import ElementTree
 
 from dbusapi import ast
+from dbusapi.typeparser import TypeParser
 
 
 def _ignore_node(node):
@@ -51,7 +51,6 @@ def _ignore_node(node):
     return node.tag[0] == '{'  # in a namespace
 
 
-# pylint: disable=interface-not-implemented
 class InterfaceParser(object):
 
     """
@@ -82,11 +81,14 @@ class InterfaceParser(object):
         # FIXME: Hard-coded for the moment.
         return [
             'unknown-node',
+            'node-naming'
+            'duplicate-node',
             'duplicate-interface',
             'missing-attribute',
             'duplicate-method',
             'duplicate-signal',
             'duplicate-property',
+            'invalid-signature',
         ]
 
     def _issue_output(self, code, message):
@@ -112,7 +114,7 @@ class InterfaceParser(object):
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
-        if len(self._output) != 0:
+        if self._output:
             return None
 
         return out
@@ -127,14 +129,34 @@ class InterfaceParser(object):
                     break
 
         # Continue parsing as per the D-Bus introspection format
-        interfaces = {}
 
         if root.tag != 'node':
             self._issue_output('unknown-node',
                                'Unknown root node ‘%s’.' % root.tag)
-            return interfaces
+            return None
 
-        for node in root.getchildren():
+        root_node = self._parse_node(root)
+
+        if root_node.name and not root_node.name[0] == '/':
+            self._issue_output('node-naming',
+                               'Root node name is not an absolute object path '
+                               '‘%s’.' % root_node.name)
+            return None
+
+        return root_node
+
+    def _parse_node(self, node_node):
+        """Parse a <node> element; return an ast.Node or None."""
+        assert node_node.tag == 'node'
+
+        if 'name' in node_node.attrib:
+            name = node_node.attrib['name']
+        else:
+            name = None
+        nodes = {}
+        interfaces = {}
+
+        for node in node_node.getchildren():
             if node.tag == 'interface':
                 interface = self._parse_interface(node)
                 if interface is None:
@@ -147,6 +169,30 @@ class InterfaceParser(object):
                     continue
 
                 interfaces[interface.name] = interface
+            elif node.tag == 'node':
+                sub_node = self._parse_node(node)
+                if sub_node is None:
+                    continue
+
+                if not sub_node.name:
+                    self._issue_output('missing-attribute',
+                                       'Missing required attribute ‘name’ '
+                                       'in non-root node.')
+                    continue
+
+                if sub_node.name[0] == '/':
+                    self._issue_output('node-naming',
+                                       'Non-root node name is not a relative '
+                                       'object path ‘%s’.' % sub_node.name)
+                    continue
+
+                if sub_node.name in nodes:
+                    self._issue_output('duplicate-node',
+                                       'Duplicate node definition ‘%s’.' %
+                                       sub_node.format_name())
+                    continue
+
+                nodes[sub_node.name] = sub_node
             elif _ignore_node(node):
                 pass
             else:
@@ -154,7 +200,7 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in root.' %
                                    node.tag)
 
-        return interfaces
+        return ast.Node(name, interfaces, nodes)
 
     # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):  # noqa
@@ -344,7 +390,14 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in property ‘%s’.' %
                                    (node.tag, pretty_prop_name))
 
-        return ast.Property(name, prop_type, access, annotations)
+        type_parser = TypeParser(prop_type)
+        type_signature = type_parser.parse()
+        if not type_signature:
+            self._issue_output('invalid-signature',
+                               type_parser.get_output()[1])
+            return None
+
+        return ast.Property(name, type_signature, access, annotations)
 
     def _parse_arg(self, arg_node, parent_name=None):
         """Parse an <arg> element; return an ast.Argument or None."""
@@ -378,7 +431,14 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in arg ‘%s’ of ‘%s’.' %
                                    (node.tag, pretty_arg_name, parent_name))
 
-        return ast.Argument(name, direction, arg_type, annotations)
+        type_parser = TypeParser(arg_type)
+        type_signature = type_parser.parse()
+        if not type_signature:
+            self._issue_output('invalid-signature',
+                               type_parser.get_output()[1])
+            return None
+
+        return ast.Argument(name, direction, type_signature, annotations)
 
     def _parse_annotation(self, annotation_node, parent_name=None):
         """Parse an <annotation> element; return an ast.Annotation or None."""
