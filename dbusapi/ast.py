@@ -40,17 +40,9 @@ class Type(object):
         self.name = "INVALID"
         self.alignment = 1
 
-    def format_type(self):
-        """Format the type’s type as a human-readable string."""
+    def __str__(self):
+        """Format the type as a human-readable string."""
         return self.type
-
-    def format_name(self):
-        """Format the type’s name as a human-readable string."""
-        return self.name
-
-    def format_alignment(self):
-        """Format the type’s alignment as a human-readable string."""
-        return str(self.alignment)
 
 
 class Byte(Type):
@@ -200,6 +192,10 @@ class Container(Type):
         Type.__init__(self)
         self.members = []
 
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "".join(map(str, self.members))
+
 
 class Array(Container):
 
@@ -209,6 +205,11 @@ class Array(Container):
         self.type = "a"
         self.name = "ARRAY"
         self.alignment = 4
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        member = str(self.members[0]) if len(self.members) > 0 else "?"
+        return "{}{}".format(self.type, member)
 
 
 class Struct(Container):
@@ -220,6 +221,10 @@ class Struct(Container):
         self.name = "STRUCT"
         self.alignment = 8
 
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "({})".format("".join(map(str, self.members)))
+
 
 class DictEntry(Container):
 
@@ -229,6 +234,23 @@ class DictEntry(Container):
         self.type = "e"
         self.name = "DICT_ENTRY"
         self.alignment = 8
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        key = str(self.members[0]) if self.members > 0 else "?"
+        val = str(self.members[1]) if self.members > 1 else "?"
+        return "{{{}{}}}".format(key, val)
+
+
+class Signature(object):
+
+    def __init__(self):
+        """Constructor."""
+        self.members = []
+
+    def __str__(self):
+        """Format the type as a human-readable string."""
+        return "".join(map(str, self.members))
 
 
 class Node(object):
@@ -246,7 +268,7 @@ class Node(object):
 
         Args:
             name: node name; a non-empty string
-            intterfaces: potentially empty dict of interfaces in the node
+            interfaces: potentially empty dict of interfaces in the node
                 containing ast.Interface instances
             nodes: potentially empty dict of sub-nodes in the node
                 containing ast.Node instances

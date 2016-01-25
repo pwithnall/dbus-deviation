@@ -105,11 +105,13 @@ class TypeParser(object):
             res = ast.Array()
             character = self._get_next_character()
             if not character:
+                self._issue_output('invalid-type',
+                                   'Incomplete array declaration.')
                 return None
             one_type = self._parse_one(character)
             if not one_type:
-                self._issue_output('unknown-type',
-                                   'Unknown type ‘%s’.' % character)
+                # Invalid member type
+                return None
             res.members.append(one_type)
             return res
         elif character == "(":
@@ -117,13 +119,15 @@ class TypeParser(object):
             while True:
                 character = self._get_next_character()
                 if not character:
+                    self._issue_output('invalid-type',
+                                       'Incomplete structure declaration.')
                     return None
                 if character == ")":
                     break
                 one_type = self._parse_one(character)
                 if not one_type:
-                    self._issue_output('unknown-type',
-                                       'Unknown type ‘%s’.' % character)
+                    # Invalid member type
+                    return None
                 res.members.append(one_type)
             return res
         elif character == "{":
@@ -131,16 +135,24 @@ class TypeParser(object):
             while True:
                 character = self._get_next_character()
                 if not character:
+                    self._issue_output('invalid-type',
+                                       'Incomplete dictionary declaration.')
                     return None
                 if character == "}":
                     break
                 one_type = self._parse_one(character)
                 if not one_type:
-                    self._issue_output('unknown-type',
-                                       'Unknown type ‘%s’.' % character)
+                    # Invalid member type
+                    return None
+                if len(res.members) >= 2:
+                    self._issue_output('invalid-type',
+                                       'Invalid dictionary declaration.')
+                    return None
                 res.members.append(one_type)
             return res
         else:
+            self._issue_output('unknown-type',
+                               'Unknown type ‘%s’.' % character)
             return None
 
     def parse(self):
@@ -155,7 +167,7 @@ class TypeParser(object):
         self._output = []
         self._index = 0
 
-        out = []
+        out = ast.Signature()
         while True:
             character = self._get_next_character()
             if not character:
@@ -163,9 +175,10 @@ class TypeParser(object):
 
             one_type = self._parse_one(character)
             if not one_type:
-                self._issue_output('unknown-type',
-                                   'Unknown type ‘%s’.' % character)
-            out.append(one_type)
+                # Invalid type
+                break
+
+            out.members.append(one_type)
 
         # Squash output on error.
         if self._output:
