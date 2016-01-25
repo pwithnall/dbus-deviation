@@ -390,13 +390,13 @@ class InterfaceParser(object):
                                    (node.tag, pretty_prop_name))
 
         type_parser = TypeParser(prop_type)
-        signature = type_parser.parse()
-        if not signature:
+        type = type_parser.parse()
+        if not type:
             self._issue_output('invalid-signature',
                                type_parser.get_output()[1])
             return None
 
-        return ast.Property(name, signature, access, annotations)
+        return ast.Property(name, type, access, annotations)
 
     def _parse_arg(self, arg_node, parent_name=None):
         """Parse an <arg> element; return an ast.Argument or None."""
@@ -431,13 +431,13 @@ class InterfaceParser(object):
                                    (node.tag, pretty_arg_name, parent_name))
 
         type_parser = TypeParser(arg_type)
-        signature = type_parser.parse()
-        if not signature:
+        type = type_parser.parse()
+        if not type:
             self._issue_output('invalid-signature',
                                type_parser.get_output()[1])
             return None
 
-        return ast.Argument(name, direction, signature, annotations)
+        return ast.Argument(name, direction, type, annotations)
 
     def _parse_annotation(self, annotation_node, parent_name=None):
         """Parse an <annotation> element; return an ast.Annotation or None."""

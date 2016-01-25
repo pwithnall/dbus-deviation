@@ -50,6 +50,13 @@ class Type(object):
         """Format the type as a human-readable string."""
         return self.type
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+            and self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Byte(Type):
 
@@ -336,6 +343,13 @@ class TypeSignature(object):
         """Format the type as a human-readable string."""
         return "".join(map(str, self.members))
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+            and self.__dict__ == other.__dict__)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Node(object):
 
@@ -446,14 +460,14 @@ class Property(object):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, signature, access, annotations=None):
+    def __init__(self, name, type, access, annotations=None):
         """
         Construct a new ast.Property.
 
         Args:
             name: property name; a non-empty string, not including the parent
                 interface name
-            signature: TypeSignature instance
+            type: TypeSignature instance
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
                 property, mapping annotation name to an ast.Annotation
@@ -463,7 +477,7 @@ class Property(object):
             annotations = {}
 
         self.name = name
-        self.signature = signature
+        self.type = type
         self.access = access
         self.interface = None
         self.annotations = annotations
@@ -592,14 +606,14 @@ class Argument(object):
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, signature, annotations=None):
+    def __init__(self, name, direction, type, annotations=None):
         """
         Construct a new ast.Argument.
 
         Args:
             name: argument name; may be empty
             direction: DIRECTION_IN or DIRECTION_OUT
-            signature: TypeSignature instance for the argument
+            type: TypeSignature instance for the argument
             annotations: potentially empty dict of annotations applied to the
                 argument, mapping annotation name to an ast.Annotation
                 instance
@@ -609,7 +623,7 @@ class Argument(object):
 
         self.name = name
         self.direction = direction
-        self.signature = signature
+        self.type = type
         self.index = -1
         self.parent = None
         self.annotations = annotations
