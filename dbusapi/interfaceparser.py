@@ -31,7 +31,6 @@ TODO
 import os
 
 # PyPy support
-# pylint: disable=interface-not-implemented
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
@@ -52,7 +51,6 @@ def _ignore_node(node):
     return node.tag[0] == '{'  # in a namespace
 
 
-# pylint: disable=interface-not-implemented
 class InterfaceParser(object):
 
     """
@@ -141,7 +139,8 @@ class InterfaceParser(object):
 
         if root_node.name and not root_node.name[0] == '/':
             self._issue_output('node-naming',
-                               'Root node name is not an absolute object path ‘%s’.' % root_node.name)
+                               'Root node name is not an absolute object path '
+                               '‘%s’.' % root_node.name)
             return None
 
         return root_node
@@ -177,12 +176,14 @@ class InterfaceParser(object):
 
                 if not sub_node.name:
                     self._issue_output('missing-attribute',
-                                       'Missing required attribute ‘name’ in non-root node.')
+                                       'Missing required attribute ‘name’ '
+                                       'in non-root node.')
                     continue
 
                 if sub_node.name[0] == '/':
                     self._issue_output('node-naming',
-                                       'Non-root node name is not a relative object path ‘%s’.' % sub_node.name)
+                                       'Non-root node name is not a relative '
+                                       'object path ‘%s’.' % sub_node.name)
                     continue
 
                 if sub_node.name in nodes:
@@ -390,13 +391,13 @@ class InterfaceParser(object):
                                    (node.tag, pretty_prop_name))
 
         type_parser = TypeParser(prop_type)
-        type = type_parser.parse()
-        if not type:
+        type_signature = type_parser.parse()
+        if not type_signature:
             self._issue_output('invalid-signature',
                                type_parser.get_output()[1])
             return None
 
-        return ast.Property(name, type, access, annotations)
+        return ast.Property(name, type_signature, access, annotations)
 
     def _parse_arg(self, arg_node, parent_name=None):
         """Parse an <arg> element; return an ast.Argument or None."""
@@ -431,13 +432,13 @@ class InterfaceParser(object):
                                    (node.tag, pretty_arg_name, parent_name))
 
         type_parser = TypeParser(arg_type)
-        type = type_parser.parse()
-        if not type:
+        type_signature = type_parser.parse()
+        if not type_signature:
             self._issue_output('invalid-signature',
                                type_parser.get_output()[1])
             return None
 
-        return ast.Argument(name, direction, type, annotations)
+        return ast.Argument(name, direction, type_signature, annotations)
 
     def _parse_annotation(self, annotation_node, parent_name=None):
         """Parse an <annotation> element; return an ast.Annotation or None."""

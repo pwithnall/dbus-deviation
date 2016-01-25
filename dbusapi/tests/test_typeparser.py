@@ -98,9 +98,9 @@ class TestParserNormal(unittest.TestCase):
 
     # pylint: disable=invalid-name
     def assertParse(self, signature):  # noqa
-        (parser, type) = _test_parser(signature)
+        (parser, type_signature) = _test_parser(signature)
         self.assertEqual(parser.get_output(), [])
-        actual_signature = str(type)
+        actual_signature = str(type_signature)
         self.assertEqual(signature, actual_signature)
 
     def test_int32(self):

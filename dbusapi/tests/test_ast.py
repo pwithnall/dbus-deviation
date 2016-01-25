@@ -218,9 +218,8 @@ class TestAstParenting(unittest.TestCase):
         self.assertEqual(annotation.parent, None)
 
         signature = TypeParser('s').parse()
-        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN, signature, {
-            'SomeAnnotation': annotation,
-        })
+        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN,
+                           signature, {'SomeAnnotation': annotation})
         self.assertEqual(arg.parent, None)
         self.assertEqual(arg.index, -1)
         self.assertEqual(annotation.parent, arg)
