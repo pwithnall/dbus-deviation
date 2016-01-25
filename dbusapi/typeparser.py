@@ -167,7 +167,7 @@ class TypeParser(object):
         self._output = []
         self._index = 0
 
-        out = ast.Signature()
+        out = ast.TypeSignature()
         while True:
             character = self._get_next_character()
             if not character:

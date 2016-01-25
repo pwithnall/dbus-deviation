@@ -34,6 +34,10 @@ TODO
 
 class Type(object):
 
+    """
+    AST representation of a D-Bus type.
+    """
+
     def __init__(self):
         """Constructor."""
         self.type = "\0"
@@ -47,6 +51,10 @@ class Type(object):
 
 class Byte(Type):
 
+    """
+    AST representation of the D-Bus BYTE type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -56,6 +64,10 @@ class Byte(Type):
 
 
 class Boolean(Type):
+
+    """
+    AST representation of the D-Bus BOOLEAN type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -67,6 +79,10 @@ class Boolean(Type):
 
 class Int16(Type):
 
+    """
+    AST representation of the D-Bus INT16 type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -76,6 +92,10 @@ class Int16(Type):
 
 
 class UInt16(Type):
+
+    """
+    AST representation of the D-Bus UINT16 type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -87,6 +107,10 @@ class UInt16(Type):
 
 class Int32(Type):
 
+    """
+    AST representation of the D-Bus INT32 type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -96,6 +120,10 @@ class Int32(Type):
 
 
 class UInt32(Type):
+
+    """
+    AST representation of the D-Bus UINT32 type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -107,6 +135,10 @@ class UInt32(Type):
 
 class Int64(Type):
 
+    """
+    AST representation of the D-Bus INT64 type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -116,6 +148,10 @@ class Int64(Type):
 
 
 class UInt64(Type):
+
+    """
+    AST representation of the D-Bus UINT64 type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -127,6 +163,10 @@ class UInt64(Type):
 
 class Double(Type):
 
+    """
+    AST representation of the D-Bus DOUBLE type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -136,6 +176,10 @@ class Double(Type):
 
 
 class String(Type):
+
+    """
+    AST representation of the D-Bus STRING type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -147,6 +191,10 @@ class String(Type):
 
 class ObjectPath(Type):
 
+    """
+    AST representation of the D-Bus OBJECT_PATH type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -156,6 +204,10 @@ class ObjectPath(Type):
 
 
 class Signature(Type):
+
+    """
+    AST representation of the D-Bus SIGNATURE type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -167,6 +219,10 @@ class Signature(Type):
 
 class Variant(Type):
 
+    """
+    AST representation of the D-Bus VARIANT type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -177,6 +233,10 @@ class Variant(Type):
 
 class UnixFD(Type):
 
+    """
+    AST representation of the D-Bus UNIX_FD type.
+    """
+
     def __init__(self):
         """Constructor."""
         Type.__init__(self)
@@ -186,6 +246,10 @@ class UnixFD(Type):
 
 
 class Container(Type):
+
+    """
+    AST representation of the D-Bus container type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -198,6 +262,10 @@ class Container(Type):
 
 
 class Array(Container):
+
+    """
+    AST representation of the D-Bus ARRAY type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -214,6 +282,10 @@ class Array(Container):
 
 class Struct(Container):
 
+    """
+    AST representation of the D-Bus STRUCT type.
+    """
+
     def __init__(self):
         """Constructor."""
         Container.__init__(self)
@@ -227,6 +299,10 @@ class Struct(Container):
 
 
 class DictEntry(Container):
+
+    """
+    AST representation of the D-Bus DICT_ENTRY type.
+    """
 
     def __init__(self):
         """Constructor."""
@@ -242,7 +318,11 @@ class DictEntry(Container):
         return "{{{}{}}}".format(key, val)
 
 
-class Signature(object):
+class TypeSignature(object):
+
+    """
+    AST representation of a D-Bus signature.
+    """
 
     def __init__(self):
         """Constructor."""
