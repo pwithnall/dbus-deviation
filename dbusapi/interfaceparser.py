@@ -38,6 +38,7 @@ except ImportError:
     from xml.etree import ElementTree
 
 from dbusapi import ast
+from dbusapi.typeparser import TypeParser
 
 
 def _ignore_node(node):
@@ -89,6 +90,7 @@ class InterfaceParser(object):
             'duplicate-method',
             'duplicate-signal',
             'duplicate-property',
+            'invalid-signature',
         ]
 
     def _issue_output(self, code, message):
@@ -387,7 +389,14 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in property ‘%s’.' %
                                    (node.tag, pretty_prop_name))
 
-        return ast.Property(name, prop_type, access, annotations)
+        type_parser = TypeParser(prop_type)
+        signature = type_parser.parse()
+        if not signature:
+            self._issue_output('invalid-signature',
+                               type_parser.get_output()[1])
+            return None
+
+        return ast.Property(name, signature, access, annotations)
 
     def _parse_arg(self, arg_node, parent_name=None):
         """Parse an <arg> element; return an ast.Argument or None."""
@@ -421,7 +430,14 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in arg ‘%s’ of ‘%s’.' %
                                    (node.tag, pretty_arg_name, parent_name))
 
-        return ast.Argument(name, direction, arg_type, annotations)
+        type_parser = TypeParser(arg_type)
+        signature = type_parser.parse()
+        if not signature:
+            self._issue_output('invalid-signature',
+                               type_parser.get_output()[1])
+            return None
+
+        return ast.Argument(name, direction, signature, annotations)
 
     def _parse_annotation(self, annotation_node, parent_name=None):
         """Parse an <annotation> element; return an ast.Annotation or None."""

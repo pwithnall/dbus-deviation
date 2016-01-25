@@ -33,6 +33,7 @@ Unit tests for dbusapi.ast
 
 
 from dbusapi import ast
+from dbusapi.typeparser import TypeParser
 import unittest
 
 
@@ -45,14 +46,16 @@ class TestAstNames(unittest.TestCase):
         self.assertEqual(iface.format_name(), 'SomeInterface')
 
     def test_property(self):
-        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ)
+        signature = TypeParser('s').parse()
+        prop = ast.Property('AProperty', signature, ast.Property.ACCESS_READ)
         iface = ast.Interface('SomeInterface', {}, {
             'AProperty': prop,
         })
         self.assertEqual(prop.format_name(), 'SomeInterface.AProperty')
 
     def test_property_unparented(self):
-        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ)
+        signature = TypeParser('s').parse()
+        prop = ast.Property('AProperty', signature, ast.Property.ACCESS_READ)
         self.assertEqual(prop.format_name(), 'AProperty')
 
     def test_method(self):
@@ -78,22 +81,26 @@ class TestAstNames(unittest.TestCase):
         self.assertEqual(signal.format_name(), 'SomeSignal')
 
     def test_argument(self):
-        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, 's')
+        signature = TypeParser('s').parse()
+        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, signature)
         method = ast.Method('ParentMethod', [arg])
         self.assertEqual(arg.format_name(), '0 (‘self’)')
 
     def test_argument_unparented(self):
-        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, 's')
+        signature = TypeParser('s').parse()
+        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, signature)
         self.assertEqual(arg.format_name(), '‘self’')
 
     def test_argument_unnamed(self):
-        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, 's')
+        signature = TypeParser('s').parse()
+        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, signature)
         method = ast.Method('ParentMethod', [arg])
         self.assertEqual(arg.format_name(), '0')
 
     # pylint: disable=invalid-name
     def test_argument_unnamed_unparented(self):
-        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, 's')
+        signature = TypeParser('s').parse()
+        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, signature)
         self.assertEqual(arg.format_name(), 'unnamed')
 
     def test_annotation_interface(self):
@@ -106,7 +113,8 @@ class TestAstNames(unittest.TestCase):
 
     def test_annotation_property(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
-        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ, {
+        signature = TypeParser('s').parse()
+        prop = ast.Property('AProperty', signature, ast.Property.ACCESS_READ, {
             'SomeAnnotation': annotation,
         })
         iface = ast.Interface('SomeInterface', {}, {
@@ -139,7 +147,8 @@ class TestAstNames(unittest.TestCase):
 
     def test_annotation_argument(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
-        arg = ast.Argument('Argument', ast.Argument.DIRECTION_IN, 's', {
+        signature = TypeParser('s').parse()
+        arg = ast.Argument('Argument', ast.Argument.DIRECTION_IN, signature, {
             'SomeAnnotation': annotation,
         })
         method = ast.Method('AMethod', [arg])
@@ -162,7 +171,8 @@ class TestAstParenting(unittest.TestCase):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         self.assertEqual(annotation.parent, None)
 
-        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ, {
+        signature = TypeParser('s').parse()
+        prop = ast.Property('AProperty', signature, ast.Property.ACCESS_READ, {
             'SomeAnnotation': annotation,
         })
         self.assertEqual(prop.interface, None)
@@ -207,7 +217,8 @@ class TestAstParenting(unittest.TestCase):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         self.assertEqual(annotation.parent, None)
 
-        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN, 's', {
+        signature = TypeParser('s').parse()
+        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN, signature, {
             'SomeAnnotation': annotation,
         })
         self.assertEqual(arg.parent, None)

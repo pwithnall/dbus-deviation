@@ -36,6 +36,8 @@ class Type(object):
 
     """
     AST representation of a D-Bus type.
+
+    See http://dbus.freedesktop.org/doc/dbus-specification.html#type-system
     """
 
     def __init__(self):
@@ -322,6 +324,8 @@ class TypeSignature(object):
 
     """
     AST representation of a D-Bus signature.
+
+    See http://dbus.freedesktop.org/doc/dbus-specification.html#type-system
     """
 
     def __init__(self):
@@ -442,14 +446,14 @@ class Property(object):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, prop_type, access, annotations=None):
+    def __init__(self, name, signature, access, annotations=None):
         """
         Construct a new ast.Property.
 
         Args:
             name: property name; a non-empty string, not including the parent
                 interface name
-            prop_type: type string for the property; see http://goo.gl/uCpa5A
+            signature: TypeSignature instance
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
                 property, mapping annotation name to an ast.Annotation
@@ -459,7 +463,7 @@ class Property(object):
             annotations = {}
 
         self.name = name
-        self.type = prop_type
+        self.signature = signature
         self.access = access
         self.interface = None
         self.annotations = annotations
@@ -588,14 +592,14 @@ class Argument(object):
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, arg_type, annotations=None):
+    def __init__(self, name, direction, signature, annotations=None):
         """
         Construct a new ast.Argument.
 
         Args:
             name: argument name; may be empty
             direction: DIRECTION_IN or DIRECTION_OUT
-            arg_type: type string for the argument; see http://goo.gl/uCpa5A
+            signature: TypeSignature instance for the argument
             annotations: potentially empty dict of annotations applied to the
                 argument, mapping annotation name to an ast.Annotation
                 instance
@@ -605,7 +609,7 @@ class Argument(object):
 
         self.name = name
         self.direction = direction
-        self.type = arg_type
+        self.signature = signature
         self.index = -1
         self.parent = None
         self.annotations = annotations
