@@ -38,11 +38,7 @@ import argparse
 import os
 import sys
 
-# PyPy support
-try:
-    from xml.etree import cElementTree as ElementTree
-except ImportError:
-    from xml.etree import ElementTree
+from lxml import etree
 
 from dbusapi.interfaceparser import InterfaceParser
 from dbusdeviation.interfacecomparator import InterfaceComparator
@@ -72,7 +68,8 @@ def _parse_file(filename, parser):
             sys.exit(1)
 
         return interfaces
-    except ElementTree.ParseError as err:
+    # pylint: disable=E1101
+    except etree.XMLSyntaxError as err:
         # If the file is empty, treat it as a non-existent Interface. This
         # allows for diffs of added files.
         if os.path.getsize(filename) == 0:
