@@ -344,6 +344,88 @@ class TestParserNormal(unittest.TestCase):
             "<doc:doc>Ignore me.</doc:doc>"
             "</annotation></interface></node>")
 
+    def test_doc_comments(self):
+        """Test that xml comments are *not* ignored"""
+        xml = ("<node xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "' xmlns:doc='"
+               "http://www.freedesktop.org/dbus/1.0/doc.dtd'>"
+               "<!--"
+               "Please consider me"
+               "-->"
+               "<interface name='I'>"
+               "<!--"
+               "Notice me too"
+               "-->"
+               "<method name='foo'>"
+               "<!--"
+               "And me!"
+               "-->"
+               "<arg name='bar' type='s'/>"
+               "</method>"
+               "</interface></node>")
+
+        (parser, interfaces, _) = _test_parser(xml)
+        interface = interfaces.get('I')
+        self.assertIsNotNone(interface)
+        self.assertEquals(interface.comment, "Please consider me")
+        meth = interface.methods.get('foo')
+        self.assertIsNotNone(meth)
+        self.assertEquals(meth.comment, "Notice me too")
+        self.assertEquals(len(meth.arguments), 1)
+        arg = meth.arguments[0]
+        self.assertEquals(arg.comment, "And me!")
+
+    def test_doc_annotations(self):
+        xml = ("<node xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "' xmlns:doc='"
+               "http://www.freedesktop.org/dbus/1.0/doc.dtd'>"
+               "<interface name='I'>"
+               "<annotation name='org.gtk.GDBus.DocString' value='bla'/>"
+               "</interface></node>")
+        (parser, interfaces, _) = _test_parser(xml)
+        interface = interfaces.get('I')
+        self.assertIsNotNone(interface)
+        self.assertEquals(interface.comment, "bla")
+
+    def test_multiline_comments(self):
+        xml = ("<node xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "' xmlns:doc='"
+               "http://www.freedesktop.org/dbus/1.0/doc.dtd'>"
+               "<!--"
+               "    Please consider that\n"
+               "    multiline comment"
+               "-->"
+               "<interface name='I'>"
+               "</interface></node>")
+
+        (parser, interfaces, _) = _test_parser(xml)
+        interface = interfaces.get('I')
+        self.assertIsNotNone(interface)
+        self.assertEquals(interface.comment,
+                "    Please consider that\n"
+                "    multiline comment")
+
+    def test_ignored_comments(self):
+        xml = ("<node xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "' xmlns:doc='"
+               "http://www.freedesktop.org/dbus/1.0/doc.dtd'>"
+               "<!--"
+               "Please ignore that comment"
+               "-->"
+               "<tp:copyright>"
+               "</tp:copyright>"
+               "<interface name='I'>"
+               "</interface></node>")
+
+        (parser, interfaces, _) = _test_parser(xml)
+        interface = interfaces.get('I')
+        self.assertIsNotNone(interface)
+        self.assertIsNone(interface.comment)
+
 
 class TestParserOutputCodes(unittest.TestCase):
     """Test the output codes from InterfaceParser."""

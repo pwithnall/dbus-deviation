@@ -135,7 +135,9 @@ class InterfaceParser(object):
                                'Unknown root node ‘%s’.' % root.tag)
             return interfaces
 
+        comment = None
         for node in root.getchildren():
+            # pylint: disable=E1101
             if node.tag == 'interface':
                 interface = self._parse_interface(node)
                 if interface is None:
@@ -147,10 +149,15 @@ class InterfaceParser(object):
                                        interface.format_name())
                     continue
 
+                interface.comment = comment
+                comment = None
                 interfaces[interface.name] = interface
+            elif node.tag == etree.Comment:
+                comment = node.text
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
+                comment = None
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in root.' %
                                    node.tag)
@@ -174,7 +181,9 @@ class InterfaceParser(object):
         properties = {}
         annotations = {}
 
+        comment = None
         for node in interface_node.getchildren():
+            # pylint: disable=E1101
             if node.tag == 'method':
                 method = self._parse_method(node, name)
                 if method is None:
@@ -186,6 +195,8 @@ class InterfaceParser(object):
                                        (name, method.format_name()))
                     continue
 
+                method.comment = comment
+                comment = None
                 methods[method.name] = method
             elif node.tag == 'signal':
                 signal = self._parse_signal(node, name)
@@ -198,6 +209,8 @@ class InterfaceParser(object):
                                        (name, signal.format_name()))
                     continue
 
+                signal.comment = comment
+                comment = None
                 signals[signal.name] = signal
             elif node.tag == 'property':
                 prop = self._parse_property(node, name)
@@ -211,6 +224,8 @@ class InterfaceParser(object):
                                        (name, prop.format_name()))
                     continue
 
+                prop.comment = comment
+                comment = None
                 properties[prop.name] = prop
             elif node.tag == 'annotation':
                 annotation = self._parse_annotation(node, name)
@@ -218,9 +233,12 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
+            elif node.tag == etree.Comment:
+                comment = node.text
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
+                comment = None
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in interface '
                                    '‘%s’.' % (node.tag, name))
@@ -244,12 +262,15 @@ class InterfaceParser(object):
 
         pretty_method_name = interface_name + '.' + name
 
+        comment = None
         for node in method_node.getchildren():
             if node.tag == 'arg':
                 arg = self._parse_arg(node, pretty_method_name)
                 if arg is None:
                     continue
 
+                arg.comment = comment
+                comment = None
                 args.append(arg)
             elif node.tag == 'annotation':
                 annotation = self._parse_annotation(node, pretty_method_name)
@@ -257,9 +278,12 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
+            elif node.tag == etree.Comment:
+                comment = node.text
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
+                comment = None
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in method ‘%s’.' %
                                    (node.tag, pretty_method_name))
@@ -282,12 +306,15 @@ class InterfaceParser(object):
 
         pretty_signal_name = interface_name + '.' + name
 
+        comment = None
         for node in signal_node.getchildren():
             if node.tag == 'arg':
                 arg = self._parse_arg(node, pretty_signal_name)
                 if arg is None:
                     continue
 
+                arg.comment = comment
+                comment = None
                 args.append(arg)
             elif node.tag == 'annotation':
                 annotation = self._parse_annotation(node, pretty_signal_name)
@@ -295,9 +322,12 @@ class InterfaceParser(object):
                     continue
 
                 annotations[annotation.name] = annotation
+            elif node.tag == etree.Comment:
+                comment = node.text
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
+                comment = None
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in signal ‘%s’.' %
                                    (node.tag, pretty_signal_name))
@@ -339,7 +369,7 @@ class InterfaceParser(object):
 
                 annotations[annotation.name] = annotation
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in property ‘%s’.' %
@@ -373,7 +403,7 @@ class InterfaceParser(object):
 
                 annotations[annotation.name] = annotation
             elif _ignore_node(node):
-                pass
+                comment = None
             else:
                 self._issue_output('unknown-node',
                                    'Unknown node ‘%s’ in arg ‘%s’ of ‘%s’.' %

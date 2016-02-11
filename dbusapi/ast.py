@@ -31,9 +31,38 @@ TODO
 
 # pylint: disable=too-few-public-methods
 
+class Documentable(object):
+
+    """Mixin class that exposes a text comment as an attribute."""
+
+    def __init__(self):
+        """
+        Construct the ast.Documentable mixin.
+
+        This constructor should never be used outside of subclasses.
+        """
+        self._comment = None
+
+    @property
+    def comment(self):
+        try:
+            doc_annotation = self.annotations.get('org.gtk.GDBus.DocString')
+            if doc_annotation:
+                return doc_annotation.value
+        except AttributeError:
+            pass
+
+        return self._comment
+
+    @comment.setter
+    def comment(self, value):
+        self._comment = value
+
+
+# pylint: disable=too-few-public-methods
 
 # pylint: disable=interface-not-implemented
-class Interface(object):
+class Interface(Documentable):
 
     """
     AST representation of an <interface> element.
@@ -59,6 +88,7 @@ class Interface(object):
                 interface, mapping annotation name to an ast.Annotation
                 instance
         """
+        Documentable.__init__(self)
         if methods is None:
             methods = {}
         if properties is None:
@@ -88,7 +118,7 @@ class Interface(object):
         return self.name
 
 
-class Property(object):
+class Property(Documentable):
 
     """
     AST representation of a <property> element.
@@ -113,6 +143,7 @@ class Property(object):
                 property, mapping annotation name to an ast.Annotation
                 instance
         """
+        Documentable.__init__(self)
         if annotations is None:
             annotations = {}
 
@@ -131,7 +162,7 @@ class Property(object):
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
-class Callable(object):
+class Callable(Documentable):
 
     u"""
     AST representation of a callable element.
@@ -153,6 +184,7 @@ class Callable(object):
                 callable, mapping annotation name to an ast.Annotation
                 instance
         """
+        Documentable.__init__(self)
         if annotations is None:
             annotations = {}
 
@@ -235,7 +267,7 @@ class Signal(Callable):
         return '%s.%s' % (self.interface.format_name(), self.name)
 
 
-class Argument(object):
+class Argument(Documentable):
 
     """
     AST representation of an <arg> element.
@@ -258,6 +290,7 @@ class Argument(object):
                 argument, mapping annotation name to an ast.Annotation
                 instance
         """
+        Documentable.__init__(self)
         if annotations is None:
             annotations = {}
 
