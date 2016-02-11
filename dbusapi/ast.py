@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 #
-# Copyright © 2015 Collabora Ltd.
+# Copyright © 2016 Collabora Ltd.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -24,27 +24,226 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-TODO
-"""
+
+"""Implements a D-Bus ast, and a XML parsing function."""
 
 
-# pylint: disable=too-few-public-methods
+from collections import OrderedDict
+# pylint: disable=no-member
+from lxml import etree
 
-class Documentable(object):
 
-    """Mixin class that exposes a text comment as an attribute."""
+class DuplicateNodeError(Exception):
 
-    def __init__(self):
+    """Error thrown when a duplicate node is found."""
+
+    pass
+
+
+class UnknownNodeError(Exception):
+
+    """Error thrown when an unexpected node is found."""
+
+    pass
+
+
+class MissingAttributeError(Exception):
+
+    """Error thrown when a required attribute is missing"""
+
+    pass
+
+
+def _ignore_node(node):
+    """
+    Decide whether to ignore the given node when parsing.
+
+    We definitely want to ignore:
+     * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}docstring
+     * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
+    """
+    # pylint: disable=E1101
+    if node.tag == etree.Comment:
+        return False
+
+    return node.tag[0] == '{'  # in a namespace
+
+
+class Loggable(object):
+
+    """Subclasses can inherit from this class to report recoverable errors."""
+
+    (ERROR,
+     WARNING) = range(2)
+
+    __error_type_to_exception = {
+            'unknown-node': UnknownNodeError,
+            'missing-attribute': MissingAttributeError,
+            'duplicate-interface': DuplicateNodeError,
+            'duplicate-method': DuplicateNodeError,
+            'duplicate-signal': DuplicateNodeError,
+            'duplicate-property': DuplicateNodeError,
+    }
+
+    log = []
+    recover = False
+    filename = ''
+    domain = ''
+
+    @staticmethod
+    def get_error_codes():
+        """Return a list of all possible error codes."""
+        return Loggable.__error_type_to_exception.keys()
+
+    @staticmethod
+    def error(code, message):
+        """Call this to either raise an exception, or store the error."""
+        if Loggable.recover:
+            Loggable.log.append(
+                (Loggable.filename, Loggable.domain, code, message))
+        else:
+            raise Loggable.__error_type_to_exception[code](message)
+
+    @staticmethod
+    def reset():
+        """Reset the log."""
+        Loggable.log = []
+        Loggable.recover = False
+        Loggable.filename = ''
+        Loggable.domain = ''
+
+    @staticmethod
+    def set_domain(domain):
+        """Set the current logging domain."""
+        Loggable.domain = domain
+
+    @staticmethod
+    def set_filename(filename):
+        """Set the current filename."""
+        Loggable.filename = filename
+
+
+class Node(Loggable):
+
+    """Base class for all D-Bus Ast nodes."""
+
+    # pylint: disable=too-many-instance-attributes
+    def __init__(self, name=None, annotations=None):
+        """Construct a new ast.Node
+
+        Args:
+            name: str, the name of the node.
+            annotations: potentially empty dict of annotations applied
+                to the node, mapping annotation name to an `ast.Annotation`
+                instance
         """
-        Construct the ast.Documentable mixin.
-
-        This constructor should never be used outside of subclasses.
-        """
+        self.name = name
+        self.children = []
+        self.parent = None
         self._comment = None
+        self.annotations = OrderedDict()
+
+        self._children_types = {
+                'annotation': Annotation,
+        }
+        self._type_containers = {
+                Annotation: self.annotations,
+        }
+        self._required_attributes = {
+                'name': 'name',
+        }
+        self._optional_attributes = {
+        }
+
+        for annotation in (annotations or {}).values():
+            self._add_child(annotation)
+
+    def __lookup_attributes(self, node):
+        for attr_name, attr_storage in self._required_attributes.items():
+            try:
+                setattr(self, attr_storage, node.attrib[attr_name])
+            except KeyError:
+                self.error('missing-attribute',
+                           'Missing required attribute ‘%s’ in %s.' %
+                           (attr_name, node.tag))
+                continue
+
+        for attr_name, attr_storage in self._optional_attributes.items():
+            try:
+                setattr(self, attr_storage, node.attrib[attr_name])
+            except KeyError:
+                pass
+
+    @classmethod
+    def from_xml(cls, node, comment=None):
+        """Return a new ast.Node instance from an XML node."""
+        res = cls()
+        res.comment = comment
+        res.parse(node)
+        return res
+
+    def _child_is_duplicate(self, child):
+        return child.name in self._type_containers[type(child)]
+
+    def _add_child(self, child):
+        child.parent = self
+        if self._child_is_duplicate(child):
+            self.error('duplicate-%s' % type(child).__name__.lower(),
+                       'Duplicate %s definition ‘%s’.' %
+                       (type(child).__name__.lower(), child.pretty_name))
+            return
+
+        self.children.append(child)
+        container = self._type_containers[type(child)]
+        # pylint: disable = unidiomatic-typecheck
+        if type(container) == list:
+            container.append(child)
+        else:
+            container[child.name] = child
+
+    def parse(self, node):
+        """Actually parse the XML node."""
+        self.__lookup_attributes(node)
+
+        xml_comment = None
+        for elem in node:
+            if elem.tag == etree.Comment:
+                xml_comment = elem.text
+                continue
+
+            elif _ignore_node(elem):
+                xml_comment = None
+                continue
+
+            try:
+                ctype = self._children_types[elem.tag]
+            except KeyError:
+                xml_comment = None
+                self.error('unknown-node',
+                           "Unknown node ‘%s’ in %s ‘%s’." %
+                           (elem.tag, type(self).__name__.lower(),
+                            self.pretty_name))
+                continue
+
+            child = ctype.from_xml(elem, xml_comment)
+            xml_comment = None
+            self._add_child(child)
+
+    def walk(self):
+        """Traverse this node's children in pre-order."""
+        for child in self.children:
+            yield child
+            for grandchild in child.walk():
+                yield grandchild
+
+    # Backward compat
+    def format_name(self):
+        """Format this node's name as a human-readable string"""
+        return self.pretty_name
 
     @property
     def comment(self):
+        """Return the comment for this node."""
         try:
             doc_annotation = self.annotations.get('org.gtk.GDBus.DocString')
             if doc_annotation:
@@ -56,13 +255,26 @@ class Documentable(object):
 
     @comment.setter
     def comment(self, value):
+        """Set the comment for this node."""
         self._comment = value
 
+    @property
+    def pretty_name(self):
+        """Format the node's name as a human-readable string."""
+        return self.name
 
-# pylint: disable=too-few-public-methods
+    @property
+    def level(self):
+        """Return the level of this node in the Ast."""
+        level = 0
+        parent = self
+        while parent:
+            level += 1
+            parent = parent.parent
+        return level
 
-# pylint: disable=interface-not-implemented
-class Interface(Documentable):
+
+class Interface(Node):
 
     """
     AST representation of an <interface> element.
@@ -71,7 +283,7 @@ class Interface(Documentable):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, name, methods=None, properties=None,
+    def __init__(self, name=None, methods=None, properties=None,
                  signals=None, annotations=None):
         """
         Construct a new ast.Interface.
@@ -79,46 +291,44 @@ class Interface(Documentable):
         Args:
             name: interface name; a non-empty string
             methods: potentially empty dict of methods in the interface,
-                mapping method name to an ast.Method instance
+                mapping method name to an `ast.Method` instance
             properties: potentially empty dict of properties in the interface,
-                mapping property name to an ast.Property instance
+                mapping property name to an `ast.Property` instance
             signals: potentially empty dict of signals in the interface,
-                mapping signal name to an ast.Signal instance
+                mapping signal name to an `ast.Signal` instance
             annotations: potentially empty dict of annotations applied to the
-                interface, mapping annotation name to an ast.Annotation
+                interface, mapping annotation name to an `ast.Annotation`
                 instance
         """
-        Documentable.__init__(self)
-        if methods is None:
-            methods = {}
-        if properties is None:
-            properties = {}
-        if signals is None:
-            signals = {}
-        if annotations is None:
-            annotations = {}
+        super(Interface, self).__init__(name, annotations)
+        self._children_types.update({'signal': Signal,
+                                     'method': Method,
+                                     'property': Property})
 
-        self.name = name
-        self.methods = methods
-        self.properties = properties
-        self.signals = signals
-        self.annotations = annotations
+        self.methods = OrderedDict()
+        self.signals = OrderedDict()
+        self.properties = OrderedDict()
 
-        for method in self.methods.values():
-            method.interface = self
-        for prop in self.properties.values():
-            prop.interface = self
-        for signal in self.signals.values():
-            signal.interface = self
-        for annotation in self.annotations.values():
-            annotation.parent = self
+        self._type_containers.update({Method: self.methods,
+                                      Signal: self.signals,
+                                      Property: self.properties})
 
-    def format_name(self):
-        u"""Format the interface’s name as a human-readable string."""
-        return self.name
+        for child in (methods or {}).values() + (signals or {}).values() + \
+                (properties or {}).values():
+            self._add_child(child)
+
+    def _add_child(self, child):
+        child.interface = self
+        super(Interface, self)._add_child(child)
 
 
-class Property(Documentable):
+def _dotted_name(elem):
+    if elem.parent:
+        return elem.parent.format_name() + '.' + elem.name
+    return elem.name
+
+
+class Property(Node):
 
     """
     AST representation of a <property> element.
@@ -130,7 +340,8 @@ class Property(Documentable):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    def __init__(self, name, prop_type, access, annotations=None):
+    def __init__(self, name=None, prop_type=None, access=None,
+                 annotations=None):
         """
         Construct a new ast.Property.
 
@@ -140,29 +351,23 @@ class Property(Documentable):
             prop_type: type string for the property; see http://goo.gl/uCpa5A
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
-                property, mapping annotation name to an ast.Annotation
+                property, mapping annotation name to an `ast.Annotation`
                 instance
         """
-        Documentable.__init__(self)
-        if annotations is None:
-            annotations = {}
-
-        self.name = name
+        super(Property, self).__init__(name, annotations)
+        self._required_attributes.update({'access': 'access',
+                                          'type': 'type'})
         self.type = prop_type
         self.access = access
         self.interface = None
-        self.annotations = annotations
-        for annotation in self.annotations.values():
-            annotation.parent = self
 
-    def format_name(self):
-        u"""Format the property’s name as a human-readable string."""
-        if self.interface is None:
-            return self.name
-        return '%s.%s' % (self.interface.format_name(), self.name)
+    @property
+    def pretty_name(self):
+        """Format the property's name as a human-readable string"""
+        return _dotted_name(self)
 
 
-class Callable(Documentable):
+class Callable(Node):
 
     u"""
     AST representation of a callable element.
@@ -171,7 +376,7 @@ class Callable(Documentable):
     contain a list of in and out arguments.
     """
 
-    def __init__(self, name, args, annotations=None):
+    def __init__(self, name=None, args=None, annotations=None):
         """
         Construct a new ast.Callable.
 
@@ -184,21 +389,28 @@ class Callable(Documentable):
                 callable, mapping annotation name to an ast.Annotation
                 instance
         """
-        Documentable.__init__(self)
-        if annotations is None:
-            annotations = {}
+        super(Callable, self).__init__(name, annotations)
+        self.arguments = []
+        self.interface = None
+        self._children_types.update({'arg': Argument})
+        self._type_containers.update({Argument: self.arguments})
 
-        self.name = name
-        self.arguments = args
-        self.annotations = annotations
-        for annotation in self.annotations.values():
-            annotation.parent = self
+        for arg in args or []:
+            self._add_child(arg)
 
-        i = 0
-        for arg in self.arguments:
-            arg.parent = self
-            arg.index = i
-            i += 1
+    def _child_is_duplicate(self, child):
+        # pylint: disable=unidiomatic-typecheck
+        if type(child) == Argument:
+            return False
+        return super(Callable, self)._child_is_duplicate(child)
+
+    def _add_child(self, child):
+        super(Callable, self)._add_child(child)
+
+    @property
+    def pretty_name(self):
+        """Format the callable's name as a human-readable string"""
+        return _dotted_name(self)
 
 
 class Method(Callable):
@@ -209,29 +421,7 @@ class Method(Callable):
     This represents a callable method of an interface.
     """
 
-    def __init__(self, name, args, annotations=None):
-        """
-        Construct a new ast.Method.
-
-        Args:
-            name: method name; a non-empty string, not including the parent
-                interface name
-            args: potentially empty ordered list of ast.Arguments accepted and
-                returned by the method
-            annotations: potentially empty dict of annotations applied to the
-                method, mapping annotation name to an ast.Annotation instance
-        """
-        if annotations is None:
-            annotations = {}
-
-        Callable.__init__(self, name, args, annotations)
-        self.interface = None
-
-    def format_name(self):
-        u"""Format the method’s name as a human-readable string."""
-        if self.interface is None:
-            return self.name
-        return '%s.%s' % (self.interface.format_name(), self.name)
+    pass
 
 
 class Signal(Callable):
@@ -242,43 +432,22 @@ class Signal(Callable):
     This represents an emittable signal on an interface.
     """
 
-    def __init__(self, name, args, annotations=None):
-        """
-        Construct a new ast.Signal.
-
-        Args:
-            name: annotation name; a non-empty string, not including the
-                parent interface name
-            args: potentially empty ordered list of ast.Arguments provided by
-                the signal
-            annotations: potentially empty dict of annotations applied to the
-                signal, mapping annotation name to an ast.Annotation instance
-        """
-        if annotations is None:
-            annotations = {}
-
-        Callable.__init__(self, name, args, annotations)
-        self.interface = None
-
-    def format_name(self):
-        u"""Format the signal’s name as a human-readable string."""
-        if self.interface is None:
-            return self.name
-        return '%s.%s' % (self.interface.format_name(), self.name)
+    pass
 
 
-class Argument(Documentable):
+class Argument(Node):
 
     """
     AST representation of an <arg> element.
 
-    This represents an argument to an ast.Signal or ast.Method.
+    This represents an argument to an `ast.Signal` or `ast.Method`.
     """
 
     DIRECTION_IN = 'in'
     DIRECTION_OUT = 'out'
 
-    def __init__(self, name, direction, arg_type, annotations=None):
+    def __init__(self, name=None, direction=None,
+                 arg_type=None, annotations=None):
         """
         Construct a new ast.Argument.
 
@@ -290,21 +459,17 @@ class Argument(Documentable):
                 argument, mapping annotation name to an ast.Annotation
                 instance
         """
-        Documentable.__init__(self)
-        if annotations is None:
-            annotations = {}
-
-        self.name = name
-        self.direction = direction
+        super(Argument, self).__init__(name, annotations)
+        self.direction = direction or Argument.DIRECTION_IN
         self.type = arg_type
-        self.index = -1
-        self.parent = None
-        self.annotations = annotations
-        for annotation in self.annotations.values():
-            annotation.parent = self
+        self._index = -1
+        self._required_attributes = {'type': 'type'}
+        self._optional_attributes.update({'direction': 'direction',
+                                          'name': 'name'})
 
-    def format_name(self):
-        u"""Format the argument’s name as a human-readable string."""
+    @property
+    def pretty_name(self):
+        """Format the argument's name as a human-readable string"""
         if self.index == -1 and self.name is None:
             return 'unnamed'
         elif self.index == -1:
@@ -314,20 +479,31 @@ class Argument(Documentable):
         else:
             return '%u (‘%s’)' % (self.index, self.name)
 
+    @property
+    def index(self):
+        """The index of this argument in its parent's list of arguments"""
+        # Slight optimization, assumes arguments cannot be reparented
+        if self._index != -1:
+            return self._index
+        if not self.parent:
+            return -1
+        else:
+            self._index = self.parent.arguments.index(self)
+            return self._index
 
-class Annotation(object):
 
-    u"""
+class Annotation(Node):
+
+    """
     AST representation of an <annotation> element.
 
-    This represents an arbitrary key–value metadata annotation attached to one
+    This represents an arbitrary key-value metadata annotation attached to one
     of the nodes in an interface.
-
     The annotation name can be one of the well-known ones described at
     http://goo.gl/LgmNUe, or could be something else.
     """
 
-    def __init__(self, name, value):
+    def __init__(self, name=None, value=None):
         """
         Construct a new ast.Annotation.
 
@@ -335,12 +511,73 @@ class Annotation(object):
             name: annotation name; a non-empty string
             value: annotation value; any string is permitted
         """
-        self.name = name
+        super(Annotation, self).__init__(name)
         self.value = value
-        self.parent = None
+        self._required_attributes.update({'value': 'value'})
 
-    def format_name(self):
-        u"""Format the annotation’s name as a human-readable string."""
-        if self.parent is None:
-            return self.name
-        return '%s.%s' % (self.parent.format_name(), self.name)
+    @property
+    def pretty_name(self):
+        """Format the annotation's name as a human-readable string"""
+        return _dotted_name(self)
+
+
+TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
+
+
+def _skip_non_node(elem):
+    for node in elem.getchildren():
+        if node.tag == 'node':
+            return node
+
+    return None
+
+
+def parse(filename, recover=False):
+    """
+    Parse an XML file and returns the root of the D-Bus ast.
+
+    Args:
+        filename: str, the file to parse
+        recover: bool, whether to parse the XML file entirely
+            when errors are encountered
+    """
+    Loggable.set_domain('parser')
+    Loggable.set_filename(filename)
+    Loggable.recover = recover
+    root = etree.parse(filename).getroot()
+    interfaces = {}
+
+    # Handle specifications wrapped in tp:spec.
+    if root.tag == '{%s}spec' % TP_DTD:
+        root = _skip_non_node(root)
+
+    if root.tag != 'node':
+        Loggable.error('unknown-node',
+                       'Unknown root node ‘%s’.' % root.tag)
+        root = _skip_non_node(root)
+
+    if root is None:
+        return None
+
+    xml_comment = None
+    for elem in root:
+        if elem.tag == etree.Comment:
+            xml_comment = elem.text
+        elif elem.tag == 'interface':
+            interface = Interface.from_xml(elem, comment=xml_comment)
+            if interface.name in interfaces:
+                Loggable.error('duplicate-interface',
+                               'Duplicate interface definition ‘%s’.' %
+                               interface.name)
+                continue
+            interfaces[interface.name] = interface
+            xml_comment = None
+        elif _ignore_node(elem):
+            xml_comment = None
+        else:
+            Loggable.error('unknown-node',
+                           "Unknown node ‘%s’ in root." % elem.tag)
+
+    if Loggable.log:
+        return None
+    return interfaces

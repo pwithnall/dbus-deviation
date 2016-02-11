@@ -32,7 +32,7 @@ Unit tests for dbus-interface-diff
 # pylint: disable=missing-docstring
 
 
-from dbusapi.interfaceparser import InterfaceParser
+from dbusapi.ast import parse, Loggable
 from dbusdeviation.interfacecomparator import InterfaceComparator
 import os
 import tempfile
@@ -58,17 +58,16 @@ class TestComparatorErrors(unittest.TestCase):
         old_tmpfile = _create_temp_xml_file(old_xml)
         new_tmpfile = _create_temp_xml_file(new_xml)
 
-        old_parser = InterfaceParser(old_tmpfile)
-        new_parser = InterfaceParser(new_tmpfile)
+        Loggable.reset()
+        old_interfaces = parse(old_tmpfile)
+        self.assertEqual(Loggable.log, [])
 
-        old_interfaces = old_parser.parse()
-        new_interfaces = new_parser.parse()
+        Loggable.reset()
+        new_interfaces = parse(new_tmpfile)
+        self.assertEqual(Loggable.log, [])
 
         os.unlink(new_tmpfile)
         os.unlink(old_tmpfile)
-
-        self.assertEqual(old_parser.get_output(), [])
-        self.assertEqual(new_parser.get_output(), [])
 
         self.assertNotEqual(old_interfaces, None)
         self.assertNotEqual(new_interfaces, None)
