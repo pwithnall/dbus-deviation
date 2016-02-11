@@ -30,12 +30,8 @@ TODO
 
 import os
 
-# PyPy support
 # pylint: disable=interface-not-implemented
-try:
-    from xml.etree import cElementTree as ElementTree
-except ImportError:
-    from xml.etree import ElementTree
+from lxml import etree
 
 from dbusapi import ast
 
@@ -48,6 +44,10 @@ def _ignore_node(node):
      * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}docstring
      * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
     """
+    # pylint: disable=E1101
+    if node.tag == etree.Comment:
+        return False
+
     return node.tag[0] == '{'  # in a namespace
 
 
@@ -108,7 +108,8 @@ class InterfaceParser(object):
             If parsing fails, None is returned.
         """
         self._output = []
-        tree = ElementTree.parse(os.path.abspath(self._filename))
+        # pylint: disable=E1101
+        tree = etree.parse(os.path.abspath(self._filename))
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
