@@ -32,7 +32,7 @@ Unit tests for dbusapi.ast.parse
 # pylint: disable=missing-docstring
 
 
-from dbusapi.ast import (parse, DuplicateNodeError,
+from dbusapi.ast import (parse, DuplicateNodeError, EmptyRootError,
                          UnknownNodeError, MissingAttributeError, Loggable)
 import os
 import tempfile
@@ -68,6 +68,15 @@ class TestParserErrors(unittest.TestCase):
             (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown root node ‘notnode’.')
+
+    def test_only_tp_spec_root(self):
+        xml = ("<tp:spec xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "'></tp:spec>")
+        with self.assertRaises(EmptyRootError) as cm:
+            (interfaces, log, filename) = _test_parsing(xml)
+        self.assertEquals(cm.exception.message,
+                          'root node is empty.')
 
     def test_duplicate_interface(self):
         xml = ("<node><interface name='I'/><interface name='I'/></node>")
@@ -356,14 +365,19 @@ class TestParserNormal(unittest.TestCase):
                "<!--"
                "Please ignore that comment"
                "-->"
-               "<tp:copyright>"
-               "</tp:copyright>"
+               "<tp:copyright/>"
                "<interface name='I'>"
+               "<!--"
+               "And that comment too"
+               "-->"
+               "<tp:copyright/>"
+               "<method name='M'/>"
                "</interface></node>")
         (interfaces, log, filename) = _test_parsing(xml)
         interface = interfaces.get('I')
-        self.assertIsNotNone(interface)
         self.assertIsNone(interface.comment)
+        method = interface.methods['M']
+        self.assertIsNone(method.comment)
 
 
 class TestParserOutputCodes(unittest.TestCase):
@@ -394,8 +408,8 @@ class TestParserRecovery(unittest.TestCase):
         self.assertEqual(log, actual_output)
         return interfaces
 
-    def test_annotation_interface(self):
-        """Test recovery from invalid annotations in an interface."""
+    def test_annotation_node(self):
+        """Test recovery from invalid annotations in a node"""
         self.assertOutput(
             "<node><interface name='I'>"
             "<annotation/><method/>"
@@ -408,62 +422,68 @@ class TestParserRecovery(unittest.TestCase):
                  'Missing required attribute ‘name’ in method.'),
             ])
 
-    def test_annotation_method(self):
-        """Test recovery from invalid annotations in a method."""
+    def test_only_tp_spec_root(self):
+        """Test recovery from empty tp spec root"""
         self.assertOutput(
-            "<node><interface name='I'><method name='M'>"
-            "<annotation/><arg/>"
-            "</method></interface></node>", [
-                ('missing-attribute',
-                 'Missing required attribute ‘name’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘value’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘type’ in arg.'),
+            "<tp:spec xmlns:tp='"
+            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+            "'></tp:spec>", [
+                ('empty-root',
+                 'root node is empty.'),
             ])
 
-    def test_annotation_signal(self):
-        """Test recovery from invalid annotations in a signal."""
+    def test_unknown_root(self):
+        """Test recovery from unknown root"""
         self.assertOutput(
-            "<node><interface name='I'><signal name='S'>"
-            "<annotation/><arg/>"
-            "</signal></interface></node>", [
+            "<badnode>"
+            "<node><interface/>"
+            "</node>"
+            "</badnode>", [
+                ('unknown-node',
+                 'Unknown root node ‘badnode’.'),
                 ('missing-attribute',
-                 'Missing required attribute ‘name’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘value’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘type’ in arg.'),
+                 'Missing required attribute ‘name’ in interface.'),
             ])
 
-    def test_annotation_property(self):
-        """Test recovery from invalid annotations in a property."""
+    def test_duplicate_node(self):
+        """Test recovery from duplicate node"""
         self.assertOutput(
             "<node><interface name='I'>"
-            "<property name='P' type='s' access='read'>"
-            "<annotation/><badnode/>"
-            "</property>"
+            "<method name='M'/>"
+            "<method name='M'/>"
+            "<method/>"
             "</interface></node>", [
+                ('duplicate-method',
+                 'Duplicate method definition ‘I.M’.'),
                 ('missing-attribute',
-                 'Missing required attribute ‘name’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘value’ in annotation.'),
-                ('unknown-node',
-                 'Unknown node ‘badnode’ in property ‘P’.'),
+                 'Missing required attribute ‘name’ in method.'),
             ])
 
-    def test_annotation_arg(self):
-        """Test recovery from invalid annotations in an arg."""
+    def test_duplicate_interface(self):
+        """Test recovery from duplicate interface"""
         self.assertOutput(
-            "<node><interface name='I'><method name='M'><arg type='s'>"
-            "<annotation/><badnode/>"
-            "</arg></method></interface></node>", [
+            "<node>"
+            "<interface name='I'/>"
+            "<interface name='I'>"
+            "<method/>"
+            "</interface></node>", [
                 ('missing-attribute',
-                 'Missing required attribute ‘name’ in annotation.'),
-                ('missing-attribute',
-                 'Missing required attribute ‘value’ in annotation.'),
+                 'Missing required attribute ‘name’ in method.'),
+                ('duplicate-interface',
+                 'Duplicate interface definition ‘I’.'),
+            ])
+
+    def test_bad_node(self):
+        """Test recovery from bad node"""
+        self.assertOutput(
+            "<node><interface name='I'>"
+            "<badnode/>"
+            "<method/>"
+            "</interface></node>", [
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in argument ‘unnamed’.'),
+                 'Unknown node ‘badnode’ in interface ‘I’.'),
+                ('missing-attribute',
+                 'Missing required attribute ‘name’ in method.'),
             ])
 
 

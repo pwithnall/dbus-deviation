@@ -65,6 +65,18 @@ class MissingAttributeError(DBusParsingError):
     pass
 
 
+class EmptyRootError(DBusParsingError):
+
+    """
+    Error thrown when the root of the tree contained no <node>
+
+    Can happen when the root is tagged with:
+    {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}spec
+    """
+
+    pass
+
+
 def _ignore_node(node):
     """
     Decide whether to ignore the given node when parsing.
@@ -85,6 +97,7 @@ class Loggable(object):
 
     __error_type_to_exception = {
             'unknown-node': UnknownNodeError,
+            'empty-root': EmptyRootError,
             'missing-attribute': MissingAttributeError,
             'duplicate-interface': DuplicateNodeError,
             'duplicate-method': DuplicateNodeError,
@@ -109,12 +122,6 @@ class Loggable(object):
                 (Loggable.extra_log_data, domain, code, message))
         else:
             raise Loggable.__error_type_to_exception[code](message)
-
-    @staticmethod
-    def reset():
-        """Reset the log."""
-        Loggable.log = []
-        Loggable.recover = False
 
 
 # pylint: disable=too-many-instance-attributes
@@ -249,13 +256,10 @@ class Node(Loggable):
     def comment(self):
         """Return the comment for this node."""
         try:
-            doc_annotation = self.annotations.get('org.gtk.GDBus.DocString')
-            if doc_annotation:
-                return doc_annotation.value
-        except AttributeError:
-            pass
-
-        return self._comment
+            doc_annotation = self.annotations['org.gtk.GDBus.DocString']
+            return doc_annotation.value
+        except KeyError:
+            return self._comment
 
     @comment.setter
     def comment(self, value):
@@ -266,16 +270,6 @@ class Node(Loggable):
     def pretty_name(self):
         """Format the node's name as a human-readable string."""
         return self.name
-
-    @property
-    def level(self):
-        """Return the level of this node in the Ast."""
-        level = 0
-        parent = self
-        while parent:
-            level += 1
-            parent = parent.parent
-        return level
 
 
 class Interface(Node):
@@ -553,15 +547,22 @@ def parse(filename, recover=False):
     if root.tag == '{%s}spec' % TP_DTD:
         root = _skip_non_node(root)
 
+    if root is None:
+        Loggable.error('empty-root',
+                       'root node is empty.',
+                       'parser')
+        log = Loggable.log[last_log_position:]
+        Loggable.extra_log_data = None
+        return None, log
+
     if root.tag != 'node':
         Loggable.error('unknown-node',
-                       'Unknown root node ‘%s’.' % root.tag)
+                       'Unknown root node ‘%s’.' % root.tag,
+                       'parser')
         root = _skip_non_node(root)
 
-    if root is None:
-        return None
-
     xml_comment = None
+
     for elem in root:
         if elem.tag == etree.Comment:
             xml_comment = elem.text
@@ -570,7 +571,8 @@ def parse(filename, recover=False):
             if interface.name in interfaces:
                 Loggable.error('duplicate-interface',
                                'Duplicate interface definition ‘%s’.' %
-                               interface.name)
+                               interface.name,
+                               'parser')
                 continue
             interfaces[interface.name] = interface
             xml_comment = None
@@ -578,7 +580,8 @@ def parse(filename, recover=False):
             xml_comment = None
         else:
             Loggable.error('unknown-node',
-                           "Unknown node ‘%s’ in root." % elem.tag)
+                           "Unknown node ‘%s’ in root." % elem.tag,
+                           'parser')
 
     log = Loggable.log[last_log_position:]
     Loggable.extra_log_data = None

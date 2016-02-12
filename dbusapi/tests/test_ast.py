@@ -219,6 +219,24 @@ class TestAstParenting(unittest.TestCase):
         self.assertEqual(arg.index, 0)
 
 
+class TestAstTraversal(unittest.TestCase):
+    """Test AST traversal."""
+
+    def test_walk(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        method = ast.Method('AMethod', [], {
+            'SomeAnnotation': annotation,
+        })
+        iface = ast.Interface('SomeInterface', {
+            'AMethod': method,
+        })
+
+        children = [node for node in iface.walk()]
+        self.assertEquals(len(children), 2)
+        self.assertEquals(children[0], method)
+        self.assertEquals(children[1], annotation)
+
+
 if __name__ == '__main__':
     # Run test suite
     unittest.main()
