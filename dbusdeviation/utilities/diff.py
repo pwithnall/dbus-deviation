@@ -41,7 +41,7 @@ import sys
 # pylint: disable=no-member
 from lxml import etree
 
-from dbusapi.ast import parse, Loggable
+from dbusapi.ast import parse
 from dbusdeviation.interfacecomparator import InterfaceComparator
 
 # Warning categories.
@@ -61,11 +61,11 @@ def _parse_file(filename):
     list. Print an error and exit if parsing fails.
     """
     try:
-        interfaces = parse(filename)
+        interfaces, log = parse(filename)
 
         # Handle parse errors.
         if interfaces is None:
-            _print_output(Loggable.log)
+            _print_output(log)
             sys.exit(1)
 
         return interfaces

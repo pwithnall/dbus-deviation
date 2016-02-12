@@ -52,10 +52,10 @@ def _create_temp_xml_file(xml):
 def _test_parsing(xml, recover=False):
     """Parse the XML snippet"""
     tmpfile = _create_temp_xml_file(xml)
-    interfaces = parse(tmpfile, recover)
+    interfaces, log = parse(tmpfile, recover)
     os.unlink(tmpfile)
 
-    return (interfaces, tmpfile)
+    return (interfaces, log, tmpfile)
 
 
 # pylint: disable=too-many-public-methods
@@ -65,28 +65,28 @@ class TestParserErrors(unittest.TestCase):
     def test_unknown_root_node(self):
         xml = ("<notnode><irrelevant/></notnode>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown root node ‘notnode’.')
 
     def test_duplicate_interface(self):
         xml = ("<node><interface name='I'/><interface name='I'/></node>")
         with self.assertRaises(DuplicateNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Duplicate interface definition ‘I’.')
 
     def test_unknown_interface_node(self):
         xml = ("<node><badnode/></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in root.')
 
     def test_interface_missing_name(self):
         xml = ("<node><interface/></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(
             cm.exception.message,
             'Missing required attribute ‘name’ in interface.')
@@ -96,7 +96,7 @@ class TestParserErrors(unittest.TestCase):
                "<method name='M'/><method name='M'/>"
                "</interface></node>")
         with self.assertRaises(DuplicateNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(
             cm.exception.message,
             'Duplicate method definition ‘I.M’.')
@@ -106,7 +106,7 @@ class TestParserErrors(unittest.TestCase):
                "<signal name='S'/><signal name='S'/>"
                "</interface></node>")
         with self.assertRaises(DuplicateNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(
             cm.exception.message,
             'Duplicate signal definition ‘I.S’.')
@@ -117,21 +117,21 @@ class TestParserErrors(unittest.TestCase):
                "<property name='P' type='s' access='readwrite'/>"
                "</interface></node>")
         with self.assertRaises(DuplicateNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Duplicate property definition ‘I.P’.')
 
     def test_unknown_sub_interface_node(self):
         xml = ("<node><interface name='I'><badnode/></interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in interface ‘I’.')
 
     def test_method_missing_name(self):
         xml = ("<node><interface name='I'><method/></interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘name’ in method.')
 
@@ -140,14 +140,14 @@ class TestParserErrors(unittest.TestCase):
                "<method name='M'><badnode/></method>"
                "</interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in method ‘M’.')
 
     def test_signal_missing_name(self):
         xml = ("<node><interface name='I'><signal/></interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘name’ in signal.')
 
@@ -156,7 +156,7 @@ class TestParserErrors(unittest.TestCase):
                "<signal name='S'><badnode/></signal>"
                "</interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in signal ‘S’.')
 
@@ -165,7 +165,7 @@ class TestParserErrors(unittest.TestCase):
                "<property type='s' access='readwrite'/>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘name’ in property.')
 
@@ -174,7 +174,7 @@ class TestParserErrors(unittest.TestCase):
                "<property name='P' access='readwrite'/>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘type’ in property.')
 
@@ -183,7 +183,7 @@ class TestParserErrors(unittest.TestCase):
                "<property name='P' type='s'/>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘access’ in property.')
 
@@ -193,7 +193,7 @@ class TestParserErrors(unittest.TestCase):
                "<badnode/></property>"
                "</interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in property ‘P’.')
 
@@ -202,7 +202,7 @@ class TestParserErrors(unittest.TestCase):
                "<method name='M'><arg type='s'><badnode/></arg></method>"
                "</interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in argument ‘unnamed’.')
 
@@ -211,7 +211,7 @@ class TestParserErrors(unittest.TestCase):
                "<method name='M'><arg/></method>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘type’ in arg.')
 
@@ -220,7 +220,7 @@ class TestParserErrors(unittest.TestCase):
                "<annotation value='V'/>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘name’ in annotation.')
 
@@ -229,7 +229,7 @@ class TestParserErrors(unittest.TestCase):
                "<annotation name='N'/>"
                "</interface></node>")
         with self.assertRaises(MissingAttributeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Missing required attribute ‘value’ in annotation.')
 
@@ -238,7 +238,7 @@ class TestParserErrors(unittest.TestCase):
                "<annotation name='N' value='V'><badnode/></annotation>"
                "</interface></node>")
         with self.assertRaises(UnknownNodeError) as cm:
-            (interfaces, filename) = _test_parsing(xml)
+            (interfaces, log, filename) = _test_parsing(xml)
         self.assertEquals(cm.exception.message,
                           'Unknown node ‘badnode’ in annotation ‘N’.')
 
@@ -249,7 +249,7 @@ class TestParserNormal(unittest.TestCase):
 
     # pylint: disable=invalid-name
     def assertParse(self, xml):  # noqa
-        (interfaces, _) = _test_parsing(xml)
+        (interfaces, log, filename) = _test_parsing(xml)
         return interfaces
 
     def test_tp_spec_root(self):
@@ -303,7 +303,7 @@ class TestParserNormal(unittest.TestCase):
                "<arg name='bar' type='s'/>"
                "</method>"
                "</interface></node>")
-        (interfaces, _) = _test_parsing(xml)
+        (interfaces, log, filename) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertEquals(interface.comment, "Please consider me")
@@ -323,7 +323,7 @@ class TestParserNormal(unittest.TestCase):
                "<interface name='I'>"
                "<annotation name='org.gtk.GDBus.DocString' value='bla'/>"
                "</interface></node>")
-        (interfaces, _) = _test_parsing(xml)
+        (interfaces, log, filename) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertEquals(interface.comment, "bla")
@@ -340,7 +340,7 @@ class TestParserNormal(unittest.TestCase):
                "-->"
                "<interface name='I'>"
                "</interface></node>")
-        (interfaces, _) = _test_parsing(xml)
+        (interfaces, log, filename) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertEquals(interface.comment,
@@ -360,7 +360,7 @@ class TestParserNormal(unittest.TestCase):
                "</tp:copyright>"
                "<interface name='I'>"
                "</interface></node>")
-        (interfaces, _) = _test_parsing(xml)
+        (interfaces, log, filename) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertIsNone(interface.comment)
@@ -387,12 +387,11 @@ class TestParserRecovery(unittest.TestCase):
 
     # pylint: disable=invalid-name
     def assertOutput(self, xml, partial_output):  # noqa
-        Loggable.reset()
-        (interfaces, filename) = _test_parsing(xml, recover=True)
+        (interfaces, log, filename) = _test_parsing(xml, recover=True)
         self.assertEqual(interfaces, None)
         actual_output = \
             [(filename, 'parser', i[0], i[1]) for i in partial_output]
-        self.assertEqual(Loggable.log, actual_output)
+        self.assertEqual(log, actual_output)
         return interfaces
 
     def test_annotation_interface(self):

@@ -547,6 +547,8 @@ def parse(filename, recover=False):
     root = etree.parse(filename).getroot()
     interfaces = {}
 
+    last_log_position = len(Loggable.log)
+
     # Handle specifications wrapped in tp:spec.
     if root.tag == '{%s}spec' % TP_DTD:
         root = _skip_non_node(root)
@@ -578,6 +580,8 @@ def parse(filename, recover=False):
             Loggable.error('unknown-node',
                            "Unknown node ‘%s’ in root." % elem.tag)
 
-    if Loggable.log:
-        return None
-    return interfaces
+    log = Loggable.log[last_log_position:]
+
+    if log:
+        return None, log
+    return interfaces, None
