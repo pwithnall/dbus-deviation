@@ -33,6 +33,10 @@ from collections import OrderedDict
 from lxml import etree
 
 
+TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
+FDO_DTD = 'http://www.freedesktop.org/dbus/1.0/doc.dtd'
+
+
 class DuplicateNodeError(Exception):
 
     """Error thrown when a duplicate node is found."""
@@ -62,10 +66,6 @@ def _ignore_node(node):
      * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}docstring
      * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
     """
-    # pylint: disable=E1101
-    if node.tag == etree.Comment:
-        return False
-
     return node.tag[0] == '{'  # in a namespace
 
 
@@ -209,6 +209,14 @@ class Node(Loggable):
         for elem in node:
             if elem.tag == etree.Comment:
                 xml_comment = elem.text
+                continue
+
+            elif elem.tag == '{%s}docstring' % TP_DTD:
+                self.comment = elem.text
+                continue
+
+            elif elem.tag == '{%s}doc' % FDO_DTD:
+                self.comment = elem.text
                 continue
 
             elif _ignore_node(elem):
@@ -519,9 +527,6 @@ class Annotation(Node):
     def pretty_name(self):
         """Format the annotation's name as a human-readable string"""
         return _dotted_name(self)
-
-
-TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 
 
 def _skip_non_node(elem):

@@ -253,99 +253,38 @@ class TestParserNormal(unittest.TestCase):
         return interfaces
 
     def test_tp_spec_root(self):
-        
         """Test that specifications wrapped in tp:spec are parsed."""
         self.assertParse(
             "<tp:spec xmlns:tp='"
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "'><node><interface name='I'/></node></tp:spec>")
 
-    def test_doc_root(self):
-        """Test that doc tags are ignored in the root."""
-        self.assertParse(
+    def test_tp_doc_node(self):
+        """Test that telepathy doc tags are parsed in nodes."""
+        interfaces = self.assertParse(
             "<node xmlns:tp='"
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</node>")
+            "'><interface name='I'><signal name='S'>"
+            "<tp:docstring>Don't ignore me.</tp:docstring>"
+            "</signal></interface></node>")
+        interface = interfaces.get('I')
+        signal = interface.signals.get('S')
+        self.assertEquals(signal.comment, "Don't ignore me.")
 
-    def test_doc_interface(self):
-        """Test that doc tags are ignored in interfaces."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</interface></node>")
-
-    def test_doc_method(self):
-        """Test that doc tags are ignored in methods."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><method name='M'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</method></interface></node>")
-
-    def test_doc_signal(self):
-        """Test that doc tags are ignored in signals."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
+    def test_fdo_doc_node(self):
+        """Test that freedesktop doc tags are parsed in nodes."""
+        interfaces = self.assertParse(
+            "<node xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
             "'><interface name='I'><signal name='S'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
+            "<doc:doc>Don't ignore me.</doc:doc>"
             "</signal></interface></node>")
+        interface = interfaces.get('I')
+        signal = interface.signals.get('S')
+        self.assertEquals(signal.comment, "Don't ignore me.")
 
-    def test_doc_property(self):
-        """Test that doc tags are ignored in properties."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><property name='P' type='s' access='read'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</property></interface></node>")
-
-    def test_doc_arg(self):
-        """Test that doc tags are ignored in args."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><method name='M'><arg type='s'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</arg></method></interface></node>")
-
-    def test_doc_annotation(self):
-        """Test that doc tags are ignored in annotations."""
-        self.assertParse(
-            "<node xmlns:tp='"
-            "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "' xmlns:doc='"
-            "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><annotation name='A' value='V'>"
-            "<tp:docstring>Ignore me.</tp:docstring>"
-            "<doc:doc>Ignore me.</doc:doc>"
-            "</annotation></interface></node>")
-
-    def test_doc_comments(self):
-        """Test that xml comments are *not* ignored"""
+    def test_comment_doc_node(self):
+        """Test that xml comments are parsed as docstrings."""
         xml = ("<node xmlns:tp='"
                "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
                "' xmlns:doc='"
@@ -364,7 +303,6 @@ class TestParserNormal(unittest.TestCase):
                "<arg name='bar' type='s'/>"
                "</method>"
                "</interface></node>")
-
         (interfaces, _) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
@@ -376,7 +314,8 @@ class TestParserNormal(unittest.TestCase):
         arg = meth.arguments[0]
         self.assertEquals(arg.comment, "And me!")
 
-    def test_doc_annotations(self):
+    def test_annotations_doc_node(self):
+        """Test that annotations are parsed as docstrings."""
         xml = ("<node xmlns:tp='"
                "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
                "' xmlns:doc='"
@@ -390,6 +329,7 @@ class TestParserNormal(unittest.TestCase):
         self.assertEquals(interface.comment, "bla")
 
     def test_multiline_comments(self):
+        """Test that whitespace is preserved when parsing comments"""
         xml = ("<node xmlns:tp='"
                "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
                "' xmlns:doc='"
@@ -400,7 +340,6 @@ class TestParserNormal(unittest.TestCase):
                "-->"
                "<interface name='I'>"
                "</interface></node>")
-
         (interfaces, _) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
@@ -409,6 +348,7 @@ class TestParserNormal(unittest.TestCase):
                           "    multiline comment")
 
     def test_ignored_comments(self):
+        """Test that comments are not applied to the wrong node"""
         xml = ("<node xmlns:tp='"
                "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
                "' xmlns:doc='"
@@ -420,7 +360,6 @@ class TestParserNormal(unittest.TestCase):
                "</tp:copyright>"
                "<interface name='I'>"
                "</interface></node>")
-
         (interfaces, _) = _test_parsing(xml)
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
