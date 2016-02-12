@@ -94,7 +94,7 @@ class Loggable(object):
 
     log = []
     recover = False
-    filename = ''
+    extra_log_data = None
 
     @staticmethod
     def get_error_codes():
@@ -106,7 +106,7 @@ class Loggable(object):
         """Call this to either raise an exception, or store the error."""
         if Loggable.recover:
             Loggable.log.append(
-                (Loggable.filename, domain, code, message))
+                (Loggable.extra_log_data, domain, code, message))
         else:
             raise Loggable.__error_type_to_exception[code](message)
 
@@ -115,12 +115,6 @@ class Loggable(object):
         """Reset the log."""
         Loggable.log = []
         Loggable.recover = False
-        Loggable.filename = ''
-
-    @staticmethod
-    def set_filename(filename):
-        """Set the current filename."""
-        Loggable.filename = filename
 
 
 class Node(Loggable):
@@ -549,7 +543,7 @@ def parse(filename, recover=False):
         recover: bool, whether to parse the XML file entirely
             when errors are encountered
     """
-    Loggable.set_filename(filename)
+    Loggable.extra_log_data = filename
     Loggable.recover = recover
     root = etree.parse(filename).getroot()
     interfaces = {}
@@ -588,6 +582,7 @@ def parse(filename, recover=False):
                            "Unknown node ‘%s’ in root." % elem.tag)
 
     log = Loggable.log[last_log_position:]
+    Loggable.extra_log_data = None
 
     if log:
         return None, log
