@@ -117,11 +117,14 @@ class Loggable(object):
         Loggable.recover = False
 
 
+# pylint: disable=too-many-instance-attributes
 class Node(Loggable):
 
     """Base class for all D-Bus Ast nodes."""
 
-    # pylint: disable=too-many-instance-attributes
+    DOCSTRING_TAGS = ['{%s}docstring' % TP_DTD,
+                      '{%s}doc' % FDO_DTD]
+
     def __init__(self, name=None, annotations=None):
         """Construct a new ast.Node
 
@@ -207,11 +210,7 @@ class Node(Loggable):
                 xml_comment = elem.text
                 continue
 
-            elif elem.tag == '{%s}docstring' % TP_DTD:
-                self.comment = elem.text
-                continue
-
-            elif elem.tag == '{%s}doc' % FDO_DTD:
+            elif elem.tag in Node.DOCSTRING_TAGS:
                 self.comment = elem.text
                 continue
 
