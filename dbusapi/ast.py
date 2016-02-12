@@ -88,7 +88,6 @@ class Loggable(object):
     log = []
     recover = False
     filename = ''
-    domain = ''
 
     @staticmethod
     def get_error_codes():
@@ -96,11 +95,11 @@ class Loggable(object):
         return Loggable.__error_type_to_exception.keys()
 
     @staticmethod
-    def error(code, message):
+    def error(code, message, domain=''):
         """Call this to either raise an exception, or store the error."""
         if Loggable.recover:
             Loggable.log.append(
-                (Loggable.filename, Loggable.domain, code, message))
+                (Loggable.filename, domain, code, message))
         else:
             raise Loggable.__error_type_to_exception[code](message)
 
@@ -110,12 +109,6 @@ class Loggable(object):
         Loggable.log = []
         Loggable.recover = False
         Loggable.filename = ''
-        Loggable.domain = ''
-
-    @staticmethod
-    def set_domain(domain):
-        """Set the current logging domain."""
-        Loggable.domain = domain
 
     @staticmethod
     def set_filename(filename):
@@ -165,7 +158,8 @@ class Node(Loggable):
             except KeyError:
                 self.error('missing-attribute',
                            'Missing required attribute ‘%s’ in %s.' %
-                           (attr_name, node.tag))
+                           (attr_name, node.tag),
+                           'parser')
                 continue
 
         for attr_name, attr_storage in self._optional_attributes.items():
@@ -190,7 +184,8 @@ class Node(Loggable):
         if self._child_is_duplicate(child):
             self.error('duplicate-%s' % type(child).__name__.lower(),
                        'Duplicate %s definition ‘%s’.' %
-                       (type(child).__name__.lower(), child.pretty_name))
+                       (type(child).__name__.lower(), child.pretty_name),
+                       'parser')
             return
 
         self.children.append(child)
@@ -230,7 +225,8 @@ class Node(Loggable):
                 self.error('unknown-node',
                            "Unknown node ‘%s’ in %s ‘%s’." %
                            (elem.tag, type(self).__name__.lower(),
-                            self.pretty_name))
+                            self.pretty_name),
+                           'parser')
                 continue
 
             child = ctype.from_xml(elem, xml_comment)
@@ -546,7 +542,6 @@ def parse(filename, recover=False):
         recover: bool, whether to parse the XML file entirely
             when errors are encountered
     """
-    Loggable.set_domain('parser')
     Loggable.set_filename(filename)
     Loggable.recover = recover
     root = etree.parse(filename).getroot()
