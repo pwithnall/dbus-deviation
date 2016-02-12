@@ -41,7 +41,7 @@ import sys
 # pylint: disable=no-member
 from lxml import etree
 
-from dbusapi.ast import parse
+from dbusapi.ast import parse, Loggable
 from dbusdeviation.interfacecomparator import InterfaceComparator
 
 # Warning categories.

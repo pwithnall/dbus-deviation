@@ -407,7 +407,7 @@ class TestLegacyParser(unittest.TestCase):
         legacy_interfaces = legacy_parser.parse()
         os.unlink(filename)
         self.assertEquals(interfaces['I'].name,
-            legacy_interfaces['I'].name)
+                          legacy_interfaces['I'].name)
 
     def test_same_error_codes(self):
         self.assertListEqual(Loggable.get_error_codes(),
@@ -418,13 +418,15 @@ class TestLegacyParser(unittest.TestCase):
                "<interface/>"
                "</node>")
         interfaces, log, filename = _test_parsing(xml, recover=True,
-            unlink=False)
+                                                  unlink=False)
         legacy_parser = InterfaceParser(filename)
         legacy_interfaces = legacy_parser.parse()
         os.unlink(filename)
         self.assertListEqual(log, legacy_parser.get_output())
 
 # pylint: disable=too-many-public-methods
+
+
 class TestParserRecovery(unittest.TestCase):
     """
     Test recovery from parser errors in Loggable to detect subsequent
