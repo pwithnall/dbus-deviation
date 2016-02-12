@@ -79,9 +79,9 @@ class InterfaceParser(object):
             name to an ast.Interface instance.
             If parsing fails, None is returned.
         """
-        interfaces, self._output = parse(self._filename)
+        interfaces, self._output = parse(self._filename, recover=True)
         # Squash output on error.
-        if len(self._output) != 0:
+        if self._output is not None:
             return None
 
         return interfaces

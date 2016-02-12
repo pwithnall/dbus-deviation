@@ -32,6 +32,7 @@ Unit tests for dbusapi.ast.parse
 # pylint: disable=missing-docstring
 
 
+from dbusapi.interfaceparser import InterfaceParser
 from dbusapi.ast import (parse, DuplicateNodeError, EmptyRootError,
                          UnknownNodeError, MissingAttributeError, Loggable)
 import os
@@ -49,11 +50,13 @@ def _create_temp_xml_file(xml):
     return tmp_name
 
 
-def _test_parsing(xml, recover=False):
+def _test_parsing(xml, recover=False, unlink=True):
     """Parse the XML snippet"""
     tmpfile = _create_temp_xml_file(xml)
     interfaces, log = parse(tmpfile, recover)
-    os.unlink(tmpfile)
+
+    if unlink:
+        os.unlink(tmpfile)
 
     return (interfaces, log, tmpfile)
 
@@ -391,6 +394,35 @@ class TestParserOutputCodes(unittest.TestCase):
         codes = Loggable.get_error_codes()
         self.assertNotEqual(codes, [])
 
+
+class TestLegacyParser(unittest.TestCase):
+    """Test the legacy `interfaceparser.InterfaceParser`"""
+
+    def test_same_parsing(self):
+        xml = ("<node>"
+               "<interface name='I'/>"
+               "</node>")
+        interfaces, log, filename = _test_parsing(xml, unlink=False)
+        legacy_parser = InterfaceParser(filename)
+        legacy_interfaces = legacy_parser.parse()
+        os.unlink(filename)
+        self.assertEquals(interfaces['I'].name,
+            legacy_interfaces['I'].name)
+
+    def test_same_error_codes(self):
+        self.assertListEqual(Loggable.get_error_codes(),
+                             InterfaceParser.get_output_codes())
+
+    def test_same_log(self):
+        xml = ("<node>"
+               "<interface/>"
+               "</node>")
+        interfaces, log, filename = _test_parsing(xml, recover=True,
+            unlink=False)
+        legacy_parser = InterfaceParser(filename)
+        legacy_interfaces = legacy_parser.parse()
+        os.unlink(filename)
+        self.assertListEqual(log, legacy_parser.get_output())
 
 # pylint: disable=too-many-public-methods
 class TestParserRecovery(unittest.TestCase):
