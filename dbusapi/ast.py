@@ -37,21 +37,28 @@ TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 FDO_DTD = 'http://www.freedesktop.org/dbus/1.0/doc.dtd'
 
 
-class DuplicateNodeError(Exception):
+class DBusParsingError(Exception):
+
+    """Error thrown when parsing a D-Bus interface XML fails"""
+
+    pass
+
+
+class DuplicateNodeError(DBusParsingError):
 
     """Error thrown when a duplicate node is found."""
 
     pass
 
 
-class UnknownNodeError(Exception):
+class UnknownNodeError(DBusParsingError):
 
     """Error thrown when an unexpected node is found."""
 
     pass
 
 
-class MissingAttributeError(Exception):
+class MissingAttributeError(DBusParsingError):
 
     """Error thrown when a required attribute is missing"""
 
