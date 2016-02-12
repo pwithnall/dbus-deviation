@@ -104,7 +104,7 @@ setup(
         'setuptools_pep8',
         'sphinx',
     ],
-    install_requires=[],
+    install_requires=['lxml'],
     tests_require=[],
     entry_points={
         'console_scripts': [

@@ -38,13 +38,10 @@ import argparse
 import os
 import sys
 
-# PyPy support
-try:
-    from xml.etree import cElementTree as ElementTree
-except ImportError:
-    from xml.etree import ElementTree
+# pylint: disable=no-member
+from lxml import etree
 
-from dbusapi.interfaceparser import InterfaceParser
+from dbusapi.ast import parse, Loggable
 from dbusdeviation.interfacecomparator import InterfaceComparator
 
 # Warning categories.
@@ -56,7 +53,7 @@ WARNING_CATEGORIES = [
 ]
 
 
-def _parse_file(filename, parser):
+def _parse_file(filename):
     """
     Parse an XML interface file.
 
@@ -64,15 +61,16 @@ def _parse_file(filename, parser):
     list. Print an error and exit if parsing fails.
     """
     try:
-        interfaces = parser.parse()
+        interfaces, log = parse(filename)
 
         # Handle parse errors.
         if interfaces is None:
-            _print_output(parser.get_output())
+            _print_output(log)
             sys.exit(1)
 
         return interfaces
-    except ElementTree.ParseError as err:
+    # pylint: disable=E1101
+    except etree.XMLSyntaxError as err:
         # If the file is empty, treat it as a non-existent Interface. This
         # allows for diffs of added files.
         if os.path.getsize(filename) == 0:
@@ -179,7 +177,7 @@ def _calculate_exit_status(args, output):
 def main():
     """Main utility implementation."""
     codes = InterfaceComparator.get_output_codes()
-    codes += InterfaceParser.get_output_codes()
+    codes += Loggable.get_error_codes()
 
     # Parse command line arguments.
     parser = argparse.ArgumentParser(
@@ -225,11 +223,8 @@ def main():
     disabled_warnings = [arg[3:] for arg in warnings_args if arg[:3] == 'no-']
 
     # Parse the two files.
-    old_parser = InterfaceParser(args.old_file)
-    new_parser = InterfaceParser(args.new_file)
-
-    old_interfaces = _parse_file(args.old_file, old_parser)
-    new_interfaces = _parse_file(args.new_file, new_parser)
+    old_interfaces = _parse_file(args.old_file)
+    new_interfaces = _parse_file(args.new_file)
 
     # Work out the human-readable name of the new XML filename.
     if args.file_display_name is not None:

@@ -3,6 +3,10 @@ test-warnings: false
 strictness: veryhigh
 pep8:
     full: true
+pep257:
+    disable:
+      - D211
+      - D400
 ignore-paths:
   - docs/conf.py
   - setup.py
