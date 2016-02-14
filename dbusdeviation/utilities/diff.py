@@ -64,7 +64,8 @@ def _parse_file(filename, parser):
     list. Print an error and exit if parsing fails.
     """
     try:
-        interfaces = parser.parse()
+        root_node = parser.parse()
+        interfaces = root_node.interfaces
 
         # Handle parse errors.
         if interfaces is None:

@@ -29,6 +29,7 @@ TODO
 """
 
 import os
+import re
 
 # PyPy support
 try:
@@ -80,6 +81,8 @@ class InterfaceParser(object):
         # FIXME: Hard-coded for the moment.
         return [
             'unknown-node',
+            'node-naming',
+            'duplicate-node',
             'duplicate-interface',
             'missing-attribute',
             'duplicate-method',
@@ -94,6 +97,16 @@ class InterfaceParser(object):
     def get_output(self):
         """Return a list of all logged parser messages."""
         return self._output
+
+    @staticmethod
+    def is_valid_absolute_object_path(path):
+        """Validate an absolute D-Bus object path."""
+        return re.match(r'(/[A-Za-z0-9_]+)+', path) is not None
+
+    @staticmethod
+    def is_valid_relative_object_path(path):
+        """Validate a relative D-Bus object path."""
+        return re.match(r'[A-Za-z0-9_]+(/[A-Za-z0-9_]+)*', path) is not None
 
     def parse(self):
         """
@@ -125,14 +138,35 @@ class InterfaceParser(object):
                     break
 
         # Continue parsing as per the D-Bus introspection format
-        interfaces = {}
 
         if root.tag != 'node':
             self._issue_output('unknown-node',
                                'Unknown root node ‘%s’.' % root.tag)
-            return interfaces
+            return None
 
-        for node in root.getchildren():
+        root_node = self._parse_node(root)
+
+        if root_node.name and \
+           not self.is_valid_absolute_object_path(root_node.name):
+            self._issue_output('node-naming',
+                               'Root node name is not an absolute object path '
+                               '‘%s’.' % root_node.name)
+            return None
+
+        return root_node
+
+    def _parse_node(self, node_node):
+        """Parse a <node> element; return an ast.Node or None."""
+        assert node_node.tag == 'node'
+
+        if 'name' in node_node.attrib:
+            name = node_node.attrib['name']
+        else:
+            name = None
+        nodes = {}
+        interfaces = {}
+
+        for node in node_node.getchildren():
             if node.tag == 'interface':
                 interface = self._parse_interface(node)
                 if interface is None:
@@ -145,6 +179,30 @@ class InterfaceParser(object):
                     continue
 
                 interfaces[interface.name] = interface
+            elif node.tag == 'node':
+                sub_node = self._parse_node(node)
+                if sub_node is None:
+                    continue
+
+                if not sub_node.name:
+                    self._issue_output('missing-attribute',
+                                       'Missing required attribute ‘name’ '
+                                       'in non-root node.')
+                    continue
+
+                if not self.is_valid_relative_object_path(sub_node.name[0]):
+                    self._issue_output('node-naming',
+                                       'Non-root node name is not a relative '
+                                       'object path ‘%s’.' % sub_node.name)
+                    continue
+
+                if sub_node.name in nodes:
+                    self._issue_output('duplicate-node',
+                                       'Duplicate node definition ‘%s’.' %
+                                       sub_node.format_name())
+                    continue
+
+                nodes[sub_node.name] = sub_node
             elif _ignore_node(node):
                 pass
             else:
@@ -152,7 +210,7 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in root.' %
                                    node.tag)
 
-        return interfaces
+        return ast.Node(name, interfaces, nodes)
 
     # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):  # noqa
