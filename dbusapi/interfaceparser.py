@@ -84,6 +84,7 @@ class InterfaceParser(object):
             'duplicate-node',
             'interface-naming',
             'duplicate-interface',
+            'member-naming',
             'missing-attribute',
             'duplicate-method',
             'duplicate-signal',
@@ -114,6 +115,12 @@ class InterfaceParser(object):
         return len(name) <= 255 and \
             re.match(r'[A-Za-z_][A-Za-z0-9_]*'
                      '(\.[A-Za-z_][A-Za-z0-9_]*)+', name) is not None
+
+    @staticmethod
+    def is_valid_member_name(name):
+        """Validate a D-Bus member name."""
+        return len(name) <= 255 and \
+            re.match(r'[A-Za-z_][A-Za-z0-9_]*', name) is not None
 
     def parse(self):
         """
@@ -248,6 +255,12 @@ class InterfaceParser(object):
                 if method is None:
                     continue
 
+                if not self.is_valid_member_name(method.name):
+                    self._issue_output('member-naming',
+                                       'Invalid method name ‘%s.%s’.' %
+                                       (name, method.format_name()))
+                    continue
+
                 if method.name in methods:
                     self._issue_output('duplicate-method',
                                        'Duplicate method definition ‘%s.%s’.' %
@@ -258,6 +271,12 @@ class InterfaceParser(object):
             elif node.tag == 'signal':
                 signal = self._parse_signal(node, name)
                 if signal is None:
+                    continue
+
+                if not self.is_valid_member_name(signal.name):
+                    self._issue_output('member-naming',
+                                       'Invalid signal name ‘%s.%s’.' %
+                                       (name, signal.format_name()))
                     continue
 
                 if signal.name in signals:
@@ -271,6 +290,8 @@ class InterfaceParser(object):
                 prop = self._parse_property(node, name)
                 if prop is None:
                     continue
+
+                # Note: D-Bus property names may not be valid member names.
 
                 if prop.name in properties:
                     self._issue_output('duplicate-property',
