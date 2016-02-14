@@ -55,7 +55,7 @@ def _test_parser(xml):
     interfaces = parser.parse()
     os.unlink(tmpfile)
 
-    return (parser, interfaces, tmpfile)
+    return parser, interfaces, tmpfile
 
 
 # pylint: disable=too-many-public-methods

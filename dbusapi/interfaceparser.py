@@ -31,7 +31,6 @@ TODO
 import os
 
 # PyPy support
-# pylint: disable=interface-not-implemented
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
@@ -51,7 +50,6 @@ def _ignore_node(node):
     return node.tag[0] == '{'  # in a namespace
 
 
-# pylint: disable=interface-not-implemented
 class InterfaceParser(object):
 
     """

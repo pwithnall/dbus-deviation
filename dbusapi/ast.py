@@ -32,7 +32,6 @@ TODO
 # pylint: disable=too-few-public-methods
 
 
-# pylint: disable=interface-not-implemented
 class Interface(object):
 
     """
