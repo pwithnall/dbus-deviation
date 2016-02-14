@@ -29,9 +29,9 @@ TODO
 """
 
 import os
+import re
 
 # PyPy support
-# pylint: disable=interface-not-implemented
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
@@ -51,9 +51,7 @@ def _ignore_node(node):
     return node.tag[0] == '{'  # in a namespace
 
 
-# pylint: disable=interface-not-implemented
 class InterfaceParser(object):
-
     """
     Parse a D-Bus introspection XML file.
 
@@ -82,7 +80,11 @@ class InterfaceParser(object):
         # FIXME: Hard-coded for the moment.
         return [
             'unknown-node',
+            'node-naming',
+            'duplicate-node',
+            'interface-naming',
             'duplicate-interface',
+            'member-naming',
             'missing-attribute',
             'duplicate-method',
             'duplicate-signal',
@@ -96,6 +98,29 @@ class InterfaceParser(object):
     def get_output(self):
         """Return a list of all logged parser messages."""
         return self._output
+
+    @staticmethod
+    def is_valid_absolute_object_path(path):
+        """Validate an absolute D-Bus object path."""
+        return re.match(r'(/[A-Za-z0-9_]+)+', path) is not None
+
+    @staticmethod
+    def is_valid_relative_object_path(path):
+        """Validate a relative D-Bus object path."""
+        return re.match(r'[A-Za-z0-9_]+(/[A-Za-z0-9_]+)*', path) is not None
+
+    @staticmethod
+    def is_valid_interface_name(name):
+        """Validate a D-Bus interface name."""
+        return len(name) <= 255 and \
+            re.match(r'[A-Za-z_][A-Za-z0-9_]*'
+                     '(\.[A-Za-z_][A-Za-z0-9_]*)+', name) is not None
+
+    @staticmethod
+    def is_valid_member_name(name):
+        """Validate a D-Bus member name."""
+        return len(name) <= 255 and \
+            re.match(r'[A-Za-z_][A-Za-z0-9_]*', name) is not None
 
     def parse(self):
         """
@@ -112,7 +137,7 @@ class InterfaceParser(object):
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
-        if len(self._output) != 0:
+        if self._output:
             return None
 
         return out
@@ -127,14 +152,35 @@ class InterfaceParser(object):
                     break
 
         # Continue parsing as per the D-Bus introspection format
-        interfaces = {}
 
         if root.tag != 'node':
             self._issue_output('unknown-node',
                                'Unknown root node ‘%s’.' % root.tag)
-            return interfaces
+            return None
 
-        for node in root.getchildren():
+        root_node = self._parse_node(root)
+
+        if root_node.name and \
+                not self.is_valid_absolute_object_path(root_node.name):
+            self._issue_output('node-naming',
+                               'Root node name is not an absolute object path '
+                               '‘%s’.' % root_node.name)
+            return None
+
+        return root_node
+
+    def _parse_node(self, node_node):
+        """Parse a <node> element; return an ast.Node or None."""
+        assert node_node.tag == 'node'
+
+        if 'name' in node_node.attrib:
+            name = node_node.attrib['name']
+        else:
+            name = None
+        nodes = {}
+        interfaces = {}
+
+        for node in node_node.getchildren():
             if node.tag == 'interface':
                 interface = self._parse_interface(node)
                 if interface is None:
@@ -147,6 +193,30 @@ class InterfaceParser(object):
                     continue
 
                 interfaces[interface.name] = interface
+            elif node.tag == 'node':
+                sub_node = self._parse_node(node)
+                if sub_node is None:
+                    continue
+
+                if not sub_node.name:
+                    self._issue_output('missing-attribute',
+                                       'Missing required attribute ‘name’ '
+                                       'in non-root node.')
+                    continue
+
+                if not self.is_valid_relative_object_path(sub_node.name[0]):
+                    self._issue_output('node-naming',
+                                       'Non-root node name is not a relative '
+                                       'object path ‘%s’.' % sub_node.name)
+                    continue
+
+                if sub_node.name in nodes:
+                    self._issue_output('duplicate-node',
+                                       'Duplicate node definition ‘%s’.' %
+                                       sub_node.format_name())
+                    continue
+
+                nodes[sub_node.name] = sub_node
             elif _ignore_node(node):
                 pass
             else:
@@ -154,7 +224,7 @@ class InterfaceParser(object):
                                    'Unknown node ‘%s’ in root.' %
                                    node.tag)
 
-        return interfaces
+        return ast.Node(name, interfaces, nodes)
 
     # pylint: disable=too-many-branches
     def _parse_interface(self, interface_node):  # noqa
@@ -165,6 +235,12 @@ class InterfaceParser(object):
             self._issue_output('missing-attribute',
                                'Missing required attribute ‘%s’ in '
                                'interface.' % 'name')
+            return None
+
+        if not self.is_valid_interface_name(interface_node.attrib['name']):
+            self._issue_output('interface-naming',
+                               'Invalid interface name ‘%s’.' %
+                               interface_node.attrib['name'])
             return None
 
         name = interface_node.attrib['name']
@@ -179,6 +255,12 @@ class InterfaceParser(object):
                 if method is None:
                     continue
 
+                if not self.is_valid_member_name(method.name):
+                    self._issue_output('member-naming',
+                                       'Invalid method name ‘%s.%s’.' %
+                                       (name, method.format_name()))
+                    continue
+
                 if method.name in methods:
                     self._issue_output('duplicate-method',
                                        'Duplicate method definition ‘%s.%s’.' %
@@ -189,6 +271,12 @@ class InterfaceParser(object):
             elif node.tag == 'signal':
                 signal = self._parse_signal(node, name)
                 if signal is None:
+                    continue
+
+                if not self.is_valid_member_name(signal.name):
+                    self._issue_output('member-naming',
+                                       'Invalid signal name ‘%s.%s’.' %
+                                       (name, signal.format_name()))
                     continue
 
                 if signal.name in signals:
@@ -202,6 +290,8 @@ class InterfaceParser(object):
                 prop = self._parse_property(node, name)
                 if prop is None:
                     continue
+
+                # Note: D-Bus property names may not be valid member names.
 
                 if prop.name in properties:
                     self._issue_output('duplicate-property',
