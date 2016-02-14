@@ -112,11 +112,18 @@ class TestParserErrors(unittest.TestCase):
                  'Duplicate node definition ‘N’.'),
             ])
 
+    def test_invalid_interface_name(self):
+        self.assertOutput(
+            "<node><interface name='0'/></node>", [
+                ('interface-naming',
+                 'Invalid interface name ‘0’.'),
+            ])
+
     def test_duplicate_interface(self):
         self.assertOutput(
-            "<node><interface name='I'/><interface name='I'/></node>", [
+            "<node><interface name='I.I'/><interface name='I.I'/></node>", [
                 ('duplicate-interface',
-                 'Duplicate interface definition ‘I’.'),
+                 'Duplicate interface definition ‘I.I’.'),
             ])
 
     def test_unknown_interface_node(self):
@@ -134,71 +141,71 @@ class TestParserErrors(unittest.TestCase):
 
     def test_duplicate_method(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<method name='M'/><method name='M'/>"
             "</interface></node>", [
                 ('duplicate-method',
-                 'Duplicate method definition ‘I.M’.'),
+                 'Duplicate method definition ‘I.I.M’.'),
             ])
 
     def test_duplicate_signal(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<signal name='S'/><signal name='S'/>"
             "</interface></node>", [
                 ('duplicate-signal',
-                 'Duplicate signal definition ‘I.S’.'),
+                 'Duplicate signal definition ‘I.I.S’.'),
             ])
 
     def test_duplicate_property(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property name='P' type='s' access='readwrite'/>"
             "<property name='P' type='s' access='readwrite'/>"
             "</interface></node>", [
                 ('duplicate-property',
-                 'Duplicate property definition ‘I.P’.'),
+                 'Duplicate property definition ‘I.I.P’.'),
             ])
 
     def test_unknown_sub_interface_node(self):
         self.assertOutput(
-            "<node><interface name='I'><badnode/></interface></node>", [
-                ('unknown-node', 'Unknown node ‘badnode’ in interface ‘I’.'),
+            "<node><interface name='I.I'><badnode/></interface></node>", [
+                ('unknown-node', 'Unknown node ‘badnode’ in interface ‘I.I’.'),
             ])
 
     def test_method_missing_name(self):
         self.assertOutput(
-            "<node><interface name='I'><method/></interface></node>", [
+            "<node><interface name='I.I'><method/></interface></node>", [
                 ('missing-attribute',
                  'Missing required attribute ‘name’ in method.'),
             ])
 
     def test_unknown_method_node(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<method name='M'><badnode/></method>"
             "</interface></node>", [
-                ('unknown-node', 'Unknown node ‘badnode’ in method ‘I.M’.'),
+                ('unknown-node', 'Unknown node ‘badnode’ in method ‘I.I.M’.'),
             ])
 
     def test_signal_missing_name(self):
         self.assertOutput(
-            "<node><interface name='I'><signal/></interface></node>", [
+            "<node><interface name='I.I'><signal/></interface></node>", [
                 ('missing-attribute',
                  'Missing required attribute ‘name’ in signal.'),
             ])
 
     def test_unknown_signal_node(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<signal name='S'><badnode/></signal>"
             "</interface></node>", [
-                ('unknown-node', 'Unknown node ‘badnode’ in signal ‘I.S’.'),
+                ('unknown-node', 'Unknown node ‘badnode’ in signal ‘I.I.S’.'),
             ])
 
     def test_property_missing_name(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property type='s' access='readwrite'/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -207,7 +214,7 @@ class TestParserErrors(unittest.TestCase):
 
     def test_property_missing_type(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property name='P' access='readwrite'/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -216,7 +223,7 @@ class TestParserErrors(unittest.TestCase):
 
     def test_property_missing_access(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property name='P' type='s'/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -225,26 +232,26 @@ class TestParserErrors(unittest.TestCase):
 
     def test_unknown_property_node(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property name='P' type='s' access='readwrite'>"
             "<badnode/>"
             "</property>"
             "</interface></node>", [
-                ('unknown-node', 'Unknown node ‘badnode’ in property ‘I.P’.'),
+                ('unknown-node', 'Unknown node ‘badnode’ in property ‘I.I.P’.'),
             ])
 
     def test_unknown_arg_node(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<method name='M'><arg type='s'><badnode/></arg></method>"
             "</interface></node>", [
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.M’.'),
+                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.I.M’.'),
             ])
 
     def test_arg_missing_type(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<method name='M'><arg/></method>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -253,7 +260,7 @@ class TestParserErrors(unittest.TestCase):
 
     def test_annotation_missing_name(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<annotation value='V'/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -262,7 +269,7 @@ class TestParserErrors(unittest.TestCase):
 
     def test_annotation_missing_value(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<annotation name='N'/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -271,11 +278,11 @@ class TestParserErrors(unittest.TestCase):
 
     def test_unknown_annotation_node(self):
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<annotation name='N' value='V'><badnode/></annotation>"
             "</interface></node>", [
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in annotation ‘I.N’.'),
+                 'Unknown node ‘badnode’ in annotation ‘I.I.N’.'),
             ])
 
 
@@ -294,7 +301,7 @@ class TestParserNormal(unittest.TestCase):
         self.assertParse(
             "<tp:spec xmlns:tp='"
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
-            "'><node><interface name='I'/></node></tp:spec>")
+            "'><node><interface name='I.I'/></node></tp:spec>")
 
     def test_doc_root(self):
         """Test that doc tags are ignored in the root."""
@@ -315,7 +322,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'>"
+            "'><interface name='I.I'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</interface></node>")
@@ -327,7 +334,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><method name='M'>"
+            "'><interface name='I.I'><method name='M'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</method></interface></node>")
@@ -339,7 +346,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><signal name='S'>"
+            "'><interface name='I.I'><signal name='S'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</signal></interface></node>")
@@ -351,7 +358,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><property name='P' type='s' access='read'>"
+            "'><interface name='I.I'><property name='P' type='s' access='read'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</property></interface></node>")
@@ -363,7 +370,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><method name='M'><arg type='s'>"
+            "'><interface name='I.I'><method name='M'><arg type='s'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</arg></method></interface></node>")
@@ -375,7 +382,7 @@ class TestParserNormal(unittest.TestCase):
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "' xmlns:doc='"
             "http://www.freedesktop.org/dbus/1.0/doc.dtd"
-            "'><interface name='I'><annotation name='A' value='V'>"
+            "'><interface name='I.I'><annotation name='A' value='V'>"
             "<tp:docstring>Ignore me.</tp:docstring>"
             "<doc:doc>Ignore me.</doc:doc>"
             "</annotation></interface></node>")
@@ -445,7 +452,7 @@ class TestParserRecovery(unittest.TestCase):
     def test_annotation_interface(self):
         """Test recovery from invalid annotations in an interface."""
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<annotation/><method/>"
             "</interface></node>", [
                 ('missing-attribute',
@@ -457,7 +464,7 @@ class TestParserRecovery(unittest.TestCase):
     def test_annotation_method(self):
         """Test recovery from invalid annotations in a method."""
         self.assertOutput(
-            "<node><interface name='I'><method name='M'>"
+            "<node><interface name='I.I'><method name='M'>"
             "<annotation/><arg/>"
             "</method></interface></node>", [
                 ('missing-attribute',
@@ -469,7 +476,7 @@ class TestParserRecovery(unittest.TestCase):
     def test_annotation_signal(self):
         """Test recovery from invalid annotations in a signal."""
         self.assertOutput(
-            "<node><interface name='I'><signal name='S'>"
+            "<node><interface name='I.I'><signal name='S'>"
             "<annotation/><arg/>"
             "</signal></interface></node>", [
                 ('missing-attribute',
@@ -481,7 +488,7 @@ class TestParserRecovery(unittest.TestCase):
     def test_annotation_property(self):
         """Test recovery from invalid annotations in a property."""
         self.assertOutput(
-            "<node><interface name='I'>"
+            "<node><interface name='I.I'>"
             "<property name='P' type='s' access='read'>"
             "<annotation/><badnode/>"
             "</property>"
@@ -489,19 +496,19 @@ class TestParserRecovery(unittest.TestCase):
                 ('missing-attribute',
                  'Missing required attribute ‘name’ in annotation.'),
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in property ‘I.P’.'),
+                 'Unknown node ‘badnode’ in property ‘I.I.P’.'),
             ])
 
     def test_annotation_arg(self):
         """Test recovery from invalid annotations in an arg."""
         self.assertOutput(
-            "<node><interface name='I'><method name='M'><arg type='s'>"
+            "<node><interface name='I.I'><method name='M'><arg type='s'>"
             "<annotation/><badnode/>"
             "</arg></method></interface></node>", [
                 ('missing-attribute',
                  'Missing required attribute ‘name’ in annotation.'),
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.M’.'),
+                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.I.M’.'),
             ])
 
 

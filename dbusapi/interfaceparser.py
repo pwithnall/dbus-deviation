@@ -52,7 +52,6 @@ def _ignore_node(node):
 
 
 class InterfaceParser(object):
-
     """
     Parse a D-Bus introspection XML file.
 
@@ -83,6 +82,7 @@ class InterfaceParser(object):
             'unknown-node',
             'node-naming',
             'duplicate-node',
+            'interface-naming',
             'duplicate-interface',
             'missing-attribute',
             'duplicate-method',
@@ -107,6 +107,13 @@ class InterfaceParser(object):
     def is_valid_relative_object_path(path):
         """Validate a relative D-Bus object path."""
         return re.match(r'[A-Za-z0-9_]+(/[A-Za-z0-9_]+)*', path) is not None
+
+    @staticmethod
+    def is_valid_interface_name(name):
+        """Validate a D-Bus interface name."""
+        return len(name) <= 255 and \
+            re.match(r'[A-Za-z_][A-Za-z0-9_]*'
+                     '(\.[A-Za-z_][A-Za-z0-9_]*)+', name) is not None
 
     def parse(self):
         """
@@ -147,7 +154,7 @@ class InterfaceParser(object):
         root_node = self._parse_node(root)
 
         if root_node.name and \
-           not self.is_valid_absolute_object_path(root_node.name):
+                not self.is_valid_absolute_object_path(root_node.name):
             self._issue_output('node-naming',
                                'Root node name is not an absolute object path '
                                '‘%s’.' % root_node.name)
@@ -221,6 +228,12 @@ class InterfaceParser(object):
             self._issue_output('missing-attribute',
                                'Missing required attribute ‘%s’ in '
                                'interface.' % 'name')
+            return None
+
+        if not self.is_valid_interface_name(interface_node.attrib['name']):
+            self._issue_output('interface-naming',
+                               'Invalid interface name ‘%s’.' %
+                               interface_node.attrib['name'])
             return None
 
         name = interface_node.attrib['name']
