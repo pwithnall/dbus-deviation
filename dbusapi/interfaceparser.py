@@ -112,7 +112,7 @@ class InterfaceParser(object):
         out = self._parse_root(tree.getroot())
 
         # Squash output on error.
-        if len(self._output) != 0:
+        if self._output:
             return None
 
         return out
