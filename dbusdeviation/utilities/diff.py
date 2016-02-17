@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 #
-# Copyright © 2015 Collabora Ltd.
+# Copyright © 2015, 2016 Collabora Ltd.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -212,12 +212,12 @@ def main():
     else:
         warnings_args = args.warnings.split(',')
 
-    for arg in warnings_args:
-        if arg[:3] == 'no-':
-            arg = arg[3:]
-        if arg not in WARNING_CATEGORIES and arg not in codes:
+    for warning_arg in warnings_args:
+        if warning_arg[:3] == 'no-':
+            warning_arg = warning_arg[3:]
+        if warning_arg not in WARNING_CATEGORIES and warning_arg not in codes:
             sys.stderr.write('%s: Unrecognized warning ‘%s’.\n' %
-                             (sys.argv[0], arg))
+                             (sys.argv[0], warning_arg))
             parser.print_help()
             sys.exit(1)
 
