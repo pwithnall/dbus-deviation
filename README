@@ -89,8 +89,10 @@ more details.
 Bugs
 ====
 
-Bug reports and (git formatted) patches should be e-mailed to one of the
-addresses listed in the ‘Contact’ section below. Thank you!
+Bug reports and patches should be sent via GitHub or Gitlab:
+
+https://github.com/pwithnall/dbus-deviation
+https://gitlab.com/dbus-deviation/dbus-deviation
 
 Contact
 =======
