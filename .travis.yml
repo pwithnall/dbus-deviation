@@ -3,7 +3,7 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
-  - "nightly"
+  - "3.5"
   - "pypy"
 # Disabled due to bugs in the logilab package on the Python 3.2 build slave.
 # See: https://travis-ci.org/pwithnall/dbus-deviation/jobs/60500460
