@@ -23,30 +23,52 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-TODO
-"""
-
-import os
+"""TODO"""
 
 from lxml import etree
+from dbusapi.ast import AstLog, Interface, ignore_node, TP_DTD
 
-from dbusapi import ast
+
+def _skip_non_node(elem):
+    for node in elem.getchildren():
+        if node.tag == 'node':
+            return node
+
+    return None
 
 
-def _ignore_node(node):
-    """
-    Decide whether to ignore the given node when parsing.
+def _get_root(filename, log):
+    root = etree.parse(filename).getroot()
 
-    We definitely want to ignore:
-     * {http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0}docstring
-     * {http://www.freedesktop.org/dbus/1.0/doc.dtd}doc
-    """
-    # pylint: disable=E1101
-    if node.tag == etree.Comment:
-        return False
+    # Handle specifications wrapped in tp:spec.
+    if root.tag == '{%s}spec' % TP_DTD:
+        root = _skip_non_node(root)
 
-    return node.tag[0] == '{'  # in a namespace
+    if root is not None and root.tag != 'node':
+        log.log_issue('unknown-node',
+                      'Unknown root node ‘%s’.' % root.tag)
+        root = _skip_non_node(root)
+
+    return root
+
+
+class ParsingLog(AstLog):
+
+    """A specialized AstLog subclass for parsing issues"""
+
+    def __init__(self, filename):
+        """
+        Construct a new ParsingLog.
+
+        Args:
+            filename: str, the name of the file being parsed.
+        """
+        super(ParsingLog, self).__init__()
+        self.__filename = filename
+        self.domain = 'parser'
+
+    def _create_entry(self, code, message):
+        return (self.__filename, self.domain, code, message)
 
 
 class InterfaceParser(object):
@@ -61,8 +83,6 @@ class InterfaceParser(object):
     unrecognised elements.
     """
 
-    TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
-
     def __init__(self, filename):
         """
         Construct a new InterfaceParser.
@@ -76,19 +96,7 @@ class InterfaceParser(object):
     @staticmethod
     def get_output_codes():
         """Return a list of all possible output codes."""
-        # FIXME: Hard-coded for the moment.
-        return [
-            'unknown-node',
-            'duplicate-interface',
-            'missing-attribute',
-            'duplicate-method',
-            'duplicate-signal',
-            'duplicate-property',
-        ]
-
-    def _issue_output(self, code, message):
-        """Append a message to the parser output."""
-        self._output.append((self._filename, 'parser', code, message))
+        return ParsingLog(None).issue_codes
 
     def get_output(self):
         """Return a list of all logged parser messages."""
@@ -101,337 +109,43 @@ class InterfaceParser(object):
         Returns:
             A non-empty dict of interfaces in the file, mapping each interface
             name to an ast.Interface instance.
-
             If parsing fails, None is returned.
         """
-        self._output = []
-        # pylint: disable=E1101
-        tree = etree.parse(os.path.abspath(self._filename))
-        out = self._parse_root(tree.getroot())
+        interfaces = {}
+        log = ParsingLog(self._filename)
 
-        # Squash output on error.
-        if self._output:
+        root = _get_root(self._filename, log)
+
+        if root is None:
+            self._output = log.issues
             return None
 
-        return out
+        xml_comment = None
 
-    def _parse_root(self, root):
-        """Parse the root node in the XML tree; return a dict of interfaces."""
-        # Handle specifications wrapped in tp:spec.
-        if root.tag == '{%s}spec' % self.TP_DTD:
-            for node in root.getchildren():
-                if node.tag == 'node':
-                    root = node
-                    break
-
-        # Continue parsing as per the D-Bus introspection format
-        interfaces = {}
-
-        if root.tag != 'node':
-            self._issue_output('unknown-node',
-                               'Unknown root node ‘%s’.' % root.tag)
-            return interfaces
-
-        comment = None
-        for node in root.getchildren():
-            # pylint: disable=E1101
-            if node.tag == 'interface':
-                interface = self._parse_interface(node)
-                if interface is None:
+        for elem in root:
+            if elem.tag == etree.Comment:
+                xml_comment = elem.text
+            elif elem.tag == 'interface':
+                interface = Interface.from_xml(elem, xml_comment, log)
+                if not interface:
                     continue
 
                 if interface.name in interfaces:
-                    self._issue_output('duplicate-interface',
-                                       'Duplicate interface definition ‘%s’.' %
-                                       interface.format_name())
+                    log.log_issue('duplicate-interface',
+                                  'Duplicate interface definition ‘%s’.' %
+                                  interface.name)
                     continue
-
-                interface.comment = comment
-                comment = None
                 interfaces[interface.name] = interface
-            elif node.tag == etree.Comment:
-                comment = node.text
-            elif _ignore_node(node):
-                comment = None
+                xml_comment = None
+            elif ignore_node(elem):
+                xml_comment = None
             else:
-                comment = None
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in root.' %
-                                   node.tag)
+                log.log_issue('unknown-node',
+                              'Unknown node ‘%s’ in root.' % elem.tag)
+
+        self._output = log.issues
+
+        if self._output:
+            return None
 
         return interfaces
-
-    # pylint: disable=too-many-branches
-    def _parse_interface(self, interface_node):  # noqa
-        """Parse an <interface> element; return an ast.Interface or None."""
-        assert interface_node.tag == 'interface'
-
-        if 'name' not in interface_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in '
-                               'interface.' % 'name')
-            return None
-
-        name = interface_node.attrib['name']
-        methods = {}
-        signals = {}
-        properties = {}
-        annotations = {}
-
-        comment = None
-        for node in interface_node.getchildren():
-            # pylint: disable=E1101
-            if node.tag == 'method':
-                method = self._parse_method(node, name)
-                if method is None:
-                    continue
-
-                if method.name in methods:
-                    self._issue_output('duplicate-method',
-                                       'Duplicate method definition ‘%s.%s’.' %
-                                       (name, method.format_name()))
-                    continue
-
-                method.comment = comment
-                comment = None
-                methods[method.name] = method
-            elif node.tag == 'signal':
-                signal = self._parse_signal(node, name)
-                if signal is None:
-                    continue
-
-                if signal.name in signals:
-                    self._issue_output('duplicate-signal',
-                                       'Duplicate signal definition ‘%s.%s’.' %
-                                       (name, signal.format_name()))
-                    continue
-
-                signal.comment = comment
-                comment = None
-                signals[signal.name] = signal
-            elif node.tag == 'property':
-                prop = self._parse_property(node, name)
-                if prop is None:
-                    continue
-
-                if prop.name in properties:
-                    self._issue_output('duplicate-property',
-                                       'Duplicate property definition '
-                                       '‘%s.%s’.' %
-                                       (name, prop.format_name()))
-                    continue
-
-                prop.comment = comment
-                comment = None
-                properties[prop.name] = prop
-            elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node, name)
-                if annotation is None:
-                    continue
-
-                annotations[annotation.name] = annotation
-            elif node.tag == etree.Comment:
-                comment = node.text
-            elif _ignore_node(node):
-                comment = None
-            else:
-                comment = None
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in interface '
-                                   '‘%s’.' % (node.tag, name))
-
-        return ast.Interface(name, methods, properties, signals,
-                             annotations)
-
-    def _parse_method(self, method_node, interface_name=None):
-        """Parse a <method> element; return an ast.Method or None."""
-        assert method_node.tag == 'method'
-
-        if 'name' not in method_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in method.' %
-                               'name')
-            return None
-
-        name = method_node.attrib['name']
-        args = []
-        annotations = {}
-
-        pretty_method_name = interface_name + '.' + name
-
-        comment = None
-        for node in method_node.getchildren():
-            if node.tag == 'arg':
-                arg = self._parse_arg(node, pretty_method_name)
-                if arg is None:
-                    continue
-
-                arg.comment = comment
-                comment = None
-                args.append(arg)
-            elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node, pretty_method_name)
-                if annotation is None:
-                    continue
-
-                annotations[annotation.name] = annotation
-            elif node.tag == etree.Comment:
-                comment = node.text
-            elif _ignore_node(node):
-                comment = None
-            else:
-                comment = None
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in method ‘%s’.' %
-                                   (node.tag, pretty_method_name))
-
-        return ast.Method(name, args, annotations)
-
-    def _parse_signal(self, signal_node, interface_name=None):
-        """Parse a <signal> element; return an ast.Signal or None."""
-        assert signal_node.tag == 'signal'
-
-        if 'name' not in signal_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in signal.' %
-                               'name')
-            return None
-
-        name = signal_node.attrib['name']
-        args = []
-        annotations = {}
-
-        pretty_signal_name = interface_name + '.' + name
-
-        comment = None
-        for node in signal_node.getchildren():
-            if node.tag == 'arg':
-                arg = self._parse_arg(node, pretty_signal_name)
-                if arg is None:
-                    continue
-
-                arg.comment = comment
-                comment = None
-                args.append(arg)
-            elif node.tag == 'annotation':
-                annotation = self._parse_annotation(node, pretty_signal_name)
-                if annotation is None:
-                    continue
-
-                annotations[annotation.name] = annotation
-            elif node.tag == etree.Comment:
-                comment = node.text
-            elif _ignore_node(node):
-                comment = None
-            else:
-                comment = None
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in signal ‘%s’.' %
-                                   (node.tag, pretty_signal_name))
-
-        return ast.Signal(name, args, annotations)
-
-    def _parse_property(self, property_node, interface_name=None):
-        """Parse a <property> element; return an ast.Property or None."""
-        assert property_node.tag == 'property'
-
-        if 'name' not in property_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in property.' %
-                               'name')
-            return None
-        elif 'type' not in property_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in property.' %
-                               'type')
-            return None
-        elif 'access' not in property_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in property.' %
-                               'access')
-            return None
-
-        name = property_node.attrib['name']
-        prop_type = property_node.attrib['type']
-        access = property_node.attrib['access']
-        annotations = {}
-
-        pretty_prop_name = interface_name + '.' + name
-
-        for node in property_node.getchildren():
-            if node.tag == 'annotation':
-                annotation = self._parse_annotation(node, pretty_prop_name)
-                if annotation is None:
-                    continue
-
-                annotations[annotation.name] = annotation
-            elif _ignore_node(node):
-                comment = None
-            else:
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in property ‘%s’.' %
-                                   (node.tag, pretty_prop_name))
-
-        return ast.Property(name, prop_type, access, annotations)
-
-    def _parse_arg(self, arg_node, parent_name=None):
-        """Parse an <arg> element; return an ast.Argument or None."""
-        assert arg_node.tag == 'arg'
-
-        if 'type' not in arg_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in arg.' %
-                               'type')
-            return None
-
-        name = arg_node.attrib.get('name', None)
-        direction = arg_node.attrib.get('direction',
-                                        ast.Argument.DIRECTION_IN)
-        arg_type = arg_node.attrib['type']
-        annotations = {}
-
-        pretty_arg_name = name if name is not None else 'unnamed'
-
-        for node in arg_node.getchildren():
-            if node.tag == 'annotation':
-                annotation = self._parse_annotation(node, pretty_arg_name)
-                if annotation is None:
-                    continue
-
-                annotations[annotation.name] = annotation
-            elif _ignore_node(node):
-                comment = None
-            else:
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in arg ‘%s’ of ‘%s’.' %
-                                   (node.tag, pretty_arg_name, parent_name))
-
-        return ast.Argument(name, direction, arg_type, annotations)
-
-    def _parse_annotation(self, annotation_node, parent_name=None):
-        """Parse an <annotation> element; return an ast.Annotation or None."""
-        assert annotation_node.tag == 'annotation'
-
-        if 'name' not in annotation_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in '
-                               'annotation.' % 'name')
-            return None
-        if 'value' not in annotation_node.attrib:
-            self._issue_output('missing-attribute',
-                               'Missing required attribute ‘%s’ in '
-                               'annotation.' % 'value')
-            return None
-
-        name = annotation_node.attrib.get('name')
-        value = annotation_node.attrib.get('value')
-
-        for node in annotation_node.getchildren():
-            if _ignore_node(node):
-                pass
-            else:
-                self._issue_output('unknown-node',
-                                   'Unknown node ‘%s’ in annotation '
-                                   '‘%s.%s’.' % (node.tag, parent_name, name))
-
-        return ast.Annotation(name, value)
