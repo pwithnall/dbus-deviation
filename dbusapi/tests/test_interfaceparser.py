@@ -203,7 +203,7 @@ class TestParserErrors(unittest.TestCase):
             "<method name='M'><arg type='s'><badnode/></arg></method>"
             "</interface></node>", [
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.M’.'),
+                 'Unknown node ‘badnode’ in argument ‘0 of method ‘I.M’’.'),
             ])
 
     def test_arg_missing_type(self):
@@ -224,22 +224,13 @@ class TestParserErrors(unittest.TestCase):
                  'Missing required attribute ‘name’ in annotation.'),
             ])
 
-    def test_annotation_missing_value(self):
-        self.assertOutput(
-            "<node><interface name='I'>"
-            "<annotation name='N'/>"
-            "</interface></node>", [
-                ('missing-attribute',
-                 'Missing required attribute ‘value’ in annotation.'),
-            ])
-
     def test_unknown_annotation_node(self):
         self.assertOutput(
             "<node><interface name='I'>"
             "<annotation name='N' value='V'><badnode/></annotation>"
             "</interface></node>", [
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in annotation ‘I.N’.'),
+                 'Unknown node ‘badnode’ in annotation ‘N of I’.'),
             ])
 
 
@@ -259,6 +250,19 @@ class TestParserNormal(unittest.TestCase):
             "<tp:spec xmlns:tp='"
             "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
             "'><node><interface name='I'/></node></tp:spec>")
+
+    def test_ignored_namespaced_tags_interface(self):
+        self.assertParse(
+            "<node><ignored:spec xmlns:ignored='http://ignored.com'>"
+            "<interface name='I'/></ignored:spec></node>")
+
+    def test_ignored_namespaced_tags(self):
+        self.assertParse(
+            "<node>"
+            "<interface name='I'>"
+            "<ignored:spec xmlns:ignored='http://ignored.com'>"
+            "</ignored:spec>"
+            "</interface></node>")
 
     def test_doc_root(self):
         """Test that doc tags are ignored in the root."""
@@ -405,8 +409,8 @@ class TestParserNormal(unittest.TestCase):
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertEquals(interface.comment,
-                "    Please consider that\n"
-                "    multiline comment")
+                          "    Please consider that\n"
+                          "    multiline comment")
 
     def test_ignored_comments(self):
         xml = ("<node xmlns:tp='"
@@ -514,7 +518,7 @@ class TestParserRecovery(unittest.TestCase):
                 ('missing-attribute',
                  'Missing required attribute ‘name’ in annotation.'),
                 ('unknown-node',
-                 'Unknown node ‘badnode’ in arg ‘unnamed’ of ‘I.M’.'),
+                 'Unknown node ‘badnode’ in argument ‘0 of method ‘I.M’’.'),
             ])
 
 

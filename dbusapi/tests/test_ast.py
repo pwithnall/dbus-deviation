@@ -78,22 +78,25 @@ class TestAstNames(unittest.TestCase):
         self.assertEqual(signal.format_name(), 'SomeSignal')
 
     def test_argument(self):
-        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, 's')
+        arg = ast.Argument('s', direction=ast.Argument.DIRECTION_IN,
+                           name='self')
         method = ast.Method('ParentMethod', [arg])
-        self.assertEqual(arg.format_name(), '0 (‘self’)')
+        self.assertEqual(arg.format_name(),
+                         '0 (‘self’) of method ‘ParentMethod’')
 
     def test_argument_unparented(self):
-        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, 's')
+        arg = ast.Argument('s', direction=ast.Argument.DIRECTION_IN,
+                           name='self')
         self.assertEqual(arg.format_name(), '‘self’')
 
     def test_argument_unnamed(self):
-        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, 's')
+        arg = ast.Argument('s', direction=ast.Argument.DIRECTION_IN)
         method = ast.Method('ParentMethod', [arg])
-        self.assertEqual(arg.format_name(), '0')
+        self.assertEqual(arg.format_name(), '0 of method ‘ParentMethod’')
 
     # pylint: disable=invalid-name
     def test_argument_unnamed_unparented(self):
-        arg = ast.Argument(None, ast.Argument.DIRECTION_IN, 's')
+        arg = ast.Argument('s', direction=ast.Argument.DIRECTION_IN)
         self.assertEqual(arg.format_name(), 'unnamed')
 
     def test_annotation_interface(self):
@@ -102,7 +105,7 @@ class TestAstNames(unittest.TestCase):
             'SomeAnnotation': annotation,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeInterface.SomeAnnotation')
+                         'SomeAnnotation of SomeInterface')
 
     def test_annotation_property(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -113,7 +116,7 @@ class TestAstNames(unittest.TestCase):
             'AProperty': prop,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeInterface.AProperty.SomeAnnotation')
+                         'SomeAnnotation of SomeInterface.AProperty')
 
     def test_annotation_method(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -124,7 +127,7 @@ class TestAstNames(unittest.TestCase):
             'AMethod': method,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeInterface.AMethod.SomeAnnotation')
+                         'SomeAnnotation of SomeInterface.AMethod')
 
     def test_annotation_signal(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -135,11 +138,11 @@ class TestAstNames(unittest.TestCase):
             'ASignal': signal,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeInterface.ASignal.SomeAnnotation')
+                         'SomeAnnotation of SomeInterface.ASignal')
 
     def test_annotation_argument(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
-        arg = ast.Argument('Argument', ast.Argument.DIRECTION_IN, 's', {
+        arg = ast.Argument('s', 'Argument', ast.Argument.DIRECTION_IN, {
             'SomeAnnotation': annotation,
         })
         method = ast.Method('AMethod', [arg])
@@ -147,7 +150,8 @@ class TestAstNames(unittest.TestCase):
             'AMethod': method,
         })
         self.assertEqual(annotation.format_name(),
-                         '0 (‘Argument’).SomeAnnotation')
+                         'SomeAnnotation of 0 (‘Argument’)'
+                         ' of method ‘SomeInterface.AMethod’')
 
     def test_annotation_unparented(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -207,7 +211,7 @@ class TestAstParenting(unittest.TestCase):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         self.assertEqual(annotation.parent, None)
 
-        arg = ast.Argument('SomeArgument', ast.Argument.DIRECTION_IN, 's', {
+        arg = ast.Argument('s', 'SomeArgument', ast.Argument.DIRECTION_IN, {
             'SomeAnnotation': annotation,
         })
         self.assertEqual(arg.parent, None)
@@ -217,6 +221,43 @@ class TestAstParenting(unittest.TestCase):
         method = ast.Method('AMethod', [arg])
         self.assertEqual(arg.parent, method)
         self.assertEqual(arg.index, 0)
+
+
+class TestAstTraversal(unittest.TestCase):
+    """Test AST traversal."""
+
+    def test_walk(self):
+        annotation = ast.Annotation('SomeAnnotation', 'value')
+        method = ast.Method('AMethod', [], {
+            'SomeAnnotation': annotation,
+        })
+        iface = ast.Interface('SomeInterface', {
+            'AMethod': method,
+        })
+
+        children = [node for node in iface.walk()]
+        self.assertEquals(len(children), 2)
+        self.assertEquals(children[0], method)
+        self.assertEquals(children[1], annotation)
+
+
+class TestAstLogging(unittest.TestCase):
+    """Test error handling in AST"""
+
+    def test_duplicate(self):
+        method = ast.Method('AMethod', [])
+        iface = ast.Interface('SomeInterface', {
+            'AMethod': method,
+        })
+        self.assertListEqual(iface.log.issues, [])
+        duplicate_method = ast.Method('AMethod', [])
+        iface.add_child(duplicate_method)
+        self.assertListEqual(
+            iface.log.issues,
+            [(None,
+              'ast',
+              'duplicate-method',
+              'Duplicate method definition ‘SomeInterface.AMethod’.')])
 
 
 if __name__ == '__main__':

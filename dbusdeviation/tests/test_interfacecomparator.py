@@ -228,7 +228,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'argument-name-changed',
-                 'Argument 0 of ‘A.M’ has changed name from ‘A’ to ‘Z’.'),
+                 'Argument 0 (‘A’) of method ‘A.M’ has changed name from ‘A’ to ‘Z’.'),
             ])
 
     def test_method_arg_type_changed(self):
@@ -242,7 +242,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-type-changed',
-                 'Argument 0 of ‘A.M’ has changed type from ‘s’ to ‘b’.'),
+                 'Argument 0 of method ‘A.M’ has changed type from ‘s’ to ‘b’.'),
             ])
 
     def test_method_arg_direction_changed(self):
@@ -256,7 +256,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-direction-changed-in-out',
-                 'Argument 0 of ‘A.M’ has changed direction from ‘in’ to '
+                 'Argument 0 of method ‘A.M’ has changed direction from ‘in’ to '
                  '‘out’.'),
             ])
 
@@ -586,7 +586,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'argument-name-changed',
-                 'Argument 0 of ‘A.S’ has changed name from ‘A’ to ‘Z’.'),
+                 'Argument 0 (‘A’) of signal ‘A.S’ has changed name from ‘A’ to ‘Z’.'),
             ])
 
     def test_signal_arg_type_changed(self):
@@ -600,7 +600,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-type-changed',
-                 'Argument 0 of ‘A.S’ has changed type from ‘s’ to ‘b’.'),
+                 'Argument 0 of signal ‘A.S’ has changed type from ‘s’ to ‘b’.'),
             ])
 
     def test_signal_arg_direction_changed(self):
@@ -614,7 +614,7 @@ class TestComparatorErrors(unittest.TestCase):
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-direction-changed-in-out',
-                 'Argument 0 of ‘A.S’ has changed direction from ‘in’ to '
+                 'Argument 0 of signal ‘A.S’ has changed direction from ‘in’ to '
                  '‘out’.'),
             ])
 

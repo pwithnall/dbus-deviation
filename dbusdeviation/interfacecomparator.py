@@ -413,17 +413,15 @@ class InterfaceComparator(object):
             if i >= n_old_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                    'argument-added',
-                                   'Argument %s of method ‘%s’ '
+                                   'Argument %s '
                                    'has been added.' %
-                                   (new_method.arguments[i].format_name(),
-                                    new_method.format_name()))
+                                   new_method.arguments[i].format_name())
             elif i >= n_new_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                    'argument-removed',
-                                   'Argument %s of method ‘%s’ '
+                                   'Argument %s '
                                    'has been removed.' %
-                                   (old_method.arguments[i].format_name(),
-                                    old_method.format_name()))
+                                   old_method.arguments[i].format_name())
             else:
                 self._compare_arguments(old_method.arguments[i],
                                         new_method.arguments[i])
@@ -480,17 +478,15 @@ class InterfaceComparator(object):
             if i >= n_old_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                    'argument-added',
-                                   'Argument %s of signal ‘%s’ '
+                                   'Argument %s '
                                    'has been added.' %
-                                   (new_signal.arguments[i].format_name(),
-                                    new_signal.format_name()))
+                                   new_signal.arguments[i].format_name())
             elif i >= n_new_args:
                 self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                    'argument-removed',
-                                   'Argument %s of signal ‘%s’ '
+                                   'Argument %s '
                                    'has been removed.' %
-                                   (old_signal.arguments[i].format_name(),
-                                    old_signal.format_name()))
+                                   old_signal.arguments[i].format_name())
             else:
                 self._compare_arguments(old_signal.arguments[i],
                                         new_signal.arguments[i])
@@ -503,26 +499,26 @@ class InterfaceComparator(object):
         if old_arg.name != new_arg.name:
             self._issue_output(self.OUTPUT_INFO,
                                'argument-name-changed',
-                               'Argument %u of ‘%s’ has changed '
+                               'Argument %s has changed '
                                'name from ‘%s’ to ‘%s’.' %
-                               (old_arg.index, old_arg.parent.format_name(),
+                               (old_arg.pretty_name,
                                 old_arg.name, new_arg.name))
 
         if old_arg.type != new_arg.type:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                'argument-type-changed',
-                               'Argument %u of ‘%s’ has changed '
+                               'Argument %s has changed '
                                'type from ‘%s’ to ‘%s’.' %
-                               (old_arg.index, old_arg.parent.format_name(),
+                               (old_arg.pretty_name,
                                 old_arg.type, new_arg.type))
 
         if old_arg.direction != new_arg.direction:
             self._issue_output(self.OUTPUT_BACKWARDS_INCOMPATIBLE,
                                'argument-direction-changed-%s-%s' %
                                (old_arg.direction, new_arg.direction),
-                               'Argument %u of ‘%s’ has changed '
+                               'Argument %s has changed '
                                'direction from ‘%s’ to ‘%s’.' %
-                               (old_arg.index, old_arg.parent.format_name(),
+                               (old_arg.pretty_name,
                                 old_arg.direction, new_arg.direction))
 
         # Compare annotations
