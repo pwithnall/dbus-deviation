@@ -29,7 +29,6 @@ TODO
 
 import os
 
-# pylint: disable=interface-not-implemented
 from lxml import etree
 
 from dbusapi import ast
