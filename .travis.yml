@@ -4,7 +4,9 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  - "pypy"
+# Disabled due to lxml 3.5.0 not working with PyPy:
+# See: https://bitbucket.org/pypy/compatibility/wiki/lxml
+#  - "pypy"
 # Disabled due to bugs in the logilab package on the Python 3.2 build slave.
 # See: https://travis-ci.org/pwithnall/dbus-deviation/jobs/60500460
 #  - "3.2"
