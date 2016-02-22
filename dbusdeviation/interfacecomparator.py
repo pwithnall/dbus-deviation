@@ -45,6 +45,7 @@ class InterfaceComparator(object):
 
     Differences are given different severity levels, depending on whether they
     affect
+
     * nothing, and are purely decorative; for example, changing the name of a
       method argument
     * forwards compatibility, where code written against the new interface
