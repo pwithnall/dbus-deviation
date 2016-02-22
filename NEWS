@@ -1,3 +1,26 @@
+Overview of changes from dbus-deviation 0.3.0 to dbus-deviation 0.4.0
+=====================================================================
+
+Major changes:
+ • Improve test coverage
+ • Port to lxml instead of xml.etree
+ • Support parsing comments and documentation nodes
+
+Overview of changes from dbus-deviation 0.2.0 to dbus-deviation 0.3.0
+=====================================================================
+
+Major changes:
+ • Improve utility arguments and variables in dbus-deviation.mk and vcs-helper
+
+Overview of changes from dbus-deviation 0.1.0 to dbus-deviation 0.2.0
+=====================================================================
+
+Major changes:
+ • Improve error reporting
+ • Improve test coverage
+ • Add Makefile snippet and helper program (vcs-helper) for use in other
+   projects
+
 Initial release of dbus-deviation 0.1.0
 =======================================
 
