@@ -25,6 +25,7 @@
 
 """TODO"""
 
+# pylint: disable=no-member
 from lxml import etree
 from dbusapi.ast import AstLog, Interface, ignore_node, TP_DTD
 
