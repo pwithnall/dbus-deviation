@@ -69,7 +69,7 @@ class ParsingLog(AstLog):
         self.domain = 'parser'
 
     def _create_entry(self, code, message):
-        return (self.__filename, self.domain, code, message)
+        return self.__filename, self.domain, code, message
 
 
 class InterfaceParser(object):

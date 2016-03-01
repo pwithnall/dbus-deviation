@@ -71,7 +71,7 @@ class Log(object):
 
     # pylint: disable=no-self-use
     def _create_entry(self, code, message):
-        return (None, self.domain, code, message)
+        return None, self.domain, code, message
 
 
 class AstLog(Log):
@@ -442,7 +442,7 @@ class Property(BaseNode):
         Args:
             name: property name; a non-empty string, not including the parent
                 interface name
-            prop_type: type string for the property; see http://goo.gl/uCpa5A
+            type_: type string for the property; see http://goo.gl/uCpa5A
             access: ACCESS_READ, ACCESS_WRITE, or ACCESS_READWRITE
             annotations: potentially empty dict of annotations applied to the
                 property, mapping annotation name to an `ast.Annotation`
