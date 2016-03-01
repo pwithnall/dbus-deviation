@@ -323,7 +323,9 @@ class Node(BaseNode):
         self._type_containers.update({Interface: self.interfaces,
                                       Node: self.nodes})
 
-        for child in (interfaces or {}).values() + (nodes or {}).values():
+        for child in (interfaces or {}).values():
+            self._add_child(child)
+        for child in (nodes or {}).values():
             self._add_child(child)
 
     def _add_child(self, child):
@@ -400,8 +402,11 @@ class Interface(BaseNode):
                                       Signal: self.signals,
                                       Property: self.properties})
 
-        for child in (methods or {}).values() + (signals or {}).values() + \
-                (properties or {}).values():
+        for child in (methods or {}).values():
+            self._add_child(child)
+        for child in (signals or {}).values():
+            self._add_child(child)
+        for child in (properties or {}).values():
             self._add_child(child)
 
     def _add_child(self, child):
