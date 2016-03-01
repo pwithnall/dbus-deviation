@@ -30,6 +30,7 @@
 from collections import OrderedDict
 # pylint: disable=no-member
 from lxml import etree
+from re import match
 
 
 TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
@@ -83,10 +84,12 @@ class AstLog(Log):
         self.register_issue_code('unknown-node')
         self.register_issue_code('empty-root')
         self.register_issue_code('missing-attribute')
+        self.register_issue_code('duplicate-node')
         self.register_issue_code('duplicate-interface')
         self.register_issue_code('duplicate-method')
         self.register_issue_code('duplicate-signal')
         self.register_issue_code('duplicate-property')
+        self.register_issue_code('node-name')
         self.domain = 'ast'
 
 
@@ -96,7 +99,7 @@ def ignore_node(node):
 
 
 # pylint: disable=too-many-instance-attributes
-class Node(object):
+class BaseNode(object):
 
     """Base class for all D-Bus Ast nodes."""
 
@@ -107,7 +110,7 @@ class Node(object):
     optional_attributes = []
 
     def __init__(self, name, annotations=None, log=None):
-        """Construct a new ast.Node
+        """Construct a new ast.BaseNode
 
         Args:
             name: str, the name of the node.
@@ -135,7 +138,7 @@ class Node(object):
 
     @classmethod
     def from_xml(cls, node, comment, log, parent=None):
-        """Return a new ast.Node instance from an XML node."""
+        """Return a new ast.BaseNode instance from an XML node."""
         attrs = {}
 
         valid = True
@@ -159,10 +162,10 @@ class Node(object):
         for attr_name in cls.optional_attributes:
             attrs[attr_name] = node.attrib.get(attr_name)
 
-        # FIXME: Hack for the fact that Argument.name is not actually required,
-        # but is the first attribute in the constructor, and hence must be
-        # specified. This can be removed when we break API.
-        if cls == Argument and 'name' not in attrs:
+        # FIXME: Hack for the fact that Node.name and Argument.name are not
+        # actually required, but is the first attribute in the constructor, and
+        # hence must be specified. This can be removed when we break API.
+        if (cls == Node or cls == Argument) and 'name' not in attrs:
             attrs['name'] = None
         elif issubclass(cls, Callable) and 'args' not in attrs:
             attrs['args'] = []
@@ -189,7 +192,7 @@ class Node(object):
                 xml_comment = elem.text
                 continue
 
-            elif elem.tag in Node.DOCSTRING_TAGS:
+            elif elem.tag in BaseNode.DOCSTRING_TAGS:
                 self.comment = elem.text
                 continue
 
@@ -201,10 +204,16 @@ class Node(object):
                 ctype = self._children_types[elem.tag]
             except KeyError:
                 xml_comment = None
-                self.__log_issue('unknown-node',
-                                 "Unknown node ‘%s’ in %s ‘%s’." %
-                                 (elem.tag, type(self).__name__.lower(),
-                                  self.pretty_name))
+                if isinstance(self, Node) and not self.pretty_name:
+                    # Special handling for root nodes to allow more meaningful
+                    #   error messages.
+                    self.__log_issue('unknown-node',
+                                     "Unknown node ‘%s’ in root." % elem.tag)
+                else:
+                    self.__log_issue('unknown-node',
+                                     "Unknown node ‘%s’ in %s ‘%s’." %
+                                     (elem.tag, type(self).__name__.lower(),
+                                      self.pretty_name))
                 continue
 
             ctype.from_xml(elem, xml_comment, parent=self,
@@ -275,12 +284,88 @@ class Node(object):
         return True
 
 
-class Interface(Node):
+class Node(BaseNode):
+
+    """
+    AST representation of a <node> element.
+
+    This represents the top level of a D-Bus API.
+    """
+
+    required_attributes = []
+    optional_attributes = ['name']
+
+    # pylint: disable=too-many-arguments
+    def __init__(self, name=None, interfaces=None, nodes=None,
+                 annotations=None, log=None):
+        """
+        Construct a new ast.Node.
+
+        Args:
+            name: node name; a non-empty string; The root <node> should either
+                have no name or should have a name that is a valid absolute
+                object path. Child <node> names must be valid relative paths.
+            interfaces: potentially empty dict of interfaces in the node,
+                mapping interface name to an `ast.Interface` instance
+            nodes: potentially empty dict of properties in the node,
+                mapping node name to an `ast.Node` instance
+            annotations: potentially empty dict of annotations applied to the
+                node, mapping annotation name to an `ast.Annotation` instance
+            log: subclass of `Log`, used to store log messages; can be None
+        """
+        super(Node, self).__init__(name, annotations, log)
+        self._children_types.update({'interface': Interface,
+                                     'node': Node})
+
+        self.interfaces = OrderedDict()
+        self.nodes = OrderedDict()
+
+        self._type_containers.update({Interface: self.interfaces,
+                                      Node: self.nodes})
+
+        for child in (interfaces or {}).values() + (nodes or {}).values():
+            self._add_child(child)
+
+    def _add_child(self, child):
+        if isinstance(child, Node):
+            if not child.name:
+                self.log.log_issue('missing-attribute',
+                                   'Missing required attribute ‘name’ in '
+                                   'non-root node.')
+            elif not Node.is_valid_relative_object_path(child.name):
+                self.log.log_issue('node-name',
+                                   'Non-root node name is not a relative '
+                                   'object path ‘%s’.' % child.name)
+        child.node = self
+        return super(Node, self)._add_child(child)
+
+    @staticmethod
+    def is_valid_absolute_object_path(path):
+        """
+        Validate an absolute D-Bus object path.
+
+        Args:
+            path: object path
+        """
+        return path == '/' or match(r'(/[A-Za-z0-9_]+)+', path) is not None
+
+    @staticmethod
+    def is_valid_relative_object_path(path):
+        """
+        Validate a relative D-Bus object path.
+
+        Args:
+            path: object path
+        """
+        return match(r'[A-Za-z0-9_]+(/[A-Za-z0-9_]+)*', path) is not None
+
+
+class Interface(BaseNode):
 
     """
     AST representation of an <interface> element.
 
-    This represents the top level of a D-Bus API.
+    This represents the most commonly used node of a D-Bus API.
     """
 
     # pylint: disable=too-many-arguments
@@ -330,7 +415,7 @@ def _dotted_name(elem):
     return elem.name
 
 
-class Property(Node):
+class Property(BaseNode):
 
     """
     AST representation of a <property> element.
@@ -342,7 +427,7 @@ class Property(Node):
     ACCESS_WRITE = 'write'
     ACCESS_READWRITE = 'readwrite'
 
-    required_attributes = Node.required_attributes + ['access', 'type']
+    required_attributes = BaseNode.required_attributes + ['access', 'type']
 
     # pylint: disable=too-many-arguments
     def __init__(self, name, type_, access, annotations=None, log=None):
@@ -370,7 +455,7 @@ class Property(Node):
         return _dotted_name(self)
 
 
-class Callable(Node):
+class Callable(BaseNode):
 
     u"""
     AST representation of a callable element.
@@ -435,7 +520,7 @@ class Signal(Callable):
     pass
 
 
-class Argument(Node):
+class Argument(BaseNode):
 
     """
     AST representation of an <arg> element.
@@ -499,7 +584,7 @@ class Argument(Node):
             return self._index
 
 
-class Annotation(Node):
+class Annotation(BaseNode):
 
     """
     AST representation of an <annotation> element.

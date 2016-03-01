@@ -48,19 +48,33 @@ def _create_temp_xml_file(xml):
     return tmp_name
 
 
-def _test_parser(xml):
+def _test_parser_with_nodes(xml):
     """Build an InterfaceParser for the XML snippet and parse it."""
     tmpfile = _create_temp_xml_file(xml)
     parser = InterfaceParser(tmpfile)
-    interfaces = parser.parse()
+    root_node = parser.parse_with_nodes()
     os.unlink(tmpfile)
+    return parser, root_node, tmpfile
 
+
+def _test_parser(xml):
+    """Build an InterfaceParser for the XML snippet and parse it."""
+    parser, root_node, tmpfile = _test_parser_with_nodes(xml)
+    interfaces = root_node.interfaces if root_node else None
     return parser, interfaces, tmpfile
 
 
 # pylint: disable=too-many-public-methods
 class TestParserErrors(unittest.TestCase):
     """Test error handling in the InterfaceParser."""
+
+    # pylint: disable=invalid-name
+    def assertOutputWithNodes(self, xml, partial_output):  # noqa
+        (parser, root_node, filename) = _test_parser_with_nodes(xml)
+        self.assertEqual(root_node, None)
+        actual_output = \
+            [(filename, 'parser', i[0], i[1]) for i in partial_output]
+        self.assertEqual(parser.get_output(), actual_output)
 
     # pylint: disable=invalid-name
     def assertOutput(self, xml, partial_output):  # noqa
@@ -74,6 +88,41 @@ class TestParserErrors(unittest.TestCase):
         self.assertOutput(
             "<notnode><irrelevant/></notnode>", [
                 ('unknown-node', 'Unknown root node ‘notnode’.'),
+            ])
+
+    def test_nonabsolute_node_name(self):
+        self.assertOutputWithNodes(
+            "<node name='rel/N'></node>", [
+                ('node-name',
+                 'Root node name is not an absolute object path ‘rel/N’.'),
+            ])
+
+    def test_invalid_node_name(self):
+        self.assertOutputWithNodes(
+            "<node name='//'></node>", [
+                ('node-name',
+                 'Root node name is not an absolute object path ‘//’.'),
+            ])
+
+    def test_missing_node_name(self):
+        self.assertOutputWithNodes(
+            "<node><node /></node>", [
+                ('missing-attribute',
+                 'Missing required attribute ‘name’ in non-root node.'),
+            ])
+
+    def test_nonrelative_node_name(self):
+        self.assertOutputWithNodes(
+            "<node><node name='/abs/N'/></node>", [
+                ('node-name',
+                 'Non-root node name is not a relative object path ‘/abs/N’.'),
+            ])
+
+    def test_duplicate_node(self):
+        self.assertOutputWithNodes(
+            "<node><node name='N'/><node name='N'/></node>", [
+                ('duplicate-node',
+                 'Duplicate node definition ‘N’.'),
             ])
 
     def test_duplicate_interface(self):
@@ -429,6 +478,42 @@ class TestParserNormal(unittest.TestCase):
         interface = interfaces.get('I')
         self.assertIsNotNone(interface)
         self.assertIsNone(interface.comment)
+
+    def test_root_node(self):
+        self.assertParse("""<node name="/" />""")
+
+    def test_dbus_spec_example(self):
+        """
+        Test parsing the example from the D-Bus Specification:
+
+            http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format
+        """
+        self.assertParse("""
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/com/example/sample_object">
+  <interface name="com.example.SampleInterface">
+    <method name="Frobate">
+      <arg name="foo" type="i" direction="in"/>
+      <arg name="bar" type="s" direction="out"/>
+      <arg name="baz" type="a{us}" direction="out"/>
+      <annotation name="org.freedesktop.DBus.Deprecated" value="true"/>
+    </method>
+    <method name="Bazify">
+      <arg name="bar" type="(iiu)" direction="in"/>
+      <arg name="bar" type="v" direction="out"/>
+    </method>
+    <method name="Mogrify">
+      <arg name="bar" type="(iiav)" direction="in"/>
+    </method>
+    <signal name="Changed">
+      <arg name="new_value" type="b"/>
+    </signal>
+    <property name="Bar" type="y" access="readwrite"/>
+  </interface>
+  <node name="child_of_sample_object"/>
+  <node name="another_child_of_sample_object"/>
+</node>""")
 
 
 class TestParserOutputCodes(unittest.TestCase):
