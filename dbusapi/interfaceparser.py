@@ -27,7 +27,7 @@
 
 # pylint: disable=no-member
 from lxml import etree
-from dbusapi.ast import AstLog, Interface, ignore_node, TP_DTD
+from dbusapi.ast import AstLog, Node, TP_DTD
 
 
 def _skip_non_node(elem):
@@ -103,16 +103,14 @@ class InterfaceParser(object):
         """Return a list of all logged parser messages."""
         return self._output
 
-    def parse(self):
+    def parse_with_nodes(self):
         """
         Parse the introspection XML file and build an AST.
 
         Returns:
-            A non-empty dict of interfaces in the file, mapping each interface
-            name to an ast.Interface instance.
+            An ast.Node instance, representing the root node.
             If parsing fails, None is returned.
         """
-        interfaces = {}
         log = ParsingLog(self._filename)
 
         root = _get_root(self._filename, log)
@@ -121,32 +119,31 @@ class InterfaceParser(object):
             self._output = log.issues
             return None
 
-        xml_comment = None
+        root_node = Node.from_xml(root, None, log)
 
-        for elem in root:
-            if elem.tag == etree.Comment:
-                xml_comment = elem.text
-            elif elem.tag == 'interface':
-                interface = Interface.from_xml(elem, xml_comment, log)
-                if not interface:
-                    continue
-
-                if interface.name in interfaces:
-                    log.log_issue('duplicate-interface',
-                                  'Duplicate interface definition ‘%s’.' %
-                                  interface.name)
-                    continue
-                interfaces[interface.name] = interface
-                xml_comment = None
-            elif ignore_node(elem):
-                xml_comment = None
-            else:
-                log.log_issue('unknown-node',
-                              'Unknown node ‘%s’ in root.' % elem.tag)
+        if root_node.name and \
+           not Node.is_valid_absolute_object_path(root_node.name):
+            log.log_issue('node-name',
+                          'Root node name is not an absolute object path '
+                          '‘%s’.' % root_node.name)
 
         self._output = log.issues
 
         if self._output:
             return None
+
+        return root_node
+
+    def parse(self):
+        """
+        Parse the introspection XML file and build an AST.
+
+        Returns:
+            A non-empty dict of interfaces belonging to the root node in the
+            file, mapping each interface name to an ast.Interface instance.
+            If parsing fails, None is returned.
+        """
+        root_node = self.parse_with_nodes()
+        interfaces = root_node.interfaces if root_node else None
 
         return interfaces
