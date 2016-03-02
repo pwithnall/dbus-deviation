@@ -81,10 +81,14 @@ integration and gather build statistics:
 Licensing
 =========
 
-dbus-deviation is licensed under the choice of the Academic Free License
-version 2.1, or the GNU General Public License version 2 (or, at your option,
-any later version). This is the same license as D-Bus itself. See COPYING for
-more details.
+dbus-deviation is licensed under the LGPL version 2.1 (or, at your option, any
+later version). See COPYING for more details.
+
+dbus-deviation versions 0.4.0 and earlier were licensed under the choice of the
+Academic Free License version 2.1, or the GNU General Public License version 2
+(or, at your option, any later version). This is the same license as D-Bus
+itself. Version 0.5.0 was relicensed to LGPLv2.1+ as it’s a more standard license
+with less ambiguity about its implications.
 
 Bugs
 ====
