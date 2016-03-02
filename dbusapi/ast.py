@@ -84,6 +84,8 @@ class AstLog(Log):
         self.register_issue_code('duplicate-property')
         self.register_issue_code('node-name')
         self.register_issue_code('interface-name')
+        self.register_issue_code('method-name')
+        self.register_issue_code('signal-name')
         self.domain = 'ast'
 
 
@@ -519,6 +521,19 @@ class Callable(BaseNode):
         """Format the callable's name as a human-readable string"""
         return _dotted_name(self)
 
+    @staticmethod
+    def is_valid_name(name):
+        """
+        Validate a D-Bus member name.
+
+        https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member
+
+        Args:
+            name: callable name
+        """
+        return len(name) <= 255 and \
+            match(r'[A-Za-z_][A-Za-z0-9_]*', name) is not None
+
 
 class Method(Callable):
 
@@ -528,7 +543,25 @@ class Method(Callable):
     This represents a callable method of an interface.
     """
 
-    pass
+    def __init__(self, name, args, annotations=None, log=None):
+        """
+        Construct a new ast.Method.
+
+        Args:
+            name: method name; a non-empty string, not including the parent
+                interface name
+            args: potentially empty ordered list of ast.Arguments accepted and
+                returned by the method
+            annotations: potentially empty dict of annotations applied to the
+                method, mapping annotation name to an ast.Annotation
+                instance
+            log: subclass of `Log`, used to store log messages; can be None
+        """
+        super(Method, self).__init__(name, args, annotations, log)
+
+        if name and not Callable.is_valid_name(name):
+            self.log.log_issue('method-name',
+                               'Invalid method name ‘%s’.' % name)
 
 
 class Signal(Callable):
@@ -539,7 +572,25 @@ class Signal(Callable):
     This represents an emittable signal on an interface.
     """
 
-    pass
+    def __init__(self, name, args, annotations=None, log=None):
+        """
+        Construct a new ast.Signal.
+
+        Args:
+            name: signal name; a non-empty string, not including the parent
+                interface name
+            args: potentially empty ordered list of ast.Arguments accepted and
+                returned by the signal
+            annotations: potentially empty dict of annotations applied to the
+                signal, mapping annotation name to an ast.Annotation
+                instance
+            log: subclass of `Log`, used to store log messages; can be None
+        """
+        super(Signal, self).__init__(name, args, annotations, log)
+
+        if name and not Callable.is_valid_name(name):
+            self.log.log_issue('signal-name',
+                               'Invalid signal name ‘%s’.' % name)
 
 
 class Argument(BaseNode):

@@ -145,6 +145,15 @@ class TestParserErrors(unittest.TestCase):
                  'Missing required attribute ‘name’ in interface.'),
             ])
 
+    def test_invalid_method(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<method name='0M'/>"
+            "</interface></node>", [
+                ('method-name',
+                 'Invalid method name ‘0M’.'),
+            ])
+
     def test_duplicate_method(self):
         self.assertOutput(
             "<node><interface name='I.I'>"
@@ -152,6 +161,15 @@ class TestParserErrors(unittest.TestCase):
             "</interface></node>", [
                 ('duplicate-method',
                  'Duplicate method definition ‘I.I.M’.'),
+            ])
+
+    def test_invalid_signal(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<signal name='*S'/>"
+            "</interface></node>", [
+                ('signal-name',
+                 'Invalid signal name ‘*S’.'),
             ])
 
     def test_duplicate_signal(self):
