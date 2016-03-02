@@ -34,15 +34,15 @@ class TestAstNames(unittest.TestCase):
     """Test AST node name generation."""
 
     def test_interface(self):
-        iface = ast.Interface('SomeInterface')
-        self.assertEqual(iface.format_name(), 'SomeInterface')
+        iface = ast.Interface('Some.Interface')
+        self.assertEqual(iface.format_name(), 'Some.Interface')
 
     def test_property(self):
         prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ)
-        ast.Interface('SomeInterface', {}, {
+        ast.Interface('Some.Interface', {}, {
             'AProperty': prop,
         })
-        self.assertEqual(prop.format_name(), 'SomeInterface.AProperty')
+        self.assertEqual(prop.format_name(), 'Some.Interface.AProperty')
 
     def test_property_unparented(self):
         prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ)
@@ -50,10 +50,10 @@ class TestAstNames(unittest.TestCase):
 
     def test_method(self):
         method = ast.Method('AMethod', [])
-        ast.Interface('SomeInterface', {
+        ast.Interface('Some.Interface', {
             'AMethod': method,
         })
-        self.assertEqual(method.format_name(), 'SomeInterface.AMethod')
+        self.assertEqual(method.format_name(), 'Some.Interface.AMethod')
 
     def test_method_unparented(self):
         method = ast.Method('AMethod', [])
@@ -61,10 +61,10 @@ class TestAstNames(unittest.TestCase):
 
     def test_signal(self):
         signal = ast.Signal('SomeSignal', [])
-        ast.Interface('SomeInterface', {}, {}, {
+        ast.Interface('Some.Interface', {}, {}, {
             'SomeSignal': signal,
         })
-        self.assertEqual(signal.format_name(), 'SomeInterface.SomeSignal')
+        self.assertEqual(signal.format_name(), 'Some.Interface.SomeSignal')
 
     def test_signal_unparented(self):
         signal = ast.Signal('SomeSignal', [])
@@ -92,44 +92,44 @@ class TestAstNames(unittest.TestCase):
 
     def test_annotation_interface(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
-        ast.Interface('SomeInterface', {}, {}, {}, {
+        ast.Interface('Some.Interface', {}, {}, {}, {
             'SomeAnnotation': annotation,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeAnnotation of ‘SomeInterface’')
+                         'SomeAnnotation of ‘Some.Interface’')
 
     def test_annotation_property(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ, {
             'SomeAnnotation': annotation,
         })
-        ast.Interface('SomeInterface', {}, {
+        ast.Interface('Some.Interface', {}, {
             'AProperty': prop,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeAnnotation of ‘SomeInterface.AProperty’')
+                         'SomeAnnotation of ‘Some.Interface.AProperty’')
 
     def test_annotation_method(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         method = ast.Method('AMethod', [], {
             'SomeAnnotation': annotation,
         })
-        ast.Interface('SomeInterface', {
+        ast.Interface('Some.Interface', {
             'AMethod': method,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeAnnotation of ‘SomeInterface.AMethod’')
+                         'SomeAnnotation of ‘Some.Interface.AMethod’')
 
     def test_annotation_signal(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
         signal = ast.Signal('ASignal', [], {
             'SomeAnnotation': annotation,
         })
-        ast.Interface('SomeInterface', {}, {}, {
+        ast.Interface('Some.Interface', {}, {}, {
             'ASignal': signal,
         })
         self.assertEqual(annotation.format_name(),
-                         'SomeAnnotation of ‘SomeInterface.ASignal’')
+                         'SomeAnnotation of ‘Some.Interface.ASignal’')
 
     def test_annotation_argument(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -137,12 +137,12 @@ class TestAstNames(unittest.TestCase):
             'SomeAnnotation': annotation,
         })
         method = ast.Method('AMethod', [arg])
-        ast.Interface('SomeInterface', {
+        ast.Interface('Some.Interface', {
             'AMethod': method,
         })
         self.assertEqual(annotation.format_name(),
                          'SomeAnnotation of ‘0 (‘Argument’)'
-                         ' of method ‘SomeInterface.AMethod’’')
+                         ' of method ‘Some.Interface.AMethod’’')
 
     def test_annotation_unparented(self):
         annotation = ast.Annotation('SomeAnnotation', 'value')
@@ -163,7 +163,7 @@ class TestAstParenting(unittest.TestCase):
         self.assertEqual(prop.interface, None)
         self.assertEqual(annotation.parent, prop)
 
-        iface = ast.Interface('SomeInterface', {}, {
+        iface = ast.Interface('Some.Interface', {}, {
             'AProperty': prop,
         })
         self.assertEqual(prop.interface, iface)
@@ -178,7 +178,7 @@ class TestAstParenting(unittest.TestCase):
         self.assertEqual(method.interface, None)
         self.assertEqual(annotation.parent, method)
 
-        iface = ast.Interface('SomeInterface', {
+        iface = ast.Interface('Some.Interface', {
             'AMethod': method,
         })
         self.assertEqual(method.interface, iface)
@@ -193,7 +193,7 @@ class TestAstParenting(unittest.TestCase):
         self.assertEqual(signal.interface, None)
         self.assertEqual(annotation.parent, signal)
 
-        iface = ast.Interface('SomeInterface', {}, {
+        iface = ast.Interface('Some.Interface', {}, {
             'ASignal': signal,
         })
         self.assertEqual(signal.interface, iface)
@@ -222,7 +222,7 @@ class TestAstTraversal(unittest.TestCase):
         method = ast.Method('AMethod', [], {
             'SomeAnnotation': annotation,
         })
-        iface = ast.Interface('SomeInterface', {
+        iface = ast.Interface('Some.Interface', {
             'AMethod': method,
         })
 
@@ -237,7 +237,7 @@ class TestAstLogging(unittest.TestCase):
 
     def test_duplicate(self):
         method = ast.Method('AMethod', [])
-        iface = ast.Interface('SomeInterface', {
+        iface = ast.Interface('Some.Interface', {
             'AMethod': method,
         })
         self.assertListEqual(iface.log.issues, [])
@@ -248,7 +248,7 @@ class TestAstLogging(unittest.TestCase):
             [(None,
               'ast',
               'duplicate-method',
-              'Duplicate method definition ‘SomeInterface.AMethod’.')])
+              'Duplicate method definition ‘Some.Interface.AMethod’.')])
 
 
 if __name__ == '__main__':
