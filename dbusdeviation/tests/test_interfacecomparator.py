@@ -83,365 +83,373 @@ class TestComparatorErrors(unittest.TestCase):
 
     def test_interface_removed(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
+            "<node><interface name='I.A'/></node>",
             "<node></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'interface-removed',
-                 'Interface ‘A’ has been removed.'),
+                 'Interface ‘I.A’ has been removed.'),
             ])
 
     def test_interface_added(self):
         self.assertOutput(
             "<node></node>",
-            "<node><interface name='A'/></node>", [
+            "<node><interface name='I.A'/></node>", [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'interface-added',
-                 'Interface ‘A’ has been added.'),
+                 'Interface ‘I.A’ has been added.'),
             ])
 
     def test_interface_deprecated(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'/></node>",
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>", [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'deprecated',
-                 'Node ‘A’ has been deprecated.'),
+                 'Node ‘I.A’ has been deprecated.'),
             ])
 
     def test_interface_deprecated_explicit(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' "
             "value='false'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>", [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'deprecated',
-                 'Node ‘A’ has been deprecated.'),
+                 'Node ‘I.A’ has been deprecated.'),
             ])
 
     def test_interface_undeprecated(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>",
-            "<node><interface name='A'/></node>", [
+            "<node><interface name='I.A'/></node>", [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'undeprecated',
-                 'Node ‘A’ has been un-deprecated.'),
+                 'Node ‘I.A’ has been un-deprecated.'),
             ])
 
     def test_interface_undeprecated_explicit(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<annotation name='org.freedesktop.DBus.Deprecated' "
             "value='false'/>"
             "</interface></node>", [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'undeprecated',
-                 'Node ‘A’ has been un-deprecated.'),
+                 'Node ‘I.A’ has been un-deprecated.'),
             ])
 
     def test_interface_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
-            "<node><interface name='A2'/></node>", [
+            "<node><interface name='I.A'/></node>",
+            "<node><interface name='I.A2'/></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'interface-removed',
-                 'Interface ‘A’ has been removed.'),
+                 'Interface ‘I.A’ has been removed.'),
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'interface-added',
-                 'Interface ‘A2’ has been added.')
+                 'Interface ‘I.A2’ has been added.')
             ])
 
     def test_method_removed(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'/></interface></node>",
-            "<node><interface name='A'/></node>", [
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
+            "<node><interface name='I.A'/></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'method-removed',
-                 'Method ‘A.M’ has been removed.'),
+                 'Method ‘I.A.M’ has been removed.'),
             ])
 
     def test_method_added(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
-            "<node><interface name='A'><method name='M'/></interface></node>",
+            "<node><interface name='I.A'/></node>",
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'method-added',
-                 'Method ‘A.M’ has been added.'),
+                 'Method ‘I.A.M’ has been added.'),
             ])
 
     def test_method_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'/></interface></node>",
-            "<node><interface name='A'><method name='M2'/></interface></node>",
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
+            "<node><interface name='I.A'><method name='M2'/>"
+            "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'method-removed',
-                 'Method ‘A.M’ has been removed.'),
+                 'Method ‘I.A.M’ has been removed.'),
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'method-added',
-                 'Method ‘A.M2’ has been added.'),
+                 'Method ‘I.A.M2’ has been added.'),
             ])
 
     def test_method_arg_removed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='s' direction='in'/></method>"
             "</interface></node>",
-            "<node><interface name='A'><method name='M'/></interface></node>",
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-removed',
-                 'Argument 0 of method ‘A.M’ has been removed.'),
+                 'Argument 0 of method ‘I.A.M’ has been removed.'),
             ])
 
     def test_method_arg_added(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'/></interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='s' direction='in'/></method>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-added',
-                 'Argument 0 of method ‘A.M’ has been added.'),
+                 'Argument 0 of method ‘I.A.M’ has been added.'),
             ])
 
     def test_method_arg_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
-            "<method name='M'><arg type='s' name='A' direction='in'/></method>"
-            "</interface></node>",
-            "<node><interface name='A'>"
-            "<method name='M'><arg type='s' name='Z' direction='in'/></method>"
-            "</interface></node>",
+            "<node><interface name='I.A'>"
+            "<method name='M'><arg type='s' name='A' direction='in'/>"
+            "</method></interface></node>",
+            "<node><interface name='I.A'>"
+            "<method name='M'><arg type='s' name='Z' direction='in'/>"
+            "</method></interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'argument-name-changed',
-                 'Argument 0 (‘A’) of method ‘A.M’ has changed name from ‘A’ '
-                 'to ‘Z’.'),
+                 'Argument 0 (‘A’) of method ‘I.A.M’ has changed name '
+                 'from ‘A’ to ‘Z’.'),
             ])
 
     def test_method_arg_type_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='s' direction='in'/></method>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='b' direction='in'/></method>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-type-changed',
-                 'Argument 0 of method ‘A.M’ has changed type from ‘s’ to '
+                 'Argument 0 of method ‘I.A.M’ has changed type from ‘s’ to '
                  '‘b’.'),
             ])
 
     def test_method_arg_direction_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='s' direction='in'/></method>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<method name='M'><arg type='s' direction='out'/></method>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-direction-changed-in-out',
-                 'Argument 0 of method ‘A.M’ has changed direction from ‘in’ '
-                 'to ‘out’.'),
+                 'Argument 0 of method ‘I.A.M’ has changed direction '
+                 'from ‘in’ to ‘out’.'),
             ])
 
     def test_method_c_symbol_changed(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.GLib.CSymbol' value='S1'/>"
             "</method></interface></node>",
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.GLib.CSymbol' value='S2'/>"
             "</method></interface></node>", [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'c-symbol-changed',
-                 'Node ‘A.M’ has changed its C symbol from ‘S1’ to ‘S2’.'),
+                 'Node ‘I.A.M’ has changed its C symbol from ‘S1’ to ‘S2’.'),
             ])
 
     def test_method_no_reply_changed_to_false(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='true'/>"
             "</method></interface></node>",
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='false'/>"
             "</method></interface></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'reply-added',
-                 'Node ‘A.M’ has been marked as returning a reply.'),
+                 'Node ‘I.A.M’ has been marked as returning a reply.'),
             ])
 
     def test_method_no_reply_changed_to_true(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'/></interface></node>",
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'/>"
+            "</interface></node>",
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='true'/>"
             "</method></interface></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'reply-removed',
-                 'Node ‘A.M’ has been marked as not returning a reply.'),
+                 'Node ‘I.A.M’ has been marked as not returning a reply.'),
             ])
 
     def test_method_no_reply_changed_to_true_explicit(self):
         self.assertOutput(
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='false'/>"
             "</method></interface></node>",
-            "<node><interface name='A'><method name='M'>"
+            "<node><interface name='I.A'><method name='M'>"
             "<annotation name='org.freedesktop.DBus.Method.NoReply' "
             "value='true'/>"
             "</method></interface></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'reply-removed',
-                 'Node ‘A.M’ has been marked as not returning a reply.'),
+                 'Node ‘I.A.M’ has been marked as not returning a reply.'),
             ])
 
     def test_property_removed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
-            "<node><interface name='A'/></node>", [
+            "<node><interface name='I.A'/></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-removed',
-                 'Property ‘A.P’ has been removed.'),
+                 'Property ‘I.A.P’ has been removed.'),
             ])
 
     def test_property_added(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'/></node>",
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'property-added',
-                 'Property ‘A.P’ has been added.'),
+                 'Property ‘I.A.P’ has been added.'),
             ])
 
     def test_property_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P2' type='b' access='readwrite'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-removed',
-                 'Property ‘A.P’ has been removed.'),
+                 'Property ‘I.A.P’ has been removed.'),
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'property-added',
-                 'Property ‘A.P2’ has been added.'),
+                 'Property ‘I.A.P2’ has been added.'),
             ])
 
     def test_property_type_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='s' access='readwrite'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-type-changed',
-                 'Property ‘A.P’ has changed type from ‘b’ to ‘s’.'),
+                 'Property ‘I.A.P’ has changed type from ‘b’ to ‘s’.'),
             ])
 
     def test_property_access_changed_r_to_rw(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='read'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'property-access-changed-read-readwrite',
-                 'Property ‘A.P’ has changed access from ‘read’ to '
+                 'Property ‘I.A.P’ has changed access from ‘read’ to '
                  '‘readwrite’, becoming less restrictive.'),
             ])
 
     def test_property_access_changed_w_to_rw(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='write'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'property-access-changed-write-readwrite',
-                 'Property ‘A.P’ has changed access from ‘write’ to '
+                 'Property ‘I.A.P’ has changed access from ‘write’ to '
                  '‘readwrite’, becoming less restrictive.'),
             ])
 
     def test_property_access_changed_r_to_w(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='read'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='write'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-access-changed-read-write',
-                 'Property ‘A.P’ has changed access from ‘read’ to ‘write’.'),
+                 'Property ‘I.A.P’ has changed access '
+                 'from ‘read’ to ‘write’.'),
             ])
 
     def test_property_access_changed_rw_to_r(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='read'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-access-changed-readwrite-read',
-                 'Property ‘A.P’ has changed access from ‘readwrite’ to '
+                 'Property ‘I.A.P’ has changed access from ‘readwrite’ to '
                  '‘read’.'),
             ])
 
     def test_property_access_changed_rw_to_w(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='readwrite'/>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<property name='P' type='b' access='write'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'property-access-changed-readwrite-write',
-                 'Property ‘A.P’ has changed access from ‘readwrite’ to '
+                 'Property ‘I.A.P’ has changed access from ‘readwrite’ to '
                  '‘write’.'),
             ])
 
@@ -449,31 +457,31 @@ class TestComparatorErrors(unittest.TestCase):
         # All the classes of error we expect.
         error1 = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ started emitting '
+            'Node ‘I.A.P’ started emitting '
             'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error2a = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ stopped emitting its new value in '
+            'Node ‘I.A.P’ stopped emitting its new value in '
             'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error2b = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ started emitting its new value in '
+            'Node ‘I.A.P’ started emitting its new value in '
             'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error3 = (
             InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ stopped emitting '
+            'Node ‘I.A.P’ stopped emitting '
             'org.freedesktop.DBus.Properties.PropertiesChanged.'
         )
         error4a = (
             InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ stopped being a constant.'
+            'Node ‘I.A.P’ stopped being a constant.'
         )
         error4b = (
             InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
-            'Node ‘A.P’ became a constant.'
+            'Node ‘I.A.P’ became a constant.'
         )
 
         # 2D matrix of test vectors. Each row gives the old annotation value;
@@ -501,14 +509,14 @@ class TestComparatorErrors(unittest.TestCase):
                 expected_errors = [vector] if vector is not None else []
 
                 self.assertOutput(
-                    "<node><interface name='A'>"
+                    "<node><interface name='I.A'>"
                     "<property name='P' type='b' access='readwrite'>"
                     "<annotation "
                     "name='org.freedesktop.DBus.Property.EmitsChangedSignal' "
                     "value='%s'/>"
                     "</property>"
                     "</interface></node>" % labels[i],
-                    "<node><interface name='A'>"
+                    "<node><interface name='I.A'>"
                     "<property name='P' type='b' access='readwrite'>"
                     "<annotation "
                     "name='org.freedesktop.DBus.Property.EmitsChangedSignal' "
@@ -519,107 +527,109 @@ class TestComparatorErrors(unittest.TestCase):
 
     def test_signal_removed(self):
         self.assertOutput(
-            "<node><interface name='A'><signal name='S'/>"
+            "<node><interface name='I.A'><signal name='S'/>"
             "</interface></node>",
-            "<node><interface name='A'/></node>", [
+            "<node><interface name='I.A'/></node>", [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'signal-removed',
-                 'Signal ‘A.S’ has been removed.'),
+                 'Signal ‘I.A.S’ has been removed.'),
             ])
 
     def test_signal_added(self):
         self.assertOutput(
-            "<node><interface name='A'/></node>",
-            "<node><interface name='A'><signal name='S'/>"
+            "<node><interface name='I.A'/></node>",
+            "<node><interface name='I.A'><signal name='S'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'signal-added',
-                 'Signal ‘A.S’ has been added.'),
+                 'Signal ‘I.A.S’ has been added.'),
             ])
 
     def test_signal_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'><signal name='S'/>"
+            "<node><interface name='I.A'><signal name='S'/>"
             "</interface></node>",
-            "<node><interface name='A'><signal name='S2'/>"
+            "<node><interface name='I.A'><signal name='S2'/>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'signal-removed',
-                 'Signal ‘A.S’ has been removed.'),
+                 'Signal ‘I.A.S’ has been removed.'),
                 (None, InterfaceComparator.OUTPUT_FORWARDS_INCOMPATIBLE,
                  'signal-added',
-                 'Signal ‘A.S2’ has been added.'),
+                 'Signal ‘I.A.S2’ has been added.'),
             ])
 
     def test_signal_arg_removed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' direction='in'/></signal>"
             "</interface></node>",
-            "<node><interface name='A'><signal name='S'/></interface></node>",
+            "<node><interface name='I.A'><signal name='S'/>"
+            "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-removed',
-                 'Argument 0 of signal ‘A.S’ has been removed.'),
+                 'Argument 0 of signal ‘I.A.S’ has been removed.'),
             ])
 
     def test_signal_arg_added(self):
         self.assertOutput(
-            "<node><interface name='A'><signal name='S'/></interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'><signal name='S'/>"
+            "</interface></node>",
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' direction='in'/></signal>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-added',
-                 'Argument 0 of signal ‘A.S’ has been added.'),
+                 'Argument 0 of signal ‘I.A.S’ has been added.'),
             ])
 
     def test_signal_arg_name_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' name='A' direction='in'/></signal>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' name='Z' direction='in'/></signal>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_INFO,
                  'argument-name-changed',
-                 'Argument 0 (‘A’) of signal ‘A.S’ has changed name from ‘A’ '
-                 'to ‘Z’.'),
+                 'Argument 0 (‘A’) of signal ‘I.A.S’ has changed name '
+                 'from ‘A’ to ‘Z’.'),
             ])
 
     def test_signal_arg_type_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' direction='in'/></signal>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='b' direction='in'/></signal>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-type-changed',
-                 'Argument 0 of signal ‘A.S’ has changed type from ‘s’ to '
+                 'Argument 0 of signal ‘I.A.S’ has changed type from ‘s’ to '
                  '‘b’.'),
             ])
 
     def test_signal_arg_direction_changed(self):
         self.assertOutput(
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' direction='in'/></signal>"
             "</interface></node>",
-            "<node><interface name='A'>"
+            "<node><interface name='I.A'>"
             "<signal name='S'><arg type='s' direction='out'/></signal>"
             "</interface></node>",
             [
                 (None, InterfaceComparator.OUTPUT_BACKWARDS_INCOMPATIBLE,
                  'argument-direction-changed-in-out',
-                 'Argument 0 of signal ‘A.S’ has changed direction from ‘in’ '
-                 'to ‘out’.'),
+                 'Argument 0 of signal ‘I.A.S’ has changed direction '
+                 'from ‘in’ to ‘out’.'),
             ])
 
 

@@ -90,6 +90,7 @@ class AstLog(Log):
         self.register_issue_code('duplicate-signal')
         self.register_issue_code('duplicate-property')
         self.register_issue_code('node-name')
+        self.register_issue_code('interface-name')
         self.domain = 'ast'
 
 
@@ -346,6 +347,8 @@ class Node(BaseNode):
         """
         Validate an absolute D-Bus object path.
 
+        https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+
         Args:
             path: object path
         """
@@ -355,6 +358,8 @@ class Node(BaseNode):
     def is_valid_relative_object_path(path):
         """
         Validate a relative D-Bus object path.
+
+        https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
 
         Args:
             path: object path
@@ -390,6 +395,11 @@ class Interface(BaseNode):
             log: subclass of `Log`, used to store log messages; can be None
         """
         super(Interface, self).__init__(name, annotations, log)
+
+        if name and not Interface.is_valid_interface_name(name):
+            self.log.log_issue('interface-name',
+                               'Invalid interface name ‘%s’.' % name)
+
         self._children_types.update({'signal': Signal,
                                      'method': Method,
                                      'property': Property})
@@ -412,6 +422,20 @@ class Interface(BaseNode):
     def _add_child(self, child):
         child.interface = self
         return super(Interface, self)._add_child(child)
+
+    @staticmethod
+    def is_valid_interface_name(name):
+        """
+        Validate a D-Bus interface name.
+
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
+
+        Args:
+            name: interface name
+        """
+        return len(name) <= 255 and \
+            match(r'[A-Za-z_][A-Za-z0-9_]*'
+                  r'(\.[A-Za-z_][A-Za-z0-9_]*)+', name) is not None
 
 
 def _dotted_name(elem):
