@@ -90,6 +90,7 @@ class AstLog(Log):
         self.register_issue_code('duplicate-signal')
         self.register_issue_code('duplicate-property')
         self.register_issue_code('node-name')
+        self.register_issue_code('interface-name')
         self.domain = 'ast'
 
 
@@ -390,6 +391,11 @@ class Interface(BaseNode):
             log: subclass of `Log`, used to store log messages; can be None
         """
         super(Interface, self).__init__(name, annotations, log)
+
+        if name and not Interface.is_valid_interface_name(name):
+            self.log.log_issue('interface-name',
+                               'Invalid interface name ‘%s’.' % name)
+
         self._children_types.update({'signal': Signal,
                                      'method': Method,
                                      'property': Property})
@@ -412,6 +418,18 @@ class Interface(BaseNode):
     def _add_child(self, child):
         child.interface = self
         return super(Interface, self)._add_child(child)
+
+    @staticmethod
+    def is_valid_interface_name(name):
+        """
+        Validate a D-Bus interface name.
+
+        Args:
+            name: interface name
+        """
+        return len(name) <= 255 and \
+            match(r'[A-Za-z_][A-Za-z0-9_]*'
+                  r'(\.[A-Za-z_][A-Za-z0-9_]*)+', name) is not None
 
 
 def _dotted_name(elem):
