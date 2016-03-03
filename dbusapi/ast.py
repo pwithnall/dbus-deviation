@@ -25,6 +25,8 @@ An AST can be built by parsing an XML file (using
 `interfaceparser.InterfaceParser`) or by building the tree of objects manually.
 """
 
+
+from abc import ABCMeta
 from collections import OrderedDict
 # pylint: disable=no-member
 from lxml import etree
@@ -103,6 +105,8 @@ def ignore_node(node):
 class BaseNode(object):
 
     """Base class for all D-Bus AST nodes."""
+
+    __metaclass__ = ABCMeta
 
     DOCSTRING_TAGS = ['{%s}docstring' % TP_DTD,
                       '{%s}doc' % FDO_DTD]
