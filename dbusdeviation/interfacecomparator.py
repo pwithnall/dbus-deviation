@@ -17,7 +17,9 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-TODO
+Module providing a `InterfaceComparator` object for comparing two D-Bus APIs
+(provided as abstract syntax trees from the introspection XML), to determine if
+they differ in API-incompatible ways.
 """
 
 from dbusapi import ast

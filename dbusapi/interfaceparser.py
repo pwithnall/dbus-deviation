@@ -16,7 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
-"""TODO"""
+"""
+Module providing an `InterfaceParser` object for parsing D-Bus introspection
+XML files into abstract syntax trees (ASTs).
+"""
 
 # pylint: disable=no-member
 from lxml import etree

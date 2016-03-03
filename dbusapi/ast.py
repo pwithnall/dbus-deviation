@@ -17,8 +17,13 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Implements a D-Bus ast."""
+"""
+An implementation of the abstract syntax tree (AST) for a D-Bus introspection
+document, which fully describes a D-Bus API.
 
+An AST can be built by parsing an XML file (using
+`interfaceparser.InterfaceParser`) or by building the tree of objects manually.
+"""
 
 from collections import OrderedDict
 # pylint: disable=no-member
