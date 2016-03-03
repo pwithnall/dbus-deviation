@@ -1,3 +1,12 @@
+Overview of changes from dbus-deviation 0.4.0 to dbus-deviation 0.5.0
+=====================================================================
+
+Major changes:
+ • Add support for <node> elements (Kaloyan Tenchov)
+ • Add object path, interface name and callable name validation
+   (Kaloyan Tenchov)
+ • Relicense to LGPLv2.1+
+
 Overview of changes from dbus-deviation 0.3.0 to dbus-deviation 0.4.0
 =====================================================================
 
