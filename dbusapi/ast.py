@@ -74,7 +74,7 @@ class Log(object):
 
 class AstLog(Log):
 
-    """Specialized Log subclass for ast messages"""
+    """Specialized Log subclass for AST messages"""
 
     def __init__(self):
         """Construct a new AstLog"""
@@ -102,7 +102,7 @@ def ignore_node(node):
 # pylint: disable=too-many-instance-attributes
 class BaseNode(object):
 
-    """Base class for all D-Bus Ast nodes."""
+    """Base class for all D-Bus AST nodes."""
 
     DOCSTRING_TAGS = ['{%s}docstring' % TP_DTD,
                       '{%s}doc' % FDO_DTD]
