@@ -24,73 +24,12 @@ from collections import OrderedDict
 # pylint: disable=no-member
 from lxml import etree
 from re import match
+from dbusapi.log import AstLog
+from dbusapi.typeparser import TypeParser
 
 
 TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 FDO_DTD = 'http://www.freedesktop.org/dbus/1.0/doc.dtd'
-
-
-class Log(object):
-
-    """Base logging class."""
-
-    def __init__(self):
-        """Construct a new Log"""
-        self.issues = []
-        self.issue_codes = set()
-        self.domain = 'default'
-
-    def register_issue_code(self, code):
-        """
-        Register a new issue code.
-
-        Duplicate codes will be silently ignored.
-
-        Args:
-            code: str, an issue code, for example `unknown-node`
-        """
-        self.issue_codes.add(code)
-
-    def log_issue(self, code, message):
-        """
-        Log a new issue.
-
-        Args:
-            code: str, A registered code for that issue.
-            message: str, A message describing the issue.
-        """
-        assert code in self.issue_codes
-        self.issues.append(self._create_entry(code, message))
-
-    # pylint: disable=no-self-use
-    def _create_entry(self, code, message):
-        return None, self.domain, code, message
-
-    def clear(self):
-        """Clear the issue list."""
-        self.issues = []
-
-
-class AstLog(Log):
-
-    """Specialized Log subclass for ast messages"""
-
-    def __init__(self):
-        """Construct a new AstLog"""
-        super(AstLog, self).__init__()
-        self.register_issue_code('unknown-node')
-        self.register_issue_code('empty-root')
-        self.register_issue_code('missing-attribute')
-        self.register_issue_code('duplicate-node')
-        self.register_issue_code('duplicate-interface')
-        self.register_issue_code('duplicate-method')
-        self.register_issue_code('duplicate-signal')
-        self.register_issue_code('duplicate-property')
-        self.register_issue_code('node-name')
-        self.register_issue_code('interface-name')
-        self.register_issue_code('method-name')
-        self.register_issue_code('signal-name')
-        self.domain = 'ast'
 
 
 def ignore_node(node):
@@ -473,7 +412,9 @@ class Property(BaseNode):
             log: subclass of `Log`, used to store log messages; can be None
         """
         super(Property, self).__init__(name, annotations, log)
-        self.type = type_
+        type_parser = TypeParser(type_, log)
+        signature = type_parser.parse()
+        self.type = signature
         self.access = access
         self.interface = None
 
@@ -627,7 +568,9 @@ class Argument(BaseNode):
         """
         super(Argument, self).__init__(name, annotations, log)
         self.direction = direction or Argument.DIRECTION_IN
-        self.type = type_
+        type_parser = TypeParser(type_, log)
+        signature = type_parser.parse()
+        self.type = signature
         self._index = -1
 
     @property

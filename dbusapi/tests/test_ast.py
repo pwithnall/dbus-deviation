@@ -26,6 +26,7 @@ Unit tests for dbusapi.ast
 
 
 from dbusapi import ast
+from dbusapi.types import TypeSignature
 import unittest
 
 
@@ -230,6 +231,20 @@ class TestAstTraversal(unittest.TestCase):
         self.assertEquals(len(children), 2)
         self.assertEquals(children[0], method)
         self.assertEquals(children[1], annotation)
+
+
+class TestAstSignatures(unittest.TestCase):
+    """Test AST node signature parsing."""
+
+    def test_property(self):
+        prop = ast.Property('AProperty', 's', ast.Property.ACCESS_READ)
+        self.assertIsInstance(prop.type, TypeSignature)
+        self.assertEqual(str(prop.type), 's')
+
+    def test_argument(self):
+        arg = ast.Argument('self', ast.Argument.DIRECTION_IN, 's')
+        self.assertIsInstance(arg.type, TypeSignature)
+        self.assertEqual(str(arg.type), 's')
 
 
 class TestAstLogging(unittest.TestCase):

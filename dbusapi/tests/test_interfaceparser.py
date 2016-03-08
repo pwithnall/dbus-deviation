@@ -181,6 +181,15 @@ class TestParserErrors(unittest.TestCase):
                  'Duplicate signal definition ‘I.I.S’.'),
             ])
 
+    def test_invalid_signal_signature(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<signal name='S'><arg name='N' type='?'/></signal>"
+            "</interface></node>", [
+                ('unknown-type',
+                 'Unknown type ‘?’.'),
+            ])
+
     def test_duplicate_property(self):
         self.assertOutput(
             "<node><interface name='I.I'>"
@@ -189,6 +198,15 @@ class TestParserErrors(unittest.TestCase):
             "</interface></node>", [
                 ('duplicate-property',
                  'Duplicate property definition ‘I.I.P’.'),
+            ])
+
+    def test_invalid_property_signature(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<property name='P' type='a?' access='readwrite'/>"
+            "</interface></node>", [
+                ('unknown-type',
+                 'Unknown type ‘?’.'),
             ])
 
     def test_unknown_sub_interface_node(self):
