@@ -66,6 +66,10 @@ class Log(object):
     def _create_entry(self, code, message):
         return None, self.domain, code, message
 
+    def clear(self):
+        """Clear the issue list."""
+        self.issues = []
+
 
 class AstLog(Log):
 
