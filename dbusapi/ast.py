@@ -30,47 +30,10 @@ from collections import OrderedDict
 # pylint: disable=no-member
 from lxml import etree
 from re import match
-
+from dbusapi.log import Log
 
 TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 FDO_DTD = 'http://www.freedesktop.org/dbus/1.0/doc.dtd'
-
-
-class Log(object):
-
-    """Base logging class."""
-
-    def __init__(self):
-        """Construct a new Log"""
-        self.issues = []
-        self.issue_codes = set()
-        self.domain = 'default'
-
-    def register_issue_code(self, code):
-        """
-        Register a new issue code.
-
-        Duplicate codes will be silently ignored.
-
-        Args:
-            code: str, an issue code, for example `unknown-node`
-        """
-        self.issue_codes.add(code)
-
-    def log_issue(self, code, message):
-        """
-        Log a new issue.
-
-        Args:
-            code: str, A registered code for that issue.
-            message: str, A message describing the issue.
-        """
-        assert code in self.issue_codes
-        self.issues.append(self._create_entry(code, message))
-
-    # pylint: disable=no-self-use
-    def _create_entry(self, code, message):
-        return None, self.domain, code, message
 
 
 class AstLog(Log):
