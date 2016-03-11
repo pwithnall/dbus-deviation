@@ -16,3 +16,11 @@ dbusapi.interfaceparser module
     :members:
     :undoc-members:
     :show-inheritance:
+
+dbusapi.log module
+------------------
+
+.. automodule:: dbusapi.log
+    :members:
+    :undoc-members:
+    :show-inheritance:
