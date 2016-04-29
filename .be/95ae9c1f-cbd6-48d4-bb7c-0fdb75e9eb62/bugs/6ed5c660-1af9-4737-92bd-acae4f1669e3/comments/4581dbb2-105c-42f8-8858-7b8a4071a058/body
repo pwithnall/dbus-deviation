@@ -1,0 +1,1 @@
+Add a helper for use with `git bisect` to work out which commit broke D-Bus API compatibility. This is mostly useful for repositories which define their D-Bus APIs in code, rather than as introspection XML files.
