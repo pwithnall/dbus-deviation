@@ -447,6 +447,45 @@ class TestParserNormal(unittest.TestCase):
         arg = meth.arguments[0]
         self.assertEquals(arg.comment, "And me!")
 
+    def test_line_numbers(self):
+        """Test that line numbers are correctly computed"""
+        xml = ("<node xmlns:tp='"
+               "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+               "' xmlns:doc='"
+               "http://www.freedesktop.org/dbus/1.0/doc.dtd'>\n"
+               "<!--\n"
+               "Please consider me\n"
+               "-->\n"
+               "<interface name='I.I'>\n"
+               "<!--\n"
+               "Notice me too\n"
+               "-->\n"
+               "<method name='foo'>\n"
+               "<!--\n"
+               "And me!\n"
+               "-->\n"
+               "<arg name='bar' type='s'/>\n"
+               "<arg name='no-comment' type='s'/>\n"
+               "</method>\n"
+               "</interface></node>\n")
+
+        (parser, interfaces, _) = _test_parser(xml)
+        interface = interfaces.get('I.I')
+        self.assertIsNotNone(interface)
+        self.assertEqual(interface.line_number, 5)
+        self.assertEqual(interface.comment_line_number, 2)
+        meth = interface.methods.get('foo')
+        self.assertIsNotNone(meth)
+        self.assertEqual(meth.line_number, 9)
+        self.assertEqual(meth.comment_line_number, 6)
+        self.assertEquals(len(meth.arguments), 2)
+        arg = meth.arguments[0]
+        self.assertEqual(arg.line_number, 13)
+        self.assertEqual(arg.comment_line_number, 10)
+        arg = meth.arguments[1]
+        self.assertEqual(arg.line_number, 14)
+        self.assertEqual(arg.comment_line_number, -1)
+
     def test_doc_annotations(self):
         xml = ("<node xmlns:tp='"
                "http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"

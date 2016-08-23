@@ -92,6 +92,8 @@ class BaseNode(object):
         self._comment = None
         self.log = log or AstLog()
         self.annotations = OrderedDict()
+        self.line_number = -1
+        self.comment_line_number = -1
 
         self._children_types = {
             'annotation': Annotation,
@@ -139,7 +141,15 @@ class BaseNode(object):
 
         attrs['log'] = log
         res = cls(**attrs)
-        res.comment = comment
+        res.line_number = node.sourceline
+        if comment is not None:
+            res.comment = comment.text
+            # lxml reports the last source line for xml comments as
+            # being the actual source line, fix this.
+            # Also report line numbers starting from 1, consistent
+            # with node.line_number
+            res.comment_line_number = (comment.sourceline -
+                                       len(res.comment.split('\n')) + 1)
 
         if parent:
             parent.add_child(res)
@@ -156,10 +166,11 @@ class BaseNode(object):
         xml_comment = None
         for elem in node:
             if elem.tag == etree.Comment:
-                xml_comment = elem.text
+                xml_comment = elem
                 continue
 
             elif elem.tag in BaseNode.DOCSTRING_TAGS:
+                self.comment_line_number = elem.sourceline
                 self.comment = elem.text
                 continue
 
