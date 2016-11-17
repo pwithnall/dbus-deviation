@@ -298,6 +298,19 @@ class InterfaceComparator(object):
         new_ecs = _get_ecs_annotation(new_node)
         output_code = 'ecs-changed-%s-%s' % (old_ecs, new_ecs)
 
+        #                                 New
+        #                   | true | invalidates | const | false
+        #     | true        | xxxx | B2          | F3    | F3
+        # Old | invalidates | B2   | xxxxxxxxxxx | F3    | F3
+        #     | const       | B1   | B1          | xxxxx | B4
+        #     | false       | B1   | B1          | F4    | xxxxx
+        #
+        # B = Backwards-compatible; F = Forwards-compatible
+        # 1 = Started notifying
+        # 2 = Property switched lists in PropertiesChanged
+        # 3 = Stopped notifying
+        # 4 = const semantics changed
+
         if old_ecs in ['true', 'invalidates'] and \
            new_ecs in ['false', 'const']:
             self._issue_output(self.OUTPUT_FORWARDS_INCOMPATIBLE, output_code,
