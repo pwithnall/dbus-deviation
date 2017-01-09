@@ -31,6 +31,8 @@ from collections import OrderedDict
 from lxml import etree
 from re import match
 from dbusapi.log import Log
+from dbusapi.typeparser import TypeParser
+
 
 TP_DTD = 'http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0'
 FDO_DTD = 'http://www.freedesktop.org/dbus/1.0/doc.dtd'
@@ -55,6 +57,8 @@ class AstLog(Log):
         self.register_issue_code('interface-name')
         self.register_issue_code('method-name')
         self.register_issue_code('signal-name')
+        self.register_issue_code('property-type')
+        self.register_issue_code('argument-type')
         self.domain = 'ast'
 
 
@@ -451,7 +455,16 @@ class Property(BaseNode):
             log: subclass of `Log`, used to store log messages; can be None
         """
         super(Property, self).__init__(name, annotations, log)
-        self.type = type_
+
+        type_parser = TypeParser(type_)
+        self.type = type_parser.parse()
+        if self.type is None:
+            message = type_parser.get_output()[0][3]
+            self.log.log_issue('property-type',
+                               'Error when parsing type ‘%s’ for property '
+                               '‘%s’: %s' %
+                               (type_, name, message))
+
         self.access = access
         self.interface = None
 
@@ -604,8 +617,17 @@ class Argument(BaseNode):
             log: subclass of `Log`, used to store log messages; can be None
         """
         super(Argument, self).__init__(name, annotations, log)
+
+        type_parser = TypeParser(type_)
+        self.type = type_parser.parse()
+        if self.type is None:
+            message = type_parser.get_output()[0][3]
+            self.log.log_issue('argument-type',
+                               'Error when parsing type ‘%s’ for argument '
+                               '‘%s’: %s' %
+                               (type_, name, message))
+
         self.direction = direction or Argument.DIRECTION_IN
-        self.type = type_
         self._index = -1
 
     @property

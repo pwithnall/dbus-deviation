@@ -17,6 +17,22 @@ dbusapi.interfaceparser module
     :undoc-members:
     :show-inheritance:
 
+dbusapi.typeparser module
+-------------------------
+
+.. automodule:: dbusapi.typeparser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+dbusapi.types module
+--------------------
+
+.. automodule:: dbusapi.types
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dbusapi.log module
 ------------------
 

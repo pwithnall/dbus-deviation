@@ -180,6 +180,16 @@ class TestParserErrors(unittest.TestCase):
                  'Duplicate signal definition ‘I.I.S’.'),
             ])
 
+    def test_invalid_signal_signature(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<signal name='S'><arg name='N' type='?'/></signal>"
+            "</interface></node>", [
+                ('argument-type',
+                 'Error when parsing type ‘?’ for argument ‘N’: '
+                 'Reserved type ‘?’ must not be used in signatures on D-Bus.'),
+            ])
+
     def test_duplicate_property(self):
         self.assertOutput(
             "<node><interface name='I.I'>"
@@ -188,6 +198,16 @@ class TestParserErrors(unittest.TestCase):
             "</interface></node>", [
                 ('duplicate-property',
                  'Duplicate property definition ‘I.I.P’.'),
+            ])
+
+    def test_invalid_property_signature(self):
+        self.assertOutput(
+            "<node><interface name='I.I'>"
+            "<property name='P' type='a?' access='readwrite'/>"
+            "</interface></node>", [
+                ('property-type',
+                 'Error when parsing type ‘a?’ for property ‘P’: '
+                 'Reserved type ‘?’ must not be used in signatures on D-Bus.'),
             ])
 
     def test_unknown_sub_interface_node(self):
