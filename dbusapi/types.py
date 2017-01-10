@@ -315,7 +315,7 @@ class Array(Container):
 
     def __str__(self):
         """Format the type as a human-readable string."""
-        assert(len(self.members) == 1)
+        assert len(self.members) == 1
         return "{}{}".format(self.type, self.members[0])
 
 
@@ -352,7 +352,7 @@ class DictEntry(Container):
 
     def __str__(self):
         """Format the type as a human-readable string."""
-        assert(len(self.members) == 2)
+        assert len(self.members) == 2
         return "{{{}{}}}".format(self.members[0], self.members[1])
 
 
