@@ -60,7 +60,6 @@ class Type(object):
 
 # pylint: disable=too-few-public-methods
 class Byte(Type):
-
     """
     AST representation of the D-Bus BYTE type.
 
@@ -77,7 +76,6 @@ class Byte(Type):
 
 # pylint: disable=too-few-public-methods
 class Boolean(Type):
-
     """
     AST representation of the D-Bus BOOLEAN type.
 
@@ -94,7 +92,6 @@ class Boolean(Type):
 
 # pylint: disable=too-few-public-methods
 class Int16(Type):
-
     """
     AST representation of the D-Bus INT16 type.
 
@@ -111,7 +108,6 @@ class Int16(Type):
 
 # pylint: disable=too-few-public-methods
 class UInt16(Type):
-
     """
     AST representation of the D-Bus UINT16 type.
 
@@ -128,7 +124,6 @@ class UInt16(Type):
 
 # pylint: disable=too-few-public-methods
 class Int32(Type):
-
     """
     AST representation of the D-Bus INT32 type.
 
@@ -145,7 +140,6 @@ class Int32(Type):
 
 # pylint: disable=too-few-public-methods
 class UInt32(Type):
-
     """
     AST representation of the D-Bus UINT32 type.
 
@@ -162,7 +156,6 @@ class UInt32(Type):
 
 # pylint: disable=too-few-public-methods
 class Int64(Type):
-
     """
     AST representation of the D-Bus INT64 type.
 
@@ -179,7 +172,6 @@ class Int64(Type):
 
 # pylint: disable=too-few-public-methods
 class UInt64(Type):
-
     """
     AST representation of the D-Bus UINT64 type.
 
@@ -196,7 +188,6 @@ class UInt64(Type):
 
 # pylint: disable=too-few-public-methods
 class Double(Type):
-
     """
     AST representation of the D-Bus DOUBLE type.
 
@@ -213,7 +204,6 @@ class Double(Type):
 
 # pylint: disable=too-few-public-methods
 class String(Type):
-
     """
     AST representation of the D-Bus STRING type.
 
@@ -231,7 +221,6 @@ class String(Type):
 
 # pylint: disable=too-few-public-methods
 class ObjectPath(Type):
-
     """
     AST representation of the D-Bus OBJECT_PATH type.
 
@@ -248,7 +237,6 @@ class ObjectPath(Type):
 
 # pylint: disable=too-few-public-methods
 class Signature(Type):
-
     """
     AST representation of the D-Bus SIGNATURE type.
     """
@@ -263,7 +251,6 @@ class Signature(Type):
 
 # pylint: disable=too-few-public-methods
 class Variant(Type):
-
     """
     AST representation of the D-Bus VARIANT type.
 
@@ -280,7 +267,6 @@ class Variant(Type):
 
 # pylint: disable=too-few-public-methods
 class UnixFD(Type):
-
     """
     AST representation of the D-Bus UNIX_FD type.
 
@@ -316,7 +302,6 @@ class Container(Type):
 
 # pylint: disable=too-few-public-methods
 class Array(Container):
-
     """
     AST representation of the D-Bus ARRAY type.
     """
@@ -336,7 +321,6 @@ class Array(Container):
 
 # pylint: disable=too-few-public-methods
 class Struct(Container):
-
     """
     AST representation of the D-Bus STRUCT type.
     """
@@ -355,7 +339,6 @@ class Struct(Container):
 
 # pylint: disable=too-few-public-methods
 class DictEntry(Container):
-
     """
     AST representation of the D-Bus DICT_ENTRY type.
     """
@@ -375,7 +358,6 @@ class DictEntry(Container):
 
 # pylint: disable=too-few-public-methods
 class TypeSignature(object):
-
     """
     AST representation of a D-Bus signature - an ordered list of one or more
     types.
