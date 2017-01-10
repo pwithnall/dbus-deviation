@@ -105,7 +105,7 @@ class TypeParser(object):
         if character in basic_types:
             return basic_types[character]()
         elif character == "a":
-            res = types.Array()
+            out_array = types.Array()
             character = self._get_next_character()
             if not character:
                 self._log.log_issue('invalid-type',
@@ -115,14 +115,14 @@ class TypeParser(object):
             if not one_type:
                 # Invalid member type - error has already been logged.
                 return None
-            res.members.append(one_type)
-            return res
+            out_array.members.append(one_type)
+            return out_array
         elif character == "(":
-            res = types.Struct()
+            out_struct = types.Struct()
             while True:
                 character = self._get_next_character()
                 if not character or \
-                   (character == ')' and len(res.members) == 0):
+                   (character == ')' and len(out_struct.members) == 0):
                     self._log.log_issue('invalid-type',
                                         'Incomplete structure declaration.')
                     return None
@@ -132,14 +132,14 @@ class TypeParser(object):
                 if not one_type:
                     # Invalid member type - error has already been logged.
                     return None
-                res.members.append(one_type)
-            return res
+                out_struct.members.append(one_type)
+            return out_struct
         elif character == "{":
-            res = types.DictEntry()
+            out_dict = types.DictEntry()
             while True:
                 character = self._get_next_character()
                 if not character or \
-                   (character == '}' and len(res.members) != 2):
+                   (character == '}' and len(out_dict.members) != 2):
                     self._log.log_issue('invalid-type',
                                         'Incomplete dictionary declaration.')
                     return None
@@ -149,12 +149,12 @@ class TypeParser(object):
                 if not one_type:
                     # Invalid member type - error has already been logged.
                     return None
-                if len(res.members) >= 2:
+                if len(out_dict.members) >= 2:
                     self._log.log_issue('invalid-type',
                                         'Invalid dictionary declaration.')
                     return None
-                res.members.append(one_type)
-            return res
+                out_dict.members.append(one_type)
+            return out_dict
         elif character in ['r', 'e', 'm', '*', '?', '@', '&', '^']:
             # https://dbus.freedesktop.org/doc/dbus-specification.html#idm399
             self._log.log_issue('reserved-type',
