@@ -32,13 +32,13 @@ from abc import ABCMeta, abstractmethod
 
 # pylint: disable=too-few-public-methods
 class Type(object):
-    __metaclass__ = ABCMeta
-
     """
     An abstract class - AST representation of a D-Bus type.
 
     See http://dbus.freedesktop.org/doc/dbus-specification.html#type-system
     """
+
+    __metaclass__ = ABCMeta
 
     def __init__(self):
         """Constructor."""
@@ -297,11 +297,11 @@ class UnixFD(Type):
 
 # pylint: disable=too-few-public-methods
 class Container(Type):
-    __metaclass__ = ABCMeta
-
     """
     An abstract class - AST representation of the D-Bus container type.
     """
+
+    __metaclass__ = ABCMeta
 
     def __init__(self):
         """Constructor."""
