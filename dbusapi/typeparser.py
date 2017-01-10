@@ -2,6 +2,7 @@
 # vim: ai ts=4 sts=4 et sw=4
 #
 # Copyright © 2016 Kaloyan Tenchov
+# Copyright © 2017 Philip Withnall
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -15,6 +16,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Module providing a `TypeParser` object for parsing D-Bus type strings into
+abstract syntax trees (ASTs) representing the nested type structure.
+"""
+
 
 from dbusapi import types
 from dbusapi.log import Log

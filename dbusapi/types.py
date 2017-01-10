@@ -16,6 +16,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
+
+"""
+A representation of the D-Bus type system as a series of classes which can be
+built into an abstract syntax tree (AST) for representing complex (nested)
+types.
+
+An AST can be built by parsing a D-Bus type signature (using
+`typeparser.TypeParser`) or by building the tree of objects manually.
+"""
+
+
 from abc import ABCMeta, abstractmethod
 
 
