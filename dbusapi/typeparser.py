@@ -82,6 +82,7 @@ class TypeParser(object):
             character = None
         return character
 
+    # pylint: disable=too-many-return-statements,too-many-branches
     def _parse_one_type(self, character):
         """Parse one complete type from the signature."""
         basic_types = {

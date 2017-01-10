@@ -30,6 +30,7 @@ An AST can be built by parsing a D-Bus type signature (using
 from abc import ABCMeta, abstractmethod
 
 
+# pylint: disable=too-few-public-methods
 class Type(object):
     __metaclass__ = ABCMeta
 
@@ -57,6 +58,7 @@ class Type(object):
         return not self.__eq__(other)
 
 
+# pylint: disable=too-few-public-methods
 class Byte(Type):
 
     """
@@ -73,6 +75,7 @@ class Byte(Type):
         self.alignment = 1
 
 
+# pylint: disable=too-few-public-methods
 class Boolean(Type):
 
     """
@@ -89,6 +92,7 @@ class Boolean(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class Int16(Type):
 
     """
@@ -105,6 +109,7 @@ class Int16(Type):
         self.alignment = 2
 
 
+# pylint: disable=too-few-public-methods
 class UInt16(Type):
 
     """
@@ -121,6 +126,7 @@ class UInt16(Type):
         self.alignment = 2
 
 
+# pylint: disable=too-few-public-methods
 class Int32(Type):
 
     """
@@ -137,6 +143,7 @@ class Int32(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class UInt32(Type):
 
     """
@@ -153,6 +160,7 @@ class UInt32(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class Int64(Type):
 
     """
@@ -169,6 +177,7 @@ class Int64(Type):
         self.alignment = 8
 
 
+# pylint: disable=too-few-public-methods
 class UInt64(Type):
 
     """
@@ -185,6 +194,7 @@ class UInt64(Type):
         self.alignment = 8
 
 
+# pylint: disable=too-few-public-methods
 class Double(Type):
 
     """
@@ -201,6 +211,7 @@ class Double(Type):
         self.alignment = 8
 
 
+# pylint: disable=too-few-public-methods
 class String(Type):
 
     """
@@ -218,6 +229,7 @@ class String(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class ObjectPath(Type):
 
     """
@@ -234,6 +246,7 @@ class ObjectPath(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class Signature(Type):
 
     """
@@ -248,6 +261,7 @@ class Signature(Type):
         self.alignment = 1
 
 
+# pylint: disable=too-few-public-methods
 class Variant(Type):
 
     """
@@ -264,6 +278,7 @@ class Variant(Type):
         self.alignment = 1
 
 
+# pylint: disable=too-few-public-methods
 class UnixFD(Type):
 
     """
@@ -280,6 +295,7 @@ class UnixFD(Type):
         self.alignment = 4
 
 
+# pylint: disable=too-few-public-methods
 class Container(Type):
     __metaclass__ = ABCMeta
 
@@ -298,6 +314,7 @@ class Container(Type):
         pass
 
 
+# pylint: disable=too-few-public-methods
 class Array(Container):
 
     """
@@ -317,6 +334,7 @@ class Array(Container):
         return "{}{}".format(self.type, self.members[0])
 
 
+# pylint: disable=too-few-public-methods
 class Struct(Container):
 
     """
@@ -335,6 +353,7 @@ class Struct(Container):
         return "({})".format("".join(map(str, self.members)))
 
 
+# pylint: disable=too-few-public-methods
 class DictEntry(Container):
 
     """
@@ -354,6 +373,7 @@ class DictEntry(Container):
         return "{{{}{}}}".format(self.members[0], self.members[1])
 
 
+# pylint: disable=too-few-public-methods
 class TypeSignature(object):
 
     """
