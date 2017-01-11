@@ -33,6 +33,14 @@ dbusapi.types module
     :undoc-members:
     :show-inheritance:
 
+dbusapi.typeformatter module
+----------------------------
+
+.. automodule:: dbusapi.typeformatter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dbusapi.log module
 ------------------
 
