@@ -20,7 +20,7 @@
 <p>A list of all the possible error codes produced by dbus-deviation, along
    with potential causes, what problems result, and how to avoid them.</p>
 
-<h2 id="parser">Parser errors</h2>
+<h2 id="parser">Interface parser errors</h2><a id="interface-parser"></a>
 
 <table>
 	<thead>
@@ -32,6 +32,14 @@
 	</thead>
 	<!-- Please keep this list alphabetically sorted. -->
 	<tbody>
+		<tr id="argument-type" class="compatibility-error">
+			<th>argument-type</th>
+			<td>error</td>
+			<td>The type of an argument to a method or signal was
+			    not a valid D-Bus type. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#type-system">D-Bus type system</a>.</td>
+		</tr>
+
 		<tr id="duplicate-interface" class="compatibility-error">
 			<th>duplicate-interface</th>
 			<td>error</td>
@@ -45,6 +53,14 @@
 			<td>error</td>
 			<td>Two methods with the same name were defined in a
 			    single D-Bus interface. One of the methods may be
+			    misnamed.</td>
+		</tr>
+
+		<tr id="duplicate-node" class="compatibility-error">
+			<th>duplicate-node</th>
+			<td>error</td>
+			<td>Two nodes with the same name were defined in a
+			    single D-Bus interface. One of the nodes may be
 			    misnamed.</td>
 		</tr>
 
@@ -64,6 +80,20 @@
 			    misnamed.</td>
 		</tr>
 
+		<tr id="interface-name" class="compatibility-error">
+			<th>interface-name</th>
+			<td>error</td>
+			<td>The name of a D-Bus interface was not valid. Check the
+			    <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface">D-Bus interface name documentation</a>.</td>
+		</tr>
+
+		<tr id="method-name" class="compatibility-error">
+			<th>method-name</th>
+			<td>error</td>
+			<td>The name of a D-Bus method was not valid. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member">D-Bus member name documentation</a>.</td>
+		</tr>
+
 		<tr id="missing-attribute" class="compatibility-error">
 			<th>missing-attribute</th>
 			<td>error</td>
@@ -73,12 +103,80 @@
 			    <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Data Format specification</a>.</td>
 		</tr>
 
+		<tr id="node-name" class="compatibility-error">
+			<th>node-name</th>
+			<td>error</td>
+			<td>The path (name) of a D-Bus node was not a valid
+			    relative path. The root node must have an absolute
+			    object path (if one is specified); child nodes must
+			    have relative object paths (if specified). Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path">D-Bus object path documentation</a>.</td>
+		</tr>
+
+		<tr id="property-type" class="compatibility-error">
+			<th>property-type</th>
+			<td>error</td>
+			<td>The type of a D-Bus property was
+			    not a valid D-Bus type. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#type-system">D-Bus type system</a>.</td>
+		</tr>
+
+		<tr id="signal-name" class="compatibility-error">
+			<th>signal-name</th>
+			<td>error</td>
+			<td>The name of a D-Bus signal was not valid. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-member">D-Bus member name documentation</a>.</td>
+		</tr>
+
 		<tr id="unknown-node" class="compatibility-error">
 			<th>unknown-node</th>
 			<td>error</td>
 			<td>An XML node in the API file was not recognized.
 			    Check the
 			    <a href="http://dbus.freedesktop.org/doc/dbus-specification.html#introspection-format">Introspection Data Format specification</a>.</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2 id="type-parser">Type parser errors</h2>
+
+<table>
+	<thead>
+		<tr>
+			<th>Error code</th>
+			<th>Compatibility</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<!-- Please keep this list alphabetically sorted. -->
+	<tbody>
+		<tr id="invalid-type" class="compatibility-error">
+			<th>invalid-type</th>
+			<td>error</td>
+			<td>A D-Bus type string is invalid, or represents an
+			    illegal D-Bus type. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#type-system">D-Bus type system documentation</a>.</td>
+		</tr>
+
+		<tr id="reserved-type" class="compatibility-error">
+			<th>reserved-type</th>
+			<td>error</td>
+			<td>A D-Bus type string contains a reserved type
+			    character, such as <tt>m</tt>, <tt>*</tt>,
+			    <tt>?</tt>, <tt>@</tt>, <tt>&amp;</tt> or
+			    <tt>^</tt>. These are not allowed in interface
+			    definitions; they’re reserved for binding
+			    implementations or future features. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#type-system">D-Bus type system documentation</a>.</td>
+		</tr>
+
+		<tr id="unknown-type" class="compatibility-error">
+			<th>unknown-type</th>
+			<td>error</td>
+			<td>A D-Bus type string contains an unknown character
+			    which is not part of the language of D-Bus type
+			    strings. Check the
+			    <a href="https://dbus.freedesktop.org/doc/dbus-specification.html#type-system">D-Bus type system documentation</a>.</td>
 		</tr>
 	</tbody>
 </table>
