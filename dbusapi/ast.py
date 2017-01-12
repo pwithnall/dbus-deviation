@@ -46,7 +46,6 @@ class AstLog(Log):
         """Construct a new AstLog"""
         super(AstLog, self).__init__()
         self.register_issue_code('unknown-node')
-        self.register_issue_code('empty-root')
         self.register_issue_code('missing-attribute')
         self.register_issue_code('duplicate-node')
         self.register_issue_code('duplicate-interface')
