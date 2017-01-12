@@ -1,3 +1,13 @@
+Overview of changes from dbus-deviation 0.5.0 to dbus-deviation 0.6.0
+=====================================================================
+
+Major changes:
+ • Split out the logging API to allow for reuse
+ • Expose source line numbers in dbusapi.ast
+ • Add a D-Bus type parser, dbusapi.typeparser (thanks to Kaloyan Tenchov)
+ • Drop Python 3.3 support as Sphinx no longer supports it
+ • Add a D-Bus type formatter, dbusapi.typeformatter
+
 Overview of changes from dbus-deviation 0.4.0 to dbus-deviation 0.5.0
 =====================================================================
 
