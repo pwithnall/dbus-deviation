@@ -106,11 +106,11 @@ setup(
         ],
     },
     author=project_author,
-    author_email='philip.withnall@collabora.co.uk',
+    author_email='philip@tecnocode.co.uk',
     description=__doc__,
     long_description=README + '\n\n' + NEWS,
     license='LGPLv2.1+',
-    url='http://people.collabora.com/~pwith/dbus-deviation/',
+    url='https://tecnocode.co.uk/dbus-deviation/',
     cmdclass={'test': DiscoverTest},
     command_options={
         'build_sphinx': {

@@ -120,8 +120,7 @@ def _print_output(output, include_uris=True, enable_colour=True):
     for (filename, level, code, message) in output:
         formatted_level = _format_level(level, enable_colour, max_level_len)
         fd_for_level = _get_fd_for_level(level)
-        errors_page = 'https://people.collabora.com' \
-                      '/~pwith/dbus-deviation/errors.html'
+        errors_page = 'https://tecnocode.co.uk/dbus-deviation/errors.html'
         explanation_uri = '%s#%s' % (errors_page, code)
         formatted_code = code.rjust(max_code_len)
 

@@ -4,11 +4,11 @@
 	<description xml:lang="en">dbus-deviation is a project for parsing D-Bus introspection XML and processing it in various ways. Its main tool is dbus-interface-diff, which calculates the difference between two D-Bus APIs for the purpose of checking for API breaks. This functionality is also available as a Python module, dbusdeviation.</description>
 	<homepage rdf:resource="https://gitlab.com/dbus-deviation/"/>
 	<license rdf:resource="http://usefulinc.com/doap/licenses/lgpl"/>
-	<download-page rdf:resource="http://people.collabora.com/~pwith/dbus-deviation/"/>
+	<download-page rdf:resource="https://tecnocode.co.uk/dbus-deviation/errors.html"/>
 	<maintainer>
 		<foaf:Person>
 			<foaf:name>Philip Withnall</foaf:name>
-			<foaf:mbox rdf:resource="mailto:philip.withnall@collabora.co.uk"/>
+			<foaf:mbox rdf:resource="mailto:philip@tecnocode.co.uk"/>
 		</foaf:Person>
 	</maintainer>
 </Project>
