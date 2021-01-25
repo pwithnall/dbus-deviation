@@ -233,5 +233,6 @@ def main():
     _print_output(out)
     sys.exit(_calculate_exit_status(args, out))
 
+
 if __name__ == '__main__':
     main()
