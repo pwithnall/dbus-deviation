@@ -93,7 +93,6 @@ setup(
     zip_safe=True,
     setup_requires=[
         'setuptools_git >= 0.3',
-        'setuptools_pep8',
         'sphinx',
     ],
     install_requires=['lxml'],

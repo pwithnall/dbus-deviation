@@ -11,13 +11,14 @@ python:
 #  - "3.2"
 # command to install dependencies
 install:
-  - pip install pylint coverage coveralls codecov .
+  - pip install pylint coverage coveralls codecov pycodestyle .
 # command to run tests
 script:
   - coverage run --source dbusapi,dbusdeviation --omit 'dbusdeviation/utilities/*' setup.py test
   - coverage report --fail-under=70
   - python setup.py check
-  - python setup.py pep8
+  - pycodestyle dbusapi
+  - pycodestyle dbusdeviation
   - pylint --errors-only dbusapi
   - pylint --errors-only dbusdeviation
 # Submit coverage data to coveralls.io and codecov.io
