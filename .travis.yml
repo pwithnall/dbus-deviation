@@ -4,9 +4,7 @@ python:
   - "3.7"
   - "3.8"
   - "3.9"
-# Disabled due to lxml 3.5.0 not working with PyPy:
-# See: https://bitbucket.org/pypy/compatibility/wiki/lxml
-#  - "pypy"
+  - "pypy3"
 # command to install dependencies
 install:
   - pip install pylint coverage coveralls codecov pycodestyle .
