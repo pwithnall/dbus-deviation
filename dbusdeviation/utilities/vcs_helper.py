@@ -412,7 +412,6 @@ def main():
     parser.add_argument('--silent', action='store_const', const=True,
                         default=False,
                         help='Silence all non-error output')
-    # pylint: disable=bad-continuation
     parser.add_argument('--git', type=str, default='git', metavar='COMMAND',
                         help='Path to the git command, including extra '
                              'arguments')
@@ -425,7 +424,6 @@ def main():
     parser.add_argument('--git-remote', dest='git_remote_origin', type=str,
                         default='origin', metavar='REMOTE',
                         help='git remote to push notes to')
-    # pylint: disable=bad-continuation
     parser.add_argument('--git-refs', dest='dbus_api_git_refs', type=str,
                         default='notes/dbus/api', metavar='REF-PATH',
                         help='Path beneath refs/ where the git notes will be'
@@ -457,7 +455,6 @@ def main():
     parser_check.add_argument('--fatal-warnings', action='store_const',
                               const=True, default=False,
                               help='Treat all warnings as fatal')
-    # pylint: disable=bad-continuation
     parser_check.add_argument('old_ref', metavar='OLD-REF',
                               type=str, nargs='?', default='',
                               help='Old ref to compare; or empty for the '
