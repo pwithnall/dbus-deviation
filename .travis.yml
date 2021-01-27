@@ -1,23 +1,20 @@
 language: python
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-# Disabled due to lxml 3.5.0 not working with PyPy:
-# See: https://bitbucket.org/pypy/compatibility/wiki/lxml
-#  - "pypy"
-# Disabled due to bugs in the logilab package on the Python 3.2 build slave.
-# See: https://travis-ci.org/pwithnall/dbus-deviation/jobs/60500460
-#  - "3.2"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.9"
+  - "pypy3"
 # command to install dependencies
 install:
-  - pip install pylint coverage coveralls codecov .
+  - pip install pylint coverage coveralls codecov pycodestyle .
 # command to run tests
 script:
   - coverage run --source dbusapi,dbusdeviation --omit 'dbusdeviation/utilities/*' setup.py test
   - coverage report --fail-under=70
   - python setup.py check
-  - python setup.py pep8
+  - pycodestyle dbusapi
+  - pycodestyle dbusdeviation
   - pylint --errors-only dbusapi
   - pylint --errors-only dbusdeviation
 # Submit coverage data to coveralls.io and codecov.io
