@@ -20,16 +20,16 @@
 Parse D-Bus introspection XML and process it in various ways
 """
 
-from setuptools import setup, find_packages
 import os
+import setuptools
 import version  # https://gist.github.com/pwithnall/7bc5f320b3bdf418265a
 
 
 project_name = 'dbus-deviation'
 __version__ = version.get_version()
 project_author = 'Philip Withnall'
-README = open('README').read()
-NEWS = open('NEWS').read()
+README = open('README.md', 'r', encoding='utf-8').read()
+NEWS = open('NEWS', 'r', encoding='utf-8').read()
 
 
 # From http://stackoverflow.com/a/17004263/2931197
@@ -84,10 +84,10 @@ except ImportError:
             discover_and_run_tests()
 
 
-setup(
+setuptools.setup(
     name=project_name,
     version=__version__,
-    packages=find_packages(exclude=['*.tests']),
+    packages=setuptools.find_packages(exclude=['*.tests']),
     include_package_data=True,
     exclude_package_data={'': ['.gitignore']},
     zip_safe=True,
@@ -108,6 +108,7 @@ setup(
     author_email='philip@tecnocode.co.uk',
     description=__doc__,
     long_description=README + '\n\n' + NEWS,
+    long_description_content_type='text/markdown',
     license='LGPLv2.1+',
     url='https://tecnocode.co.uk/dbus-deviation/',
     cmdclass={'test': DiscoverTest},

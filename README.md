@@ -17,7 +17,7 @@ Using dbus-deviation
 dbus-deviation can be used as a utility program or as a Python library.
 
 The utility programs:
- • dbus-interface-diff:
+ - dbus-interface-diff:
      Check for differences between two versions of the same D-Bus API and
      print details of each difference. It can check for problems with forwards
      and backwards compatibility, as well as general informational
@@ -28,7 +28,7 @@ The utility programs:
            com.example.Interface1.xml \  # old version of the interface
            com.example.Interface2.xml    # new version of the interface
 
- • dbus-interface-vcs-helper:
+ - dbus-interface-vcs-helper:
      This is a helper program designed to be used by dbus-deviation.mk.
 
 As a library, the core object is an InterfaceParser, allowing a D-Bus API to
@@ -40,13 +40,17 @@ dbus-deviation.mk
 
 This is a Makefile snippet which should be copied into your project, added to
 git, and the following two lines included in your top-level Makefile.am:
-   dbus_api_xml_files = list of D-Bus interface XML files
-   -include $(top_srcdir)/dbus-deviation.mk
+```
+dbus_api_xml_files = list of D-Bus interface XML files
+-include $(top_srcdir)/dbus-deviation.mk
+```
 
 Do not add it to EXTRA_DIST. It is designed to work from git checkouts only.
 
 Then run:
-   make dbus-deviation-mk-install
+```
+make dbus-deviation-mk-install
+```
 to set up the API signature database. This assumes that your project defines
 D-Bus interfaces in XML files, and does not generate them at runtime.
 
@@ -58,25 +62,25 @@ There is currently no streamlined support for projects which generate D-Bus
 interfaces at runtime.
 
 dbus-deviation.mk defines the following rules:
- • dist-dbus-api-compatibility (a dependency of dist-hook)
- • check-dbus-api-compatibility (a dependency of check-local)
- • dbus-deviation-mk-install (never triggered automatically)
+ - dist-dbus-api-compatibility (a dependency of dist-hook)
+ - check-dbus-api-compatibility (a dependency of check-local)
+ - dbus-deviation-mk-install (never triggered automatically)
 
 Dependencies
 ============
 
- • argparse
- • lxml
+ - argparse
+ - lxml
 
 Development
 ===========
 
 For fun, dbus-deviation uses the following services to do continuous
 integration and gather build statistics:
- • https://travis-ci.org/pwithnall/dbus-deviation
- • https://landscape.io/github/pwithnall/dbus-deviation
- • https://coveralls.io/r/pwithnall/dbus-deviation
- • https://codecov.io/github/pwithnall/dbus-deviation
+ - https://travis-ci.org/pwithnall/dbus-deviation
+ - https://landscape.io/github/pwithnall/dbus-deviation
+ - https://coveralls.io/r/pwithnall/dbus-deviation
+ - https://codecov.io/github/pwithnall/dbus-deviation
 
 Licensing
 =========
@@ -94,9 +98,8 @@ Bugs
 ====
 
 Bug reports and patches should be sent via GitHub or Gitlab:
-
-https://github.com/pwithnall/dbus-deviation
-https://gitlab.com/dbus-deviation/dbus-deviation
+ - https://github.com/pwithnall/dbus-deviation
+ - https://gitlab.com/dbus-deviation/dbus-deviation
 
 Contact
 =======
