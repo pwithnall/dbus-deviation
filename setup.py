@@ -106,7 +106,7 @@ setuptools.setup(
     },
     author=project_author,
     author_email='philip@tecnocode.co.uk',
-    description=__doc__,
+    description=__doc__.strip(),
     long_description=README + '\n\n' + NEWS,
     long_description_content_type='text/markdown',
     license='LGPLv2.1+',
