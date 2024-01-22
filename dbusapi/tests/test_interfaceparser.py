@@ -459,13 +459,13 @@ class TestParserNormal(unittest.TestCase):
         (parser, interfaces, _) = _test_parser(xml)
         interface = interfaces.get('I.I')
         self.assertIsNotNone(interface)
-        self.assertEquals(interface.comment, "Please consider me")
+        self.assertEqual(interface.comment, "Please consider me")
         meth = interface.methods.get('foo')
         self.assertIsNotNone(meth)
-        self.assertEquals(meth.comment, "Notice me too")
-        self.assertEquals(len(meth.arguments), 1)
+        self.assertEqual(meth.comment, "Notice me too")
+        self.assertEqual(len(meth.arguments), 1)
         arg = meth.arguments[0]
-        self.assertEquals(arg.comment, "And me!")
+        self.assertEqual(arg.comment, "And me!")
 
     def test_line_numbers(self):
         """Test that line numbers are correctly computed"""
@@ -498,7 +498,7 @@ class TestParserNormal(unittest.TestCase):
         self.assertIsNotNone(meth)
         self.assertEqual(meth.line_number, 9)
         self.assertEqual(meth.comment_line_number, 6)
-        self.assertEquals(len(meth.arguments), 2)
+        self.assertEqual(len(meth.arguments), 2)
         arg = meth.arguments[0]
         self.assertEqual(arg.line_number, 13)
         self.assertEqual(arg.comment_line_number, 10)
@@ -517,7 +517,7 @@ class TestParserNormal(unittest.TestCase):
         (parser, interfaces, _) = _test_parser(xml)
         interface = interfaces.get('I.I')
         self.assertIsNotNone(interface)
-        self.assertEquals(interface.comment, "bla")
+        self.assertEqual(interface.comment, "bla")
 
     def test_multiline_comments(self):
         xml = ("<node xmlns:tp='"
@@ -534,9 +534,9 @@ class TestParserNormal(unittest.TestCase):
         (parser, interfaces, _) = _test_parser(xml)
         interface = interfaces.get('I.I')
         self.assertIsNotNone(interface)
-        self.assertEquals(interface.comment,
-                          "    Please consider that\n"
-                          "    multiline comment")
+        self.assertEqual(interface.comment,
+                         "    Please consider that\n"
+                         "    multiline comment")
 
     def test_ignored_comments(self):
         xml = ("<node xmlns:tp='"
