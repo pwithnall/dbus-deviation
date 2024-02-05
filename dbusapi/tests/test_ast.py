@@ -227,9 +227,9 @@ class TestAstTraversal(unittest.TestCase):
         })
 
         children = [node for node in iface.walk()]
-        self.assertEquals(len(children), 2)
-        self.assertEquals(children[0], method)
-        self.assertEquals(children[1], annotation)
+        self.assertEqual(len(children), 2)
+        self.assertEqual(children[0], method)
+        self.assertEqual(children[1], annotation)
 
 
 class TestAstSignatures(unittest.TestCase):
